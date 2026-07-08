@@ -1,0 +1,59 @@
+<view wx:if="{{loading}}" class="empty">正在加载...</view>
+<view wx:else class="page booking">
+  <view class="hint">请完成以下预约选项</view>
+  <view class="block-title">选择理发师</view>
+  <view class="staff-list">
+    <view wx:for="{{staffOptions}}" wx:key="id" class="staff-option {{item.className}}" bindtap="selectStaff" data-id="{{item.id}}">
+      <view wx:if="{{item.isNoPreference}}" class="staff-placeholder">?</view>
+      <image wx:else class="staff-img" mode="aspectFill" src="{{item.imageUrl}}" />
+      <view class="staff-copy">
+        <view class="staff-head">
+          <view class="staff-name">{{item.name}}</view>
+          <view wx:if="{{item.extraServiceFee}}" class="fee">+¥{{item.extraServiceFee}}</view>
+        </view>
+        <view wx:if="{{!item.isNoPreference}}" class="staff-role">{{item.role}}{{item.experience ? '（' + item.experience + '）' : ''}}</view>
+        <view wx:if="{{item.bio}}" class="staff-bio">{{item.bio}}</view>
+      </view>
+      <view class="check">
+        <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
+        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_light_pink.png" />
+      </view>
+    </view>
+  </view>
+
+  <view class="block-title">选择服务项目</view>
+  <view wx:for="{{serviceOptions}}" wx:key="id" class="service-option {{item.className}}" bindtap="selectService" data-id="{{item.id}}">
+    <image class="service-img" mode="aspectFill" src="{{item.imageUrl}}" />
+    <view class="service-copy">
+      <view class="service-name">{{item.name}}</view>
+      <view wx:if="{{item.noteText}}" class="service-note">{{item.noteText}}</view>
+      <view class="service-duration">{{item.durationText}}</view>
+    </view>
+    <view class="service-side">
+      <view class="price">{{item.priceText}}</view>
+      <view class="check">
+        <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
+        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_light_pink.png" />
+      </view>
+    </view>
+  </view>
+
+  <view class="block-title">选择预约日期</view>
+  <scroll-view scroll-x class="dates">
+    <view wx:for="{{dates}}" wx:key="value" class="date {{item.className}}" bindtap="selectDate" data-value="{{item.value}}">
+      <view>{{item.label}}</view>
+      <view>{{item.day}}</view>
+    </view>
+  </scroll-view>
+
+  <view class="block-title">可用时间段</view>
+  <view class="chips">
+    <view wx:for="{{slotOptions}}" wx:key="startTime" class="chip {{item.className}}" bindtap="selectTime" data-time="{{item.time}}" data-available="{{item.isAvailable}}">
+      {{item.time}}
+    </view>
+  </view>
+
+  <view class="bottom-bar">
+    <button class="primary-btn submit" disabled="{{!canSubmit}}" loading="{{submitting}}" bindtap="submit">{{submitText}}</button>
+  </view>
+</view>

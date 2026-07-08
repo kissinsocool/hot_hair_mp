@@ -1,0 +1,75 @@
+.profile-head {
+  display: flex;
+  align-items: center;
+  gap: 24rpx;
+  padding: 28rpx 20rpx;
+  border-radius: 16rpx;
+}
+
+.avatar-wrap {
+  position: relative;
+  flex: 0 0 132rpx;
+}
+
+.avatar {
+  width: 132rpx;
+  height: 132rpx;
+  border-radius: 50%;
+  background: #e8dcd0;
+}
+
+.camera {
+  position: absolute;
+  right: -4rpx;
+  bottom: -4rpx;
+  width: 42rpx;
+  height: 42rpx;
+  border-radius: 50%;
+  background: #e8a2b0;
+}
+
+.camera image {
+  width: 28rpx;
+  height: 28rpx;
+}
+
+.name {
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.form {
+  margin-top: 24rpx;
+  padding: 18rpx;
+  border-radius: 16rpx;
+}
+
+.input-wrap,
+.picker {
+  display: flex;
+  align-items: center;
+  height: 92rpx;
+  line-height: 92rpx;
+  margin-bottom: 22rpx;
+  padding: 0 24rpx;
+  border: 1rpx solid #e8dcd0;
+  border-radius: 16rpx;
+  background: #fdfbf9;
+}
+
+.input-wrap input {
+  flex: 1;
+  min-width: 0;
+  height: 92rpx;
+}
+
+.logout {
+  margin-top: 18rpx;
+}
+
+.form .primary-btn {
+  height: 74rpx;
+  line-height: 74rpx;
+  border-radius: 16rpx;
+  font-size: 32rpx;
+}

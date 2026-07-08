@@ -1,0 +1,25 @@
+<view class="page">
+  <view wx:if="{{loggedIn}}">
+    <view class="card profile-head">
+      <view class="avatar-wrap" bindtap="pickAvatar">
+        <image class="avatar" mode="aspectFill" src="{{avatarPreview}}" />
+        <view class="camera"><image mode="aspectFit" src="/assets/icons/photo_camera_outlined.png" /></view>
+      </view>
+      <view>
+        <view class="name">{{displayNameText}}</view>
+        <view class="muted">{{phoneText}}</view>
+      </view>
+    </view>
+
+    <view class="card form">
+      <view class="section-title">个人资料</view>
+      <view class="input-wrap"><image class="icon-img" mode="aspectFit" src="/assets/icons/person_outline.png" /><input value="{{displayName}}" bindinput="onName" placeholder="昵称" /></view>
+      <picker range="{{genders}}" value="{{genderIndex}}" bindchange="onGender">
+        <view class="picker"><image class="icon-img" mode="aspectFit" src="/assets/icons/wc_outlined.png" />性别：{{gender}}</view>
+      </picker>
+      <view class="input-wrap"><image class="icon-img" mode="aspectFit" src="/assets/icons/phone_iphone_outlined.png" /><input value="{{phone}}" bindinput="onPhone" type="number" maxlength="11" placeholder="手机号" /></view>
+      <button class="primary-btn" loading="{{saving}}" bindtap="save">保存资料</button>
+      <button class="danger-btn logout" bindtap="logout">退出登录</button>
+    </view>
+  </view>
+</view>

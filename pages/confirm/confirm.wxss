@@ -1,0 +1,92 @@
+.title {
+  margin: 24rpx 4rpx 40rpx;
+  color: #5a5a5a;
+  font-size: 40rpx;
+  font-weight: 800;
+}
+
+.panel {
+  margin-bottom: 100rpx;
+  padding: 20rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 0 0 30rpx;
+  margin-bottom: 30rpx;
+  border-bottom: 1rpx solid #f4e7df;
+}
+
+.compact {
+  padding-bottom: 10rpx;
+  margin-bottom: 10rpx;
+  border-bottom: 0;
+}
+
+.row text:first-child {
+  color: #8a8a8a;
+}
+
+.row text:last-child {
+  flex: 1;
+  text-align: right;
+  font-weight: 800;
+}
+
+.total {
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.total text:last-child {
+  color: #e8a2b0;
+  font-size: 36rpx;
+}
+
+.sheet-mask {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.success-sheet {
+  position: fixed;
+  z-index: 51;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 30rpx 30rpx calc(30rpx + env(safe-area-inset-bottom));
+  border-radius: 50rpx 50rpx 0 0;
+  background: #fff;
+  text-align: center;
+}
+
+.success-icon {
+  width: 120rpx;
+  height: 120rpx;
+}
+
+.success-title {
+  margin-top: 40rpx;
+  color: #5a5a5a;
+  font-size: 40rpx;
+  font-weight: 800;
+}
+
+.success-text {
+  margin-top: 16rpx;
+  color: #777;
+  line-height: 1.5;
+}
+
+.success-btn {
+  margin-top: 60rpx;
+}

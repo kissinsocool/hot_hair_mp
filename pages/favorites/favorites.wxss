@@ -1,0 +1,76 @@
+.page {
+  padding-top: 20rpx;
+}
+
+.salon-card {
+  position: relative;
+  height: 220rpx;
+  margin: 0 18rpx 14rpx;
+  border-color: #f0e4db;
+  border-radius: 24rpx;
+  box-shadow: 0 4rpx 12rpx rgba(156, 114, 91, 0.12);
+}
+
+.salon-image {
+  width: 270rpx;
+  height: 220rpx;
+  flex: 0 0 270rpx;
+}
+
+.salon-body {
+  padding: 14rpx 8rpx 8rpx 12rpx;
+}
+
+.salon-head {
+  gap: 10rpx;
+}
+
+.salon-name {
+  max-height: 70rpx;
+  font-size: 30rpx;
+  line-height: 35rpx;
+}
+
+.salon-rating {
+  display: flex;
+  align-items: center;
+  gap: 6rpx;
+  color: #ff9800;
+  line-height: 30rpx;
+}
+
+.salon-rating .icon-img {
+  width: 25rpx;
+  height: 25rpx;
+  margin-right: 0;
+}
+
+.salon-desc {
+  height: 58rpx;
+  margin-top: 6rpx;
+  font-size: 30rpx;
+  line-height: 32rpx;
+}
+
+.salon-foot {
+  margin-top: 34rpx;
+}
+
+.distance {
+  max-width: 280rpx;
+  font-size: 26rpx;
+  font-weight: 800;
+}
+
+.favorite {
+  position: absolute;
+  right: 12rpx;
+  bottom: 8rpx;
+  width: 46rpx;
+  height: 46rpx;
+}
+
+.favorite image {
+  width: 46rpx;
+  height: 46rpx;
+}

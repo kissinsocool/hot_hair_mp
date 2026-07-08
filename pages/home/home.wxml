@@ -1,0 +1,62 @@
+<view class="home">
+  <view class="appbar" style="padding-top: {{statusBarHeight}}px; min-height: {{appBarHeight}}px;">
+    <view class="appbar-row" style="height: {{navBarHeight}}px;">
+      <view class="location" bindtap="openLocation">
+        <image class="top-icon" mode="aspectFit" src="/assets/icons/location_on_outlined.png" />
+        <text class="location-text">{{locationText}}</text>
+        <image class="arrow-icon" mode="aspectFit" src="/assets/icons/keyboard_arrow_down_white.png" />
+      </view>
+      <button class="message-btn" hover-class="none" bindtap="openMessages" aria-label="消息">
+        <view class="message-wrap">
+          <image class="message-icon" mode="aspectFit" src="/assets/icons/notifications_none.png" />
+          <view wx:if="{{hasUnreadMessages}}" class="message-dot"></view>
+        </view>
+      </button>
+    </view>
+    <view class="search">
+      <input value="{{keyword}}" bindinput="onKeyword" bindconfirm="submitSearch" placeholder="按名称搜索沙龙..." />
+      <button hover-class="none" bindtap="submitSearch">搜索</button>
+    </view>
+  </view>
+
+  <view wx:if="{{suggestions.length}}" class="suggestions">
+    <view wx:for="{{suggestions}}" wx:key="id" class="suggestion" bindtap="chooseSuggestion" data-name="{{item.name}}">
+      <view class="suggestion-name">{{item.name}}</view>
+      <view class="suggestion-sub">{{item.addressText}}</view>
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="list" style="height: calc(100vh - {{appBarHeight}}px - 80px - env(safe-area-inset-bottom));" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
+    <view class="list-title">{{listTitle}}</view>
+
+    <view wx:if="{{loading && !visibleSalons.length}}" class="loading">正在加载...</view>
+    <view wx:elif="{{errorMessage}}" class="empty">
+      <view class="empty-title">加载失败</view>
+      <view class="empty-sub">{{errorMessage}}</view>
+      <button class="retry" bindtap="loadSalons">重新加载</button>
+    </view>
+    <view wx:elif="{{!visibleSalons.length}}" class="empty">
+      <view class="empty-title">没有找到匹配的沙龙</view>
+      <view class="empty-sub">换个名称试试看</view>
+    </view>
+
+    <view wx:for="{{visibleSalons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
+      <image class="salon-image" mode="aspectFill" src="{{item.image}}" />
+      <view class="salon-body">
+        <view class="salon-head">
+          <view class="salon-name">{{item.nameText}}</view>
+          <view class="salon-rating"><image class="star-icon" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
+        </view>
+        <view class="salon-desc">{{item.descriptionText}}</view>
+        <view class="salon-foot">
+          <view class="distance">{{item.distanceText}}</view>
+          <view class="favorite" catchtap="toggleFavorite" data-id="{{item.id}}">
+            <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{visibleSalons.length < filteredSalons.length}}" class="load-more">继续下拉加载更多</view>
+  </scroll-view>
+</view>

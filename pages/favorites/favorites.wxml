@@ -1,0 +1,19 @@
+<view class="page">
+  <view wx:if="{{!loggedIn}}"></view>
+  <view wx:elif="{{loading && !salons.length}}" class="empty">正在加载...</view>
+  <view wx:elif="{{!salons.length}}" class="empty">还没有收藏的沙龙</view>
+  <view wx:for="{{salons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
+    <image class="salon-image" mode="aspectFill" src="{{item.image}}" />
+    <view class="salon-body">
+      <view class="salon-head">
+        <view class="salon-name">{{item.nameText}}</view>
+        <view class="salon-rating"><image class="icon-img" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
+      </view>
+      <view class="salon-desc">{{item.descriptionText}}</view>
+      <view class="salon-foot">
+        <view class="distance">{{item.distanceText}}</view>
+        <view class="favorite" catchtap="toggle" data-id="{{item.id}}"><image mode="aspectFit" src="/assets/icons/favorite_pink.png" /></view>
+      </view>
+    </view>
+  </view>
+</view>

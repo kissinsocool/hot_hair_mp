@@ -1,0 +1,67 @@
+{
+  "pages": [
+    "pages/home/home",
+    "pages/login/login",
+    "pages/detail/detail",
+    "pages/staff/staff",
+    "pages/booking/booking",
+    "pages/confirm/confirm",
+    "pages/orders/orders",
+    "pages/favorites/favorites",
+    "pages/profile/profile",
+    "pages/location/location",
+    "pages/messages/messages"
+  ],
+  "window": {
+    "navigationBarTitleText": "麻辣烫",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#fdfbf9"
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "你的位置信息将用于推荐附近美发店"
+    }
+  },
+  "requiredPrivateInfos": [
+    "getLocation",
+    "chooseLocation"
+  ],
+  "tabBar": {
+    "custom": true,
+    "color": "#806f66",
+    "selectedColor": "#e8a2b0",
+    "backgroundColor": "#ffffff",
+    "fontSize": "14px",
+    "iconWidth": "29.16px",
+    "height": "80px",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "探店",
+        "iconPath": "assets/icons/storefront_outlined.png",
+        "selectedIconPath": "assets/icons/storefront.png"
+      },
+      {
+        "pagePath": "pages/favorites/favorites",
+        "text": "收藏",
+        "iconPath": "assets/icons/favorite_border.png",
+        "selectedIconPath": "assets/icons/favorite.png"
+      },
+      {
+        "pagePath": "pages/orders/orders",
+        "text": "我的订单",
+        "iconPath": "assets/icons/receipt_long_outline.png",
+        "selectedIconPath": "assets/icons/receipt_long.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我",
+        "iconPath": "assets/icons/person_outline.png",
+        "selectedIconPath": "assets/icons/person.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

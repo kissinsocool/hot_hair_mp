@@ -1,0 +1,93 @@
+.staff-page {
+  padding-bottom: 140rpx;
+}
+
+.profile {
+  padding: 30rpx 20rpx;
+  background: #fff;
+  text-align: center;
+}
+
+.avatar {
+  width: 280rpx;
+  height: 280rpx;
+  border-radius: 50%;
+  background: #e8dcd0;
+}
+
+.name {
+  margin-top: 40rpx;
+  color: #5a5a5a;
+  font-size: 48rpx;
+  font-weight: 800;
+}
+
+.role {
+  display: inline-block;
+  margin: 14rpx 0;
+  padding: 8rpx 18rpx;
+  border-radius: 999rpx;
+  background: #e8a2b0;
+  color: #fff;
+}
+
+.rating {
+  display: flex;
+  justify-content: center;
+  gap: 24rpx;
+  margin: 24rpx 0;
+}
+
+.rating > text {
+  font-size: 64rpx;
+  font-weight: 800;
+}
+
+.stars {
+  color: #f2a51f;
+}
+
+.stars image {
+  width: 24rpx;
+  height: 24rpx;
+}
+
+.section {
+  margin-bottom: 24rpx;
+  padding: 20rpx;
+  border-radius: 40rpx;
+}
+
+.desc {
+  color: #5a5a5a;
+  line-height: 1.6;
+}
+
+.review {
+  padding: 18rpx 0;
+  border-top: 1rpx solid #f4e7df;
+}
+
+.review-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10rpx;
+  font-weight: 800;
+}
+
+.bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 18rpx 20rpx calc(18rpx + env(safe-area-inset-bottom));
+  background: #fff;
+}
+
+.bar .primary-btn {
+  height: 82rpx;
+  line-height: 82rpx;
+  width: 100% !important;
+  margin: 0;
+  font-size: 30rpx;
+}

@@ -1,0 +1,151 @@
+.messages-page {
+  min-height: 100vh;
+  background: #fffdfb;
+}
+
+.messages-appbar {
+  display: flex;
+  align-items: center;
+  height: calc(90rpx + env(safe-area-inset-top));
+  padding: calc(14rpx + env(safe-area-inset-top)) 20rpx 0;
+  background: #fff;
+}
+
+.messages-title {
+  flex: 1;
+  margin-left: 34rpx;
+  color: #55545a;
+  font-size: 40rpx;
+  font-weight: 800;
+  line-height: 56rpx;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 30rpx;
+  margin-right: 150rpx;
+}
+
+.nav-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.nav-icon image {
+  width: 34rpx;
+  height: 34rpx;
+  opacity: 0.72;
+}
+
+.nav-back {
+  width: 64rpx;
+  height: 64rpx;
+}
+
+.nav-back image {
+  width: 45rpx;
+  height: 45rpx;
+}
+
+.nav-home {
+  width: 72rpx;
+  height: 72rpx;
+}
+
+.nav-home image {
+  width: 51rpx;
+  height: 51rpx;
+}
+
+.messages-list {
+  padding: 16rpx 16rpx 22rpx;
+}
+
+.msg-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 22rpx;
+  min-height: 230rpx;
+  margin-bottom: 12rpx;
+  padding: 18rpx 24rpx 16rpx;
+  border: 1rpx solid #eadbd1;
+  border-radius: 12rpx;
+  background: #fff;
+}
+
+.status-dot {
+  flex: 0 0 auto;
+  width: 16rpx;
+  height: 16rpx;
+  margin-top: 14rpx;
+  border-radius: 50%;
+  background: #ff9800;
+}
+
+.msg-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.status {
+  color: #ff9800;
+  font-size: 30rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+}
+
+.status.completed,
+.status.accepted {
+  color: #4caf50;
+}
+
+.status-dot.completed,
+.status-dot.accepted {
+  background: #4caf50;
+}
+
+.status.rejected,
+.status.canceled,
+.status.cancelled {
+  color: #ff5252;
+}
+
+.status-dot.rejected,
+.status-dot.canceled,
+.status-dot.cancelled {
+  background: #ff5252;
+}
+
+.status.pending {
+  color: #ff9800;
+}
+
+.msg-text {
+  margin-top: 16rpx;
+  margin-bottom: 8rpx;
+  color: #66646a;
+  font-size: 36rpx;
+  font-weight: 500;
+  line-height: 52rpx;
+}
+
+.msg-meta {
+  display: flex;
+  align-items: center;
+  min-height: 48rpx;
+  color: #868489;
+  font-size: 34rpx;
+  font-weight: 500;
+  line-height: 48rpx;
+}
+
+.meta-icon {
+  width: 28rpx;
+  height: 28rpx;
+  margin-right: 12rpx;
+  opacity: 0.5;
+}

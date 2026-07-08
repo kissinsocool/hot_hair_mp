@@ -1,0 +1,212 @@
+page {
+  box-sizing: border-box;
+  min-height: 100%;
+  background: #fdfbf9;
+  color: #5a5a5a;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+}
+
+view,
+text,
+image,
+button,
+input {
+  box-sizing: border-box;
+}
+
+button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  line-height: normal !important;
+}
+
+button::after {
+  border: 0;
+}
+
+.button-hover {
+  background: inherit;
+  opacity: 1;
+}
+
+.page {
+  padding: 20rpx;
+}
+
+.card {
+  background: #ffffff;
+  border: 1rpx solid #e8dcd0;
+  border-radius: 16rpx;
+  box-shadow: 0 6rpx 20rpx rgba(0, 0, 0, 0.04);
+}
+
+.primary-btn {
+  width: 100% !important;
+  height: 80rpx;
+  line-height: 80rpx;
+  margin-right: 0;
+  margin-left: 0;
+  border-radius: 999rpx;
+  background: #e8a2b0;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 34rpx;
+}
+
+.ghost-btn {
+  width: 100% !important;
+  height: 68rpx;
+  line-height: 68rpx;
+  margin-right: 0;
+  margin-left: 0;
+  border: 1rpx solid #e8a2b0;
+  border-radius: 16rpx;
+  background: #fff;
+  color: #e8a2b0;
+  font-weight: 700;
+  font-size: 28rpx;
+}
+
+.danger-btn {
+  width: 100% !important;
+  height: 60rpx;
+  line-height: 60rpx;
+  margin-right: 0;
+  margin-left: 0;
+  border: 1rpx solid #d94b4b;
+  border-radius: 999rpx;
+  background: #fff;
+  color: #d94b4b;
+  font-weight: 700;
+  font-size: 28rpx;
+}
+
+.bar .primary-btn {
+  width: 100% !important;
+  margin: 0;
+  font-size: 30rpx;
+}
+
+.muted {
+  color: #8a8a8a;
+}
+
+.empty {
+  padding: 120rpx 24rpx;
+  text-align: center;
+  color: #8a8a8a;
+}
+
+.section-title {
+  margin: 28rpx 0 20rpx;
+  color: #5a5a5a;
+  font-size: 36rpx;
+  font-weight: 800;
+}
+
+.one-line {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon-img {
+  width: 34rpx;
+  height: 34rpx;
+  margin-right: 8rpx;
+  vertical-align: middle;
+}
+
+.salon-card {
+  display: flex;
+  height: 264rpx;
+  margin: 0 20rpx 14rpx;
+  overflow: hidden;
+  border: 1rpx solid rgba(232, 220, 208, 0.7);
+  border-radius: 32rpx;
+  background: #fff;
+  box-shadow: 0 12rpx 28rpx rgba(0, 0, 0, 0.08);
+}
+
+.salon-image {
+  width: 45%;
+  min-width: 300rpx;
+  max-width: 356rpx;
+  height: 264rpx;
+  flex: 0 0 45%;
+  background: #eee;
+}
+
+.salon-body {
+  flex: 1;
+  min-width: 0;
+  padding: 16rpx 8rpx 8rpx 12rpx;
+}
+
+.salon-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 16rpx;
+}
+
+.salon-name {
+  flex: 1;
+  min-width: 0;
+  max-height: 76rpx;
+  overflow: hidden;
+  color: #5a5a5a;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 38rpx;
+}
+
+.salon-rating {
+  flex: 0 0 auto;
+  overflow: hidden;
+  color: #f39c12;
+  font-size: 24rpx;
+  font-weight: 800;
+  line-height: 34rpx;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.salon-desc {
+  display: -webkit-box;
+  height: 60rpx;
+  margin-top: 10rpx;
+  overflow: hidden;
+  color: #777;
+  font-size: 28rpx;
+  line-height: 30rpx;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.salon-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 22rpx;
+}
+
+.distance {
+  min-width: 0;
+  max-width: 260rpx;
+  overflow: hidden;
+  color: #e8a2b0;
+  font-size: 24rpx;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.favorite {
+  flex: 0 0 56rpx;
+  color: #e8a2b0;
+  font-size: 40rpx;
+  text-align: center;
+}

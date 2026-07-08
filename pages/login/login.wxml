@@ -1,0 +1,12 @@
+<view class="page login-page">
+  <view class="hero card">
+    <image class="hero-img" mode="aspectFill" src="/assets/images/auth_hero.jpg" />
+    <view class="hero-mask"></view>
+    <view class="brand">变美从靓丝开始</view>
+  </view>
+  <button class="primary-btn phone-login-btn" loading="{{loading}}" open-type="getPhoneNumber" bindgetphonenumber="loginByPhone">手机号一键登录</button>
+  <view class="agreement" bindtap="toggleAgreement">
+    <image class="agreement-icon" mode="aspectFit" src="{{agreed ? '/assets/icons/check_circle_light_pink.png' : '/assets/icons/check_circle_light_gray.png'}}" />
+    <text>我已阅读并同意靓丝用户服务协议、隐私政策</text>
+  </view>
+</view>
