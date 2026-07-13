@@ -1,4 +1,5 @@
 const api = require('../../utils/api');
+const ad = require('../../utils/ad');
 
 Page({
   data: {
@@ -8,11 +9,13 @@ Page({
     currentPromoIndex: 0,
     reviewCount: 3,
     visibleReviews: [],
-    loading: true
+    loading: true,
+    ad: ad.DEFAULT
   },
 
   onLoad(query) {
     this.setData({ id: query.id || '' });
+    ad.load().then((config) => this.setData({ ad: config }));
     this.load();
   },
 
@@ -33,6 +36,7 @@ Page({
       salon.services = await Promise.all((salon.services || []).map(async (service) => ({
         ...service,
         imageUrl: await api.displayImageUrl(service.imageUrl),
+        tags: service.tags || service.categories || [],
         noteText: service.note || service.description || '',
         durationText: this.formatDuration(service.duration || service.durationMinutes),
         priceText: this.formatPrice(service.price || service.priceLabel)

@@ -103,6 +103,7 @@ Page({
     const serviceOptions = (salon.services || []).map((service) => ({
       ...service,
       imageUrl: api.mediaUrl(service.imageUrl || ''),
+      tags: service.tags || service.categories || [],
       noteText: service.note || service.description || '',
       durationText: service.duration || (service.durationMinutes ? `${service.durationMinutes} min` : ''),
       priceText: formatPrice(service.price || service.priceLabel),

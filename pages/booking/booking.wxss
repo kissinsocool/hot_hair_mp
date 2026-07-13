@@ -185,6 +185,21 @@
   margin-left: 18rpx;
 }
 
+.service-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.service-tag {
+  padding: 3rpx 12rpx;
+  background: #fde4eb;
+  color: #d06884;
+  font-size: 25rpx;
+  line-height: 32rpx;
+}
+
 .service-name {
   color: #5a5a5a;
   font-size: 37.33rpx;

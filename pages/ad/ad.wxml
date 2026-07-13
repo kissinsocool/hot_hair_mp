@@ -1,0 +1,14 @@
+<view class="ad-page">
+  <image class="hero" mode="aspectFill" src="/assets/images/ad.jpeg" />
+  <view class="content">
+    <view class="eyebrow">夏日焕新季</view>
+    <view class="title">热门造型限时优惠</view>
+    <view class="desc">到店体验精选剪发、染发与护理服务，换个清爽造型迎接夏天。</view>
+    <view class="card">
+      <view class="card-title">活动说明</view>
+      <view>活动内容：精选剪发、染发与护理服务</view>
+      <view>适用门店：平台内参与活动的店铺</view>
+      <view>具体优惠以预约页面及门店说明为准</view>
+    </view>
+  </view>
+</view>

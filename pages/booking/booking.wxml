@@ -25,6 +25,9 @@
   <view wx:for="{{serviceOptions}}" wx:key="id" class="service-option {{item.className}}" bindtap="selectService" data-id="{{item.id}}">
     <image class="service-img" mode="aspectFill" src="{{item.imageUrl}}" />
     <view class="service-copy">
+      <view class="service-tags">
+        <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
+      </view>
       <view class="service-name">{{item.name}}</view>
       <view wx:if="{{item.noteText}}" class="service-note">{{item.noteText}}</view>
       <view class="service-duration">{{item.durationText}}</view>

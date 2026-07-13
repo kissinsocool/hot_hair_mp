@@ -27,6 +27,9 @@
   </view>
 
   <scroll-view scroll-y class="list" style="height: calc(100vh - {{appBarHeight}}px - 80px - env(safe-area-inset-bottom));" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
+    <navigator wx:if="{{ad.enabled}}" class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
+      <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
+    </navigator>
     <view class="list-title">{{listTitle}}</view>
 
     <view wx:if="{{loading && !visibleSalons.length}}" class="loading">正在加载...</view>

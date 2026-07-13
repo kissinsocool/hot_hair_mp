@@ -2,6 +2,7 @@ const api = require('../../utils/api');
 const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const messages = require('../../utils/messages');
+const ad = require('../../utils/ad');
 
 Page({
   data: {
@@ -24,7 +25,8 @@ Page({
     navBarHeight: 44,
     appBarHeight: 148,
     locatedOnce: false,
-    hasUnreadMessages: false
+    hasUnreadMessages: false,
+    ad: ad.DEFAULT
   },
 
   onLoad() {
@@ -39,6 +41,7 @@ Page({
   },
 
   onShow() {
+    ad.load().then((config) => this.setData({ ad: config }));
     this.loadFavorites(false);
     this.loadUnreadMessages();
     this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {

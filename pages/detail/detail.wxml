@@ -1,9 +1,17 @@
 <view wx:if="{{loading}}" class="empty">正在加载...</view>
 <view wx:else class="detail">
+  <view class="detail-top {{ad.enabled ? '' : 'no-ad'}}">
+    <view class="detail-nav">
+      <view class="back" catchtap="goBack"><image mode="aspectFit" src="/assets/icons/arrow_back_ios_new.png" /></view>
+      <view class="detail-nav-title">店铺详情</view>
+    </view>
+    <navigator wx:if="{{ad.enabled}}" class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
+      <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
+    </navigator>
+  </view>
   <view class="hero">
     <image class="hero-img" mode="aspectFill" src="{{salon.image}}" />
     <view class="hero-mask"></view>
-    <view class="back" catchtap="goBack"><image mode="aspectFit" src="/assets/icons/arrow_back_ios_new.png" /></view>
     <view class="hero-title">{{salon.name}}</view>
   </view>
   <view class="body">
@@ -46,6 +54,9 @@
         <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" />
         <view class="service-main">
           <view class="service-copy">
+            <view class="service-tags">
+              <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
+            </view>
             <view class="service-name">{{item.name}}</view>
             <view wx:if="{{item.noteText}}" class="service-note">{{item.noteText}}</view>
           </view>
