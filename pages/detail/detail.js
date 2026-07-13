@@ -19,8 +19,7 @@ Page({
   async load() {
     try {
       const salon = await api.request(`/salons/${this.data.id}`);
-      const firstPromo = salon.promoImages && salon.promoImages[0];
-      salon.image = await api.displayImageUrl(salon.image || firstPromo);
+      salon.image = await api.displayImageUrl(api.salonImage(salon));
       salon.promoImages = await Promise.all((salon.promoImages || salon.images || []).map(api.displayImageUrl));
       if (!salon.promoImages.length && salon.image) salon.promoImages = [salon.image];
       salon.ratingText = salon.rating || '4.8';
@@ -55,7 +54,7 @@ Page({
   },
 
   async normalizeReview(review) {
-    const image = review.imageUrl || review.image || (review.imageUrls && review.imageUrls[0]) || (review.images && review.images[0]);
+    const images = review.imageUrls || review.images || [review.imageUrl || review.image].filter(Boolean);
     return {
       ...review,
       userText: review.user || review.userName || review.phone || '用户',
@@ -64,7 +63,7 @@ Page({
       serviceText: review.serviceName || review.service || '染发+修复',
       staffText: review.staffName || review.staff || 'Sato',
       dateText: this.formatDate(review.createdAt || review.date),
-      imageUrl: image ? await api.displayImageUrl(image) : ''
+      imageUrls: await Promise.all(images.map(api.displayImageUrl))
     };
   },
 
@@ -128,7 +127,8 @@ Page({
   },
 
   previewReviewImage(e) {
-    wx.previewImage({ urls: [e.currentTarget.dataset.url], current: e.currentTarget.dataset.url });
+    const review = this.data.visibleReviews[Number(e.currentTarget.dataset.reviewIndex)] || {};
+    wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
   goBack() {

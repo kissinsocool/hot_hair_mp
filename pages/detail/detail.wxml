@@ -16,7 +16,7 @@
         <view class="hours">营业时间： {{salon.openingHoursText}}</view>
       </view>
       <view class="heart" bindtap="toggleFavorite">
-        <image mode="aspectFit" src="{{isFavorite ? '/assets/icons/favorite.png' : '/assets/icons/favorite_border.png'}}" />
+        <image mode="aspectFit" src="{{isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
       </view>
     </view>
     <view wx:if="{{salon.promoImages.length}}" class="promo">
@@ -72,7 +72,7 @@
     <view class="card section">
       <view class="section-title">客户评价</view>
       <view wx:if="{{!visibleReviews.length}}" class="muted">暂无评价</view>
-      <view wx:for="{{visibleReviews}}" wx:key="id" class="review">
+      <view wx:for="{{visibleReviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
           <view class="review-user">
             <image class="avatar" mode="aspectFit" src="/assets/icons/person.png" />
@@ -85,7 +85,9 @@
         </view>
         <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon" mode="aspectFit" src="{{star}}" /></view>
         <view class="desc">{{item.comment}}</view>
-        <image wx:if="{{item.imageUrl}}" class="review-image" mode="aspectFill" src="{{item.imageUrl}}" bindtap="previewReviewImage" data-url="{{item.imageUrl}}" />
+        <view wx:if="{{item.imageUrls.length}}" class="review-images">
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+        </view>
       </view>
       <button wx:if="{{visibleReviews.length < salon.reviews.length}}" class="ghost-btn" bindtap="showMoreReviews">查看更多评价</button>
     </view>

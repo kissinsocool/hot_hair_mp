@@ -20,10 +20,11 @@
         <view class="name">{{item.serviceName}}</view>
         <view class="status {{item.statusClass}}">{{item.statusLabel}}</view>
       </view>
-      <view class="muted"><image class="icon-img" mode="aspectFit" src="/assets/icons/confirmation_number.png" />订单号 {{item.orderNo}}</view>
-      <view class="muted"><image class="icon-img" mode="aspectFit" src="/assets/icons/storefront_outlined.png" />{{item.salonName}}</view>
-      <view class="muted"><image class="icon-img" mode="aspectFit" src="/assets/icons/person_outline.png" />{{item.staffName}}</view>
-      <view class="time"><image class="icon-img" mode="aspectFit" src="/assets/icons/schedule.png" />{{item.startTimeText}}</view>
+      <view class="muted"><text class="order-label">订单编号:</text>{{item.orderNo}}</view>
+      <view class="muted"><text class="order-label">商家名称:</text>{{item.salonName}}</view>
+      <view class="time"><text class="order-label">到店时间:</text>{{item.startTimeText}}</view>
+      <view class="muted"><text class="order-label">理发师:</text>{{item.staffName}}</view>
+      <view class="muted"><text class="order-label">下单时间:</text>{{item.createdTimeText}}</view>
       <view class="actions {{item.canCancel && !item.canReview && !item.canComplain ? 'single' : ''}}">
         <button wx:if="{{item.canCancel}}" class="cancel danger" catchtap="cancel" data-id="{{item.id}}"><image class="btn-icon" mode="aspectFit" src="/assets/icons/cancel.png" />取消订单</button>
         <button wx:if="{{item.canReview}}" class="cancel{{item.reviewButtonClass}}" catchtap="review" data-id="{{item.id}}" data-type="review" data-disabled="{{item.reviewed}}"><image class="btn-icon" mode="aspectFit" src="{{item.reviewed ? '/assets/icons/check_circle.png' : '/assets/icons/rate_review_outlined.png'}}" />{{item.reviewButtonText}}</button>

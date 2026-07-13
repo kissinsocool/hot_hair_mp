@@ -1,7 +1,18 @@
 const app = getApp();
+const TEST_TOKEN = '__test_login_bypass__';
+const TEST_SESSION = {
+  token: TEST_TOKEN,
+  user: {
+    account: 'test',
+    displayName: '测试用户',
+    phone: '13800000000',
+    gender: '保密'
+  }
+};
 
 function session() {
-  return app.globalData.session || wx.getStorageSync('session') || null;
+  // ponytail: frontend-only login bypass for testing; remove before release.
+  return app.globalData.session || wx.getStorageSync('session') || TEST_SESSION;
 }
 
 function mediaUrl(value) {
@@ -17,7 +28,7 @@ function mediaUrl(value) {
 
 function displayImageUrl(value) {
   const url = mediaUrl(value);
-  if (!url.startsWith('http://')) return Promise.resolve(url);
+  if (!/^https?:\/\//.test(url)) return Promise.resolve(url);
 
   return new Promise((resolve) => {
     wx.downloadFile({
@@ -32,9 +43,15 @@ function displayImageUrl(value) {
   });
 }
 
+function salonImage(salon = {}) {
+  const firstPromo = salon.promoImages && salon.promoImages[0];
+  const firstImage = salon.images && salon.images[0];
+  return salon.coverImage || salon.coverImageUrl || salon.coverUrl || salon.bannerUrl || salon.image || salon.imageUrl || firstPromo || firstImage || '';
+}
+
 function request(path, options = {}) {
   const currentSession = session();
-  const token = currentSession && currentSession.token;
+  const token = currentSession && currentSession.token !== TEST_TOKEN && currentSession.token;
   return new Promise((resolve, reject) => {
     wx.request({
       url: `${app.globalData.apiBaseUrl}${path}`,
@@ -101,6 +118,7 @@ module.exports = {
   request,
   requireLogin,
   saveSession,
+  salonImage,
   session,
   statusText
 };

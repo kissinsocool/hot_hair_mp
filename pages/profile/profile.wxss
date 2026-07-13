@@ -25,7 +25,7 @@
   width: 42rpx;
   height: 42rpx;
   border-radius: 50%;
-  background: #e8a2b0;
+  background: #d06884;
 }
 
 .camera image {
@@ -67,9 +67,20 @@
   margin-top: 18rpx;
 }
 
+.form .primary-btn,
+.form .danger-btn {
+  height: 82rpx;
+  line-height: 82rpx;
+  border-radius: 999rpx;
+  font-size: 36rpx;
+  font-weight: 700;
+}
+
 .form .primary-btn {
-  height: 74rpx;
-  line-height: 74rpx;
-  border-radius: 16rpx;
-  font-size: 32rpx;
+  background: #d06884;
+}
+
+.form .danger-btn {
+  border-color: #d06884;
+  color: #d06884;
 }

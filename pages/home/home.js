@@ -106,7 +106,7 @@ Page({
   async normalizeSalon(salon) {
     return {
       ...salon,
-      image: await api.displayImageUrl(salon.image),
+      image: await api.displayImageUrl(api.salonImage(salon)),
       nameText: salon.name || '未知沙龙',
       addressText: salon.address || '',
       descriptionText: salon.description || '暂无描述',

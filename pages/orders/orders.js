@@ -3,6 +3,7 @@ const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const messages = require('../../utils/messages');
 const orderUtils = require('../../utils/orders');
+const MAX_IMAGE_BASE64_LENGTH = Math.ceil(800 * 1024 * 4 / 3);
 
 Page({
   data: {
@@ -166,15 +167,21 @@ Page({
       count: remain,
       mediaType: ['image'],
       sizeType: ['compressed'],
-      success: (res) => {
+      success: async (res) => {
         const fs = wx.getFileSystemManager();
         const additions = [];
         for (const file of res.tempFiles || []) {
           try {
+            const tempPath = await compressImage(file.tempFilePath);
+            const data = fs.readFileSync(tempPath, 'base64');
+            if (data.length > MAX_IMAGE_BASE64_LENGTH) {
+              wx.showToast({ title: '图片过大，请换一张', icon: 'none' });
+              continue;
+            }
             additions.push({
-              tempPath: file.tempFilePath,
-              fileName: file.tempFilePath.split('/').pop() || 'image.jpg',
-              data: fs.readFileSync(file.tempFilePath, 'base64')
+              tempPath,
+              fileName: tempPath.split('/').pop() || 'image.jpg',
+              data
             });
           } catch (_) {}
         }
@@ -228,4 +235,16 @@ function buildStars(rating) {
     selected: value <= rating,
     icon: value <= rating ? '/assets/icons/star_gold.png' : '/assets/icons/star_border.png'
   }));
+}
+
+function compressImage(src) {
+  return new Promise((resolve) => {
+    if (!wx.compressImage) return resolve(src);
+    wx.compressImage({
+      src,
+      quality: 35,
+      success: (res) => resolve(res.tempFilePath || src),
+      fail: () => resolve(src)
+    });
+  });
 }

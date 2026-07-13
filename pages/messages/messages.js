@@ -1,3 +1,4 @@
+const api = require('../../utils/api');
 const bookingSocket = require('../../utils/bookingSocket');
 const messages = require('../../utils/messages');
 const orderUtils = require('../../utils/orders');

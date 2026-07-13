@@ -1,4 +1,5 @@
 const api = require('../../utils/api');
+const MAX_IMAGE_BASE64_LENGTH = Math.ceil(800 * 1024 * 4 / 3);
 
 Page({
   data: {
@@ -58,16 +59,21 @@ Page({
     wx.chooseMedia({
       count: 1,
       mediaType: ['image'],
-      success: (res) => {
+      success: async (res) => {
         const firstFile = res.tempFiles && res.tempFiles[0];
         const file = firstFile && firstFile.tempFilePath;
         if (!file) return;
+        const tempPath = await compressImage(file);
         wx.getFileSystemManager().readFile({
-          filePath: file,
+          filePath: tempPath,
           encoding: 'base64',
           success: (read) => {
+            if (read.data.length > MAX_IMAGE_BASE64_LENGTH) {
+              wx.showToast({ title: '图片过大，请换一张', icon: 'none' });
+              return;
+            }
             const avatarUrl = `data:image/jpeg;base64,${read.data}`;
-            this.setData({ avatarUrl, avatarPreview: file });
+            this.setData({ avatarUrl, avatarPreview: tempPath });
           }
         });
       }
@@ -110,3 +116,15 @@ Page({
     this.sync();
   }
 });
+
+function compressImage(src) {
+  return new Promise((resolve) => {
+    if (!wx.compressImage) return resolve(src);
+    wx.compressImage({
+      src,
+      quality: 35,
+      success: (res) => resolve(res.tempFilePath || src),
+      fail: () => resolve(src)
+    });
+  });
+}

@@ -48,11 +48,11 @@
   gap: 8rpx;
   margin-top: 24rpx;
   color: #9a8f88;
-  font-size: 24rpx;
+  font-size: 30rpx;
   text-align: center;
 }
 
 .agreement-icon {
-  width: 28rpx;
-  height: 28rpx;
+  width: 34rpx;
+  height: 34rpx;
 }

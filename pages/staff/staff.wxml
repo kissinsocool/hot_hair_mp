@@ -3,30 +3,30 @@
   <view class="profile">
     <image class="avatar" mode="aspectFill" src="{{staff.imageUrl}}" />
     <view class="name">{{staff.name}}</view>
-    <view class="role">{{staff.role}}</view>
-    <view class="muted">{{staff.experience}}</view>
-  </view>
-  <view class="page">
+    <view class="role">{{staff.roleText}}</view>
     <view class="rating">
       <text>{{staff.ratingText}}</text>
       <view>
         <view class="stars"><image wx:for="{{[1,2,3,4,5]}}" wx:key="*this" mode="aspectFit" src="/assets/icons/star_gold.png" /></view>
-        <view class="muted">基于 {{staff.reviews.length}} 位客户评价</view>
       </view>
     </view>
+  </view>
+  <view class="page">
     <view class="card section">
-      <view class="section-title">关于我</view>
       <view class="desc">{{staff.bioText}}</view>
     </view>
     <view class="card section">
-      <view class="section-title">客户评价</view>
+      <view class="section-title">客户评价（{{staff.reviews.length}}）</view>
       <view wx:if="{{!staff.reviews.length}}" class="muted">暂无评价</view>
-      <view wx:for="{{staff.reviews}}" wx:key="id" class="review">
+      <view wx:for="{{staff.reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
           <text>{{item.userText}}</text>
-          <text class="stars">{{item.ratingText}} 分</text>
+          <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="review-star-icon" mode="aspectFit" src="{{star}}" /></view>
         </view>
         <view class="desc">{{item.comment}}</view>
+        <view wx:if="{{item.imageUrls.length}}" class="review-images">
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+        </view>
       </view>
     </view>
   </view>

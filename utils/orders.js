@@ -32,6 +32,7 @@ function messageText(status) {
 function formatOrder(order) {
   const date = new Date(order.startTime);
   const startTimeText = api.formatTime(order.startTime);
+  const createdTimeText = api.formatTime(order.createdAt || order.createTime || order.createdTime);
   return {
     ...order,
     orderNo: order.orderNo || order.id,
@@ -40,6 +41,7 @@ function formatOrder(order) {
     statusClass: statusClass(order.status),
     startTimeMs: Number.isNaN(date.getTime()) ? 0 : date.getTime(),
     startTimeText,
+    createdTimeText,
     canCancel: ['pending', 'accepted'].includes(order.status),
     canReview: order.status === 'completed',
     canComplain: order.status === 'completed',

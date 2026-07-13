@@ -50,10 +50,10 @@ button::after {
   margin-right: 0;
   margin-left: 0;
   border-radius: 999rpx;
-  background: #e8a2b0;
+  background: #d06884;
   color: #ffffff;
   font-weight: 700;
-  font-size: 34rpx;
+  font-size: 36rpx;
 }
 
 .ghost-btn {
@@ -62,12 +62,12 @@ button::after {
   line-height: 68rpx;
   margin-right: 0;
   margin-left: 0;
-  border: 1rpx solid #e8a2b0;
+  border: 1rpx solid #d06884;
   border-radius: 16rpx;
   background: #fff;
-  color: #e8a2b0;
+  color: #d06884;
   font-weight: 700;
-  font-size: 28rpx;
+  font-size: 32rpx;
 }
 
 .danger-btn {
@@ -87,7 +87,8 @@ button::after {
 .bar .primary-btn {
   width: 100% !important;
   margin: 0;
-  font-size: 30rpx;
+  font-size: 36rpx;
+  font-weight: 700;
 }
 
 .muted {
@@ -197,7 +198,7 @@ button::after {
   min-width: 0;
   max-width: 260rpx;
   overflow: hidden;
-  color: #e8a2b0;
+  color: #d06884;
   font-size: 24rpx;
   font-weight: 700;
   text-overflow: ellipsis;
@@ -206,7 +207,7 @@ button::after {
 
 .favorite {
   flex: 0 0 56rpx;
-  color: #e8a2b0;
+  color: #d06884;
   font-size: 40rpx;
   text-align: center;
 }

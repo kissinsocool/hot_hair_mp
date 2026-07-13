@@ -12,8 +12,8 @@
   <button class="primary-btn" loading="{{submitting}}" bindtap="submit">提交预约申请</button>
   <view wx:if="{{successVisible}}" class="sheet-mask"></view>
   <view wx:if="{{successVisible}}" class="success-sheet">
-    <image class="success-icon" mode="aspectFit" src="/assets/icons/check_circle.png" />
-    <view class="success-title">预约申请已发送给商家！</view>
+    <image class="success-icon" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />
+    <view class="success-title">预约申请已提交待商家确认！</view>
     <view class="success-text">商家接单或拒单后，您可以在预约消息中查看结果。</view>
     <button class="primary-btn success-btn" bindtap="openMessages">查看预约消息</button>
   </view>

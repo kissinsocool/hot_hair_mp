@@ -43,7 +43,7 @@
 }
 
 .total text:last-child {
-  color: #e8a2b0;
+  color: #d06884;
   font-size: 36rpx;
 }
 
