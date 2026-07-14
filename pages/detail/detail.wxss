@@ -43,13 +43,13 @@
 
 .hero {
   position: relative;
-  height: 380rpx;
+  height: 254rpx;
   overflow: hidden;
 }
 
 .hero-img {
   width: 100%;
-  height: 380rpx;
+  height: 254rpx;
   background: #e8dcd0;
 }
 
@@ -155,7 +155,7 @@
 .promo-swiper,
 .promo-image {
   width: 100%;
-  height: 520rpx;
+  height: 624rpx;
 }
 
 .promo-image {
