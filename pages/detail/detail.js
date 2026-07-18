@@ -104,7 +104,9 @@ Page({
   async toggleFavorite() {
     if (!api.requireLogin()) return;
     try {
-      await api.request('/favorites/toggle', { method: 'POST', data: this.data.salon });
+      await api.request(`/favorites/${encodeURIComponent(this.data.id)}`, {
+        method: this.data.isFavorite ? 'DELETE' : 'PUT'
+      });
       const isFavorite = !this.data.isFavorite;
       this.setData({ isFavorite });
     } catch (err) {

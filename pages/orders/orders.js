@@ -3,7 +3,7 @@ const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const messages = require('../../utils/messages');
 const orderUtils = require('../../utils/orders');
-const MAX_IMAGE_BASE64_LENGTH = Math.ceil(800 * 1024 * 4 / 3);
+const MAX_IMAGE_BYTES = 800 * 1024;
 
 Page({
   data: {
@@ -173,15 +173,17 @@ Page({
         for (const file of res.tempFiles || []) {
           try {
             const tempPath = await compressImage(file.tempFilePath);
-            const data = fs.readFileSync(tempPath, 'base64');
-            if (data.length > MAX_IMAGE_BASE64_LENGTH) {
+            const size = fs.statSync(tempPath).size;
+            if (!size || size > MAX_IMAGE_BYTES) {
               wx.showToast({ title: '图片过大，请换一张', icon: 'none' });
               continue;
             }
+            const fileName = tempPath.split('/').pop() || 'image.jpg';
             additions.push({
               tempPath,
-              fileName: tempPath.split('/').pop() || 'image.jpg',
-              data
+              fileName,
+              contentType: imageContentType(fileName),
+              size
             });
           } catch (_) {}
         }
@@ -210,12 +212,12 @@ Page({
     this.setData({ sheetSubmitting: true });
     try {
       const id = this.data.sheetOrder.id;
-      const images = this.data.sheetImages.map(({ fileName, data }) => ({ fileName, data }));
+      const imageObjects = await uploadImages(this.data.sheetImages, this.data.sheetType);
       await api.request(isReview ? `/bookings/${id}/review` : `/bookings/${id}/complaint`, {
         method: 'POST',
         data: isReview
-          ? { rating: this.data.sheetRating, comment: content, images }
-          : { description: content, images }
+          ? { rating: this.data.sheetRating, comment: content, imageObjects }
+          : { description: content, imageObjects }
       });
       wx.showToast({ title: isReview ? '评价晒单已提交' : '投诉已提交' });
       this.getTabBar().show();
@@ -247,4 +249,28 @@ function compressImage(src) {
       fail: () => resolve(src)
     });
   });
+}
+
+function imageContentType(fileName) {
+  const name = String(fileName || '').toLowerCase();
+  if (name.endsWith('.png')) return 'image/png';
+  if (name.endsWith('.webp')) return 'image/webp';
+  if (name.endsWith('.gif')) return 'image/gif';
+  return 'image/jpeg';
+}
+
+async function uploadImages(images, type) {
+  if (!images.length) return [];
+  const { uploads = [] } = await api.request('/uploads/moderation/sign', {
+    method: 'POST',
+    data: {
+      type,
+      files: images.map(({ fileName, contentType, size }) => ({ fileName, contentType, size }))
+    }
+  });
+  if (uploads.length !== images.length) throw new Error('图片上传凭证数量不正确');
+  await Promise.all(uploads.map((upload, index) =>
+    api.uploadFile(upload.uploadUrl, images[index].tempPath, upload.fields)
+  ));
+  return uploads.map(upload => upload.objectName);
 }

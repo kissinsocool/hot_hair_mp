@@ -75,6 +75,24 @@ function request(path, options = {}) {
   });
 }
 
+function uploadFile(url, filePath, formData) {
+  return new Promise((resolve, reject) => {
+    wx.uploadFile({
+      url,
+      filePath,
+      name: 'file',
+      formData,
+      success(res) {
+        if (res.statusCode >= 200 && res.statusCode < 300) return resolve(res);
+        reject(new Error(`图片上传失败 ${res.statusCode}`));
+      },
+      fail(err) {
+        reject(new Error(err.errMsg || '图片上传失败'));
+      }
+    });
+  });
+}
+
 async function requestAllPages(path, options = {}) {
   const limit = Math.min(Number(options.limit) || 100, 100);
   const items = [];
@@ -146,5 +164,6 @@ module.exports = {
   saveSession,
   salonImage,
   session,
-  statusText
+  statusText,
+  uploadFile
 };

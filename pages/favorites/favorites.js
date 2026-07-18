@@ -49,7 +49,7 @@ Page({
     try {
       const salon = this.data.salons.find((item) => item.id === e.currentTarget.dataset.id);
       if (!salon) return;
-      await api.request('/favorites/toggle', { method: 'POST', data: salon });
+      await api.request(`/favorites/${encodeURIComponent(salon.id)}`, { method: 'DELETE' });
       this.load();
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
