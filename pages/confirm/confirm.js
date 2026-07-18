@@ -28,10 +28,10 @@ Page({
       await api.request('/bookings', {
         method: 'POST',
         data: {
+          salonId: booking.salonId,
           staffId: booking.staffId,
           serviceId: booking.serviceId,
-          startTime: booking.startTime,
-          ...(booking.candidateStaffIds && booking.candidateStaffIds.length ? { candidateStaffIds: booking.candidateStaffIds } : {})
+          startTime: booking.startTime
         }
       });
       this.setData({ successVisible: true });

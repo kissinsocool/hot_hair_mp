@@ -17,6 +17,19 @@ function connect() {
   socket.onMessage((res) => {
     try {
       const data = JSON.parse(res.data);
+      if (data.event === 'auth.required') {
+        const session = app.globalData.session || wx.getStorageSync('session');
+        if (session && session.token && session.token !== '__test_login_bypass__') {
+          socket.send({
+            data: JSON.stringify({
+              event: 'authenticate',
+              role: 'client',
+              token: session.token
+            })
+          });
+        }
+        return;
+      }
       listeners.forEach((listener) => listener(data));
     } catch (_) {}
   });

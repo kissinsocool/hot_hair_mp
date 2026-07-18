@@ -63,7 +63,7 @@ function request(path, options = {}) {
       },
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          resolve(res.data);
+          resolve(options.withResponse ? { data: res.data, headers: res.header || {} } : res.data);
         } else {
           reject(new Error((res.data && res.data.message) || `请求失败 ${res.statusCode}`));
         }
@@ -73,6 +73,30 @@ function request(path, options = {}) {
       }
     });
   });
+}
+
+async function requestAllPages(path, options = {}) {
+  const limit = Math.min(Number(options.limit) || 100, 100);
+  const items = [];
+  // ponytail: preserves the current full-list UI; switch to load-more before lists exceed 10,000 rows.
+  for (let page = 1; page <= 100; page += 1) {
+    const separator = path.includes('?') ? '&' : '?';
+    const response = await request(`${path}${separator}page=${page}&limit=${limit}`, {
+      ...options,
+      withResponse: true
+    });
+    const pageItems = Array.isArray(response.data) ? response.data : [];
+    items.push(...pageItems);
+    const totalHeader = Object.entries(response.headers)
+      .find(([key]) => key.toLowerCase() === 'x-total-count');
+    const total = Number(totalHeader && totalHeader[1]);
+    if (!hasMorePages(items.length, pageItems.length, limit, Number.isFinite(total) ? total : null)) break;
+  }
+  return items;
+}
+
+function hasMorePages(loaded, pageLength, pageSize, total) {
+  return pageLength > 0 && (total == null ? pageLength >= pageSize : loaded < total);
 }
 
 function statusText(status) {
@@ -114,8 +138,10 @@ module.exports = {
   clearSession,
   displayImageUrl,
   formatTime,
+  hasMorePages,
   mediaUrl,
   request,
+  requestAllPages,
   requireLogin,
   saveSession,
   salonImage,

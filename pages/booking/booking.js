@@ -23,21 +23,30 @@ Page({
     this.salonId = query.id;
     this.initialStaffId = query.staffId || '';
     this.initialServiceId = query.serviceId || '';
-    const dates = nextDates();
-    this.setData({ dates, selectedDate: dates[0].value });
     this.load();
   },
 
   async load() {
     try {
       const salon = await api.request(`/salons/${this.salonId}`);
+      const dates = nextDates(salon.closedDates);
+      const selectedDate = (dates.find((date) => !date.isClosed) || {}).value || '';
+      const requestedServiceId = String(this.initialServiceId || '');
+      const selectedServiceId = (salon.services || []).some(
+        (service) => String(service.id) === requestedServiceId
+      ) ? requestedServiceId : '';
       this.setData({
         salon,
+        dates,
+        selectedDate,
         selectedStaffId: this.initialStaffId || '__no_preference__',
-        selectedServiceId: this.initialServiceId || ''
+        selectedServiceId
       });
+      if (requestedServiceId && !selectedServiceId) {
+        wx.showToast({ title: '套餐已更新，请重新选择', icon: 'none' });
+      }
       this.refreshOptions();
-      await this.loadSlots();
+      if (selectedDate) await this.loadSlots();
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
@@ -46,14 +55,14 @@ Page({
   },
 
   async loadSlots() {
-    const staffIds = ((this.data.salon && this.data.salon.staff) || []).map((staff) => staff.id);
+    if (!this.data.selectedDate) {
+      this.setData({ slots: [], selectedTime: '' });
+      this.refreshOptions();
+      return;
+    }
     const staffId = this.data.selectedStaffId;
-    if (!staffIds.length) return;
     const slots = staffId === '__no_preference__'
-      ? mergeCandidateSlots(await Promise.all(staffIds.map(async (id) => ({
-        staffId: id,
-        slots: await api.request(`/staff/${id}/slots?date=${this.data.selectedDate}`)
-      }))), this.data.selectedDate)
+      ? await api.request(`/staff/${staffId}/slots?date=${this.data.selectedDate}&salonId=${encodeURIComponent(this.salonId)}`)
       : await api.request(`/staff/${staffId}/slots?date=${this.data.selectedDate}`);
     this.setData({ slots, selectedTime: '' });
     this.refreshOptions();
@@ -66,11 +75,13 @@ Page({
   },
 
   selectService(e) {
-    this.setData({ selectedServiceId: e.currentTarget.dataset.id });
+    this.setData({ selectedServiceId: String(e.currentTarget.dataset.id || '') });
     this.refreshOptions();
   },
 
   selectDate(e) {
+    const isClosed = e.currentTarget.dataset.closed;
+    if (isClosed === true || isClosed === 'true') return;
     this.setData({ selectedDate: e.currentTarget.dataset.value });
     this.refreshOptions();
     this.loadSlots();
@@ -107,11 +118,11 @@ Page({
       noteText: service.note || service.description || '',
       durationText: service.duration || (service.durationMinutes ? `${service.durationMinutes} min` : ''),
       priceText: formatPrice(service.price || service.priceLabel),
-      className: this.data.selectedServiceId === service.id ? 'active-card' : ''
+      className: this.data.selectedServiceId === String(service.id) ? 'active-card' : ''
     }));
     const dates = this.data.dates.map((date) => ({
       ...date,
-      className: this.data.selectedDate === date.value ? 'active' : ''
+      className: date.isClosed ? 'disabled' : this.data.selectedDate === date.value ? 'active' : ''
     }));
     const slotOptions = this.data.slots.map((slot) => {
       const isAvailable = isSlotAvailable(slot, this.data.selectedDate);
@@ -121,10 +132,12 @@ Page({
         className: !isAvailable ? 'disabled' : this.data.selectedTime === slot.time ? 'active' : ''
       };
     });
-    const canSubmit = Boolean(this.data.selectedStaffId && this.data.selectedServiceId && this.data.selectedTime);
+    const canSubmit = Boolean(this.data.selectedStaffId && this.data.selectedServiceId && this.data.selectedDate && this.data.selectedTime);
     const submitText = !this.data.selectedStaffId
       ? '请选择理发师'
-      : !this.data.selectedServiceId
+      : !this.data.selectedDate
+        ? '请选择营业日期'
+        : !this.data.selectedServiceId
         ? '请选择服务项目'
         : !this.data.selectedTime
           ? '请选择时间段'
@@ -134,13 +147,18 @@ Page({
 
   async submit() {
     const { selectedServiceId, selectedStaffId, selectedDate, selectedTime, salon } = this.data;
-    if (!selectedStaffId || !selectedServiceId || !selectedTime) {
+    if (!selectedStaffId || !selectedServiceId || !selectedDate || !selectedTime) {
       wx.showToast({ title: '请选完整预约信息', icon: 'none' });
       return;
     }
-    const staffIds = (salon.staff || []).map((staff) => staff.id);
     const staffId = selectedStaffId;
-    const service = (salon.services || []).find((item) => item.id === selectedServiceId) || {};
+    const service = (salon.services || []).find((item) => String(item.id) === selectedServiceId);
+    if (!service) {
+      this.setData({ selectedServiceId: '' });
+      this.refreshOptions();
+      wx.showToast({ title: '套餐已更新，请重新选择', icon: 'none' });
+      return;
+    }
     const staff = selectedStaffId === '__no_preference__'
       ? { id: '__no_preference__', name: '无需指定' }
       : (salon.staff || []).find((item) => item.id === selectedStaffId) || {};
@@ -154,24 +172,26 @@ Page({
       servicePrice: service.price || service.priceLabel || '',
       extraServiceFee: staff.extraServiceFee || 0,
       selectedStaffId,
-      startTime: `${selectedDate}T${selectedTime}:00`,
-      candidateStaffIds: selectedStaffId === '__no_preference__' ? staffIds : []
+      startTime: `${selectedDate}T${selectedTime}:00`
     };
     wx.navigateTo({ url: `/pages/confirm/confirm?data=${encodeURIComponent(JSON.stringify(payload))}` });
   }
 });
 
-function nextDates() {
+function nextDates(closedDates = []) {
   const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+  const closedDateSet = new Set(closedDates || []);
   const today = new Date();
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + index);
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
+    const value = `${date.getFullYear()}-${month}-${day}`;
     return {
-      value: `${date.getFullYear()}-${month}-${day}`,
+      value,
       label: week[date.getDay()],
-      day
+      day,
+      isClosed: closedDateSet.has(value)
     };
   });
 }
@@ -186,20 +206,4 @@ function isSlotAvailable(slot, selectedDate) {
   const available = slot.isAvailable !== false;
   const start = new Date(slot.startTime || `${selectedDate}T${slot.time}:00`);
   return available && (Number.isNaN(start.getTime()) || start > new Date());
-}
-
-function mergeCandidateSlots(staffSlotGroups, selectedDate) {
-  const slotsByTime = {};
-  staffSlotGroups.forEach(({ staffId, slots }) => {
-    slots.forEach((slot) => {
-      const time = slot.time || String(slot.startTime || '').slice(11, 16);
-      if (!time) return;
-      const isAvailable = isSlotAvailable({ ...slot, time }, selectedDate);
-      const current = slotsByTime[time];
-      if (!current || (!current.isAvailable && isAvailable)) {
-        slotsByTime[time] = { ...slot, time, isAvailable, availableStaffId: isAvailable ? staffId : '' };
-      }
-    });
-  });
-  return Object.values(slotsByTime).sort((a, b) => a.time.localeCompare(b.time));
 }

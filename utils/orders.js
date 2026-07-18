@@ -1,7 +1,7 @@
 const api = require('./api');
 
 function displayStaffName(order) {
-  return order.isNoPreference || (order.candidateStaffIds && order.candidateStaffIds.length) ? '无需指定' : order.staffName;
+  return order.isNoPreference || !order.staffId ? '无需指定' : order.staffName;
 }
 
 function statusClass(status) {

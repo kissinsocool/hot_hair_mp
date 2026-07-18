@@ -43,9 +43,10 @@
 
   <view class="block-title">选择预约日期</view>
   <scroll-view scroll-x class="dates">
-    <view wx:for="{{dates}}" wx:key="value" class="date {{item.className}}" bindtap="selectDate" data-value="{{item.value}}">
-      <view>{{item.label}}</view>
-      <view>{{item.day}}</view>
+    <view wx:for="{{dates}}" wx:key="value" class="date {{item.className}}" bindtap="selectDate" data-value="{{item.value}}" data-closed="{{item.isClosed}}">
+      <view class="date-week">{{item.label}}</view>
+      <view class="date-day">{{item.day}}</view>
+      <view wx:if="{{item.isClosed}}" class="date-rest">休息日</view>
     </view>
   </scroll-view>
 
