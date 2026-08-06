@@ -29,6 +29,14 @@ function messageText(status) {
   return '预约申请已提交，正在等待商家确认。';
 }
 
+function couponDisplay(order) {
+  const discountFen = Math.max(0, Number(order.couponDiscountFen || 0));
+  return {
+    hasCouponDiscount: discountFen > 0,
+    couponText: `${order.couponTitle || '优惠券'}，优惠 ${formatFen(discountFen)}`
+  };
+}
+
 function formatOrder(order) {
   const date = new Date(order.startTime);
   const startTimeText = api.formatTime(order.startTime);
@@ -42,6 +50,7 @@ function formatOrder(order) {
     startTimeMs: Number.isNaN(date.getTime()) ? 0 : date.getTime(),
     startTimeText,
     createdTimeText,
+    ...couponDisplay(order),
     canCancel: ['pending', 'accepted'].includes(order.status),
     canReview: order.status === 'completed',
     canComplain: order.status === 'completed',
@@ -55,11 +64,16 @@ function formatOrder(order) {
 function formatMessage(order) {
   return {
     ...order,
+    ...couponDisplay(order),
     staffName: displayStaffName(order),
     statusLabel: messageStatus(order.status, order.statusLabel),
     userMessageText: order.userMessage || messageText(order.status),
     startTimeText: api.formatTime(order.startTime)
   };
+}
+
+function formatFen(value) {
+  return `¥${(Number(value || 0) / 100).toFixed(2)}`;
 }
 
 module.exports = {

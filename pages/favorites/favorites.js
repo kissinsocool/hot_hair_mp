@@ -1,9 +1,11 @@
 const api = require('../../utils/api');
+const app = getApp();
+const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 Page({
   data: {
-    loggedIn: false,
-    loading: false,
+    loggedIn: initiallyLoggedIn,
+    loading: initiallyLoggedIn,
     salons: []
   },
 
@@ -12,7 +14,12 @@ Page({
     const loggedIn = Boolean(session && session.token);
     this.setData({ loggedIn });
     if (!loggedIn) {
-      wx.navigateTo({ url: '/pages/login/login' });
+      if (app.globalData.pendingLoginReturnRoute === 'pages/favorites/favorites') {
+        app.globalData.pendingLoginReturnRoute = '';
+        wx.switchTab({ url: '/pages/home/home' });
+      } else {
+        wx.navigateTo({ url: '/pages/login/login' });
+      }
       return;
     }
     this.load();

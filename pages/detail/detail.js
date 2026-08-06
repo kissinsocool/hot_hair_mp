@@ -29,7 +29,7 @@ Page({
       salon.starIcons = starIcons(salon.ratingText);
       salon.openingHoursText = salon.openingHours || '暂无营业时间';
       salon.phoneText = salon.phone || '暂无电话';
-      salon.addressText = salon.address || '地址未知';
+      salon.addressText = this.formatAddress(salon.address);
       salon.descriptionText = salon.fullDescription || salon.description || '暂无详细描述';
       salon.reviews = await Promise.all((salon.reviews || []).map((review) => this.normalizeReview(review)));
       salon.reviewTotalText = salon.reviewCount || salon.reviews.length || 0;
@@ -62,6 +62,7 @@ Page({
     return {
       ...review,
       userText: review.user || review.userName || review.phone || '用户',
+      avatarUrl: api.mediaUrl(review.avatarUrl),
       ratingText: review.rating || 5,
       starIcons: starIcons(review.rating || 5),
       serviceText: review.serviceName || review.service || '染发+修复',
@@ -81,6 +82,13 @@ Page({
     const text = String(value);
     if (text.startsWith('¥') || !/^\d+(\.\d+)?$/.test(text)) return text;
     return `¥${text}`;
+  },
+
+  formatAddress(value) {
+    if (!value) return '地址未知';
+    const address = String(value).trim();
+    const match = address.match(/^(?:(?:北京|天津|上海|重庆)市|.+?(?:省|自治区|特别行政区))?(?:.+?(?:市|自治州|地区|盟))?.+?(?:区|县|旗|市)(.+)$/);
+    return match && match[1].trim() || address;
   },
 
   formatDate(value) {
@@ -135,13 +143,6 @@ Page({
   previewReviewImage(e) {
     const review = this.data.visibleReviews[Number(e.currentTarget.dataset.reviewIndex)] || {};
     wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
-  },
-
-  goBack() {
-    wx.switchTab({
-      url: '/pages/home/home',
-      fail: () => wx.reLaunch({ url: '/pages/home/home' })
-    });
   },
 
   showMoreReviews() {

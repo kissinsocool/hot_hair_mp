@@ -1,8 +1,8 @@
 const api = require('./api');
 
 const DEFAULT = {
-  enabled: true,
-  image: '/assets/images/ad.jpeg',
+  enabled: false,
+  image: '',
   link: '/pages/ad/ad'
 };
 

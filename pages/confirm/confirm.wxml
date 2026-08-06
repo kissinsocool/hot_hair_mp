@@ -2,12 +2,20 @@
   <view class="title">请核对您的预约信息</view>
   <view class="card panel">
     <view class="row"><text>服务项目</text><text>{{booking.serviceName}}</text></view>
-    <view class="row"><text>预约日期</text><text>{{booking.dateText}}</text></view>
+    <view class="row"><text>到店日期</text><text>{{booking.dateText}}</text></view>
     <view class="row compact"><text>到店时间</text><text>{{booking.arrivalTimeText}}</text></view>
     <view class="row"><text>理发师</text><text>{{booking.staffName}}</text></view>
     <view class="row compact"><text>服务费用</text><text>{{booking.servicePriceText}}</text></view>
     <view class="row"><text>理发师额外服务费</text><text>{{booking.extraFeeText}}</text></view>
-    <view class="row total"><text>合计</text><text>{{booking.totalText}}</text></view>
+    <view class="row coupon-row" bindtap="chooseCoupon">
+      <text>优惠券</text>
+      <view class="coupon-choice">
+        <text class="{{selectedCoupon ? 'selected-coupon' : ''}}">{{couponLoading ? '加载中...' : couponText}}</text>
+        <text class="arrow">›</text>
+      </view>
+    </view>
+    <view wx:if="{{selectedCoupon}}" class="row compact discount-row"><text>优惠券抵扣</text><text>{{couponDiscountText}}</text></view>
+    <view class="row total"><text>到店需支付</text><text>{{payableText}}</text></view>
   </view>
   <button class="primary-btn" loading="{{submitting}}" bindtap="submit">提交预约申请</button>
   <view wx:if="{{successVisible}}" class="sheet-mask"></view>

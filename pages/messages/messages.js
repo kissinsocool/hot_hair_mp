@@ -39,7 +39,7 @@ Page({
   async load() {
     this.setData({ loading: true });
     try {
-      const orders = await api.request('/bookings');
+      const orders = await api.requestAllPages('/bookings');
       this.setData({ orders: orders.map(orderUtils.formatMessage) });
       wx.setStorageSync(messages.READ_KEY, messages.latestMessageKey(orders));
     } catch (err) {

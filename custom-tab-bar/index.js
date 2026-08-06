@@ -1,6 +1,7 @@
 Component({
   data: {
     hidden: false,
+    initialized: false,
     selected: 0,
     list: [
       {
@@ -17,7 +18,7 @@ Component({
       },
       {
         pagePath: 'pages/orders/orders',
-        text: '我的订单',
+        text: '订单',
         iconPath: '/assets/icons/receipt_long_outline.png',
         selectedIconPath: '/assets/icons/receipt_long.png'
       },
@@ -64,8 +65,9 @@ Component({
     },
 
     select(selected) {
-      if (selected === this.data.selected && this.data.list[selected] && this.data.list[selected].selected) return;
+      if (this.data.initialized && selected === this.data.selected && this.data.list[selected] && this.data.list[selected].selected) return;
       this.setData({
+        initialized: true,
         selected,
         list: this.data.list.map((item, index) => ({
           ...item,

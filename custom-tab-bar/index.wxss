@@ -27,6 +27,7 @@
 }
 
 .tab-icon-wrap {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -41,8 +42,16 @@
 }
 
 .tab-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
   width: 23.33px;
   height: 23.33px;
+  transform: translate(-50%, -50%);
+}
+
+.tab-icon-hidden {
+  opacity: 0;
 }
 
 .tab-text {

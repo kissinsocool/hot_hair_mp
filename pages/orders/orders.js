@@ -1,14 +1,17 @@
 const api = require('../../utils/api');
+const app = getApp();
 const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const messages = require('../../utils/messages');
 const orderUtils = require('../../utils/orders');
 const MAX_IMAGE_BYTES = 800 * 1024;
+const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 Page({
   data: {
-    loggedIn: false,
-    loading: false,
+    loggedIn: initiallyLoggedIn,
+    loading: initiallyLoggedIn,
+    refreshing: false,
     orders: [],
     sheetVisible: false,
     sheetType: 'review',
@@ -40,7 +43,12 @@ Page({
     this.setData({ loggedIn });
     if (!loggedIn) {
       this.setData({ hasUnreadMessages: false });
-      wx.navigateTo({ url: '/pages/login/login' });
+      if (app.globalData.pendingLoginReturnRoute === 'pages/orders/orders') {
+        app.globalData.pendingLoginReturnRoute = '';
+        wx.switchTab({ url: '/pages/home/home' });
+      } else {
+        wx.navigateTo({ url: '/pages/login/login' });
+      }
       return;
     }
     this.load();
@@ -51,8 +59,10 @@ Page({
     });
   },
 
-  onPullDownRefresh() {
-    this.load().finally(() => wx.stopPullDownRefresh());
+  refresh() {
+    if (this.data.refreshing) return;
+    this.setData({ refreshing: true });
+    this.load().finally(() => this.setData({ refreshing: false }));
   },
 
   onHide() {
@@ -70,7 +80,7 @@ Page({
     this.setData({ loading: !this.data.orders.length });
     try {
       const orders = await api.requestAllPages('/bookings');
-      const readKey = wx.getStorageSync(messages.READ_KEY) || '';
+      const readKey = messages.readMessageKey(orders);
       this.setData({
         orders: orders.map(orderUtils.formatOrder),
         hasUnreadMessages: messages.hasUnreadBookingMessages(orders, readKey)

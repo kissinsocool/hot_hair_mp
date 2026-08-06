@@ -1,10 +1,15 @@
 .orders-page {
-  min-height: 100vh;
-  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  height: 100vh;
+  overflow: hidden;
   background: #fffdfb;
 }
 
 .orders-appbar {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -13,10 +18,14 @@
   box-sizing: border-box;
 }
 
+.orders-appbar-spacer {
+  flex: 0 0 auto;
+}
+
 .orders-title {
   color: #fff;
-  font-size: 42rpx;
-  font-weight: 800;
+  font-size: 34rpx;
+  font-weight: 600;
   line-height: 58rpx;
 }
 
@@ -44,7 +53,8 @@
 }
 
 .orders-list {
-  padding: 18rpx 16rpx 0;
+  padding: 18rpx 16rpx 20rpx;
+  box-sizing: border-box;
 }
 
 .order {
@@ -117,6 +127,14 @@
   flex: 0 0 128rpx;
   color: #777;
   font-weight: 500;
+}
+
+.coupon-discount {
+  color: #d06884;
+}
+
+.coupon-discount .order-label {
+  color: #d06884;
 }
 
 .icon-img {

@@ -144,6 +144,10 @@
   line-height: 48rpx;
 }
 
+.coupon-meta {
+  color: #d06884;
+}
+
 .meta-icon {
   width: 28rpx;
   height: 28rpx;

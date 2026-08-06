@@ -1,4 +1,4 @@
-<view wx:if="{{!hidden}}" class="tabbar">
+<view wx:if="{{initialized && !hidden}}" class="tabbar">
   <view
     wx:for="{{list}}"
     wx:key="pagePath"
@@ -7,7 +7,8 @@
     bindtap="switchTab"
   >
     <view class="tab-icon-wrap">
-      <image class="tab-icon" mode="aspectFit" src="{{item.selected ? item.selectedIconPath : item.iconPath}}" />
+      <image class="tab-icon {{item.selected ? 'tab-icon-hidden' : ''}}" mode="aspectFit" src="{{item.iconPath}}" />
+      <image class="tab-icon {{item.selected ? '' : 'tab-icon-hidden'}}" mode="aspectFit" src="{{item.selectedIconPath}}" />
     </view>
     <text class="tab-text">{{item.text}}</text>
   </view>

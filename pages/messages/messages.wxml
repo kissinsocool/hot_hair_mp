@@ -18,6 +18,7 @@
         <view class="msg-meta"><image class="meta-icon" mode="aspectFit" src="/assets/icons/content_cut.png" />{{item.serviceName}} · {{item.staffName}}</view>
         <view class="msg-meta"><image class="meta-icon" mode="aspectFit" src="/assets/icons/storefront_outlined.png" />{{item.salonName}}</view>
         <view class="msg-meta"><image class="meta-icon" mode="aspectFit" src="/assets/icons/schedule.png" />{{item.startTimeText}}</view>
+        <view wx:if="{{item.hasCouponDiscount}}" class="msg-meta coupon-meta">券 · {{item.couponText}}</view>
       </view>
     </view>
   </view>

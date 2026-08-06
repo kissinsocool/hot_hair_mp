@@ -20,12 +20,16 @@ Page({
     locationText: '选择定位',
     keyword: '',
     visibleCount: 10,
-    listTitle: '附近的店铺',
     statusBarHeight: 0,
     navBarHeight: 44,
     appBarHeight: 148,
     locatedOnce: false,
     hasUnreadMessages: false,
+    supportHidden: false,
+    newUserGiftVisible: false,
+    newUserGiftImage: '',
+    newUserGiftDismissed: false,
+    claimingNewUserGift: false,
     ad: ad.DEFAULT
   },
 
@@ -41,7 +45,9 @@ Page({
   },
 
   onShow() {
+    this.setData({ supportHidden: false });
     ad.load().then((config) => this.setData({ ad: config }));
+    this.loadNewUserGift();
     this.loadFavorites(false);
     this.loadUnreadMessages();
     this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
@@ -52,11 +58,13 @@ Page({
   },
 
   onHide() {
+    clearTimeout(this.supportTimer);
     if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
     this.unsubscribeBookingSocket = null;
   },
 
   onUnload() {
+    clearTimeout(this.supportTimer);
     if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
     this.unsubscribeBookingSocket = null;
   },
@@ -79,7 +87,6 @@ Page({
         this.setData({
           latitude: res.latitude,
           longitude: res.longitude,
-          listTitle: '附近的店铺',
           locatedOnce: true
         });
         this.loadSalons();
@@ -113,6 +120,7 @@ Page({
       nameText: salon.name || '未知沙龙',
       addressText: salon.address || '',
       descriptionText: salon.description || '暂无描述',
+      tags: Array.isArray(salon.tags) ? salon.tags.filter(Boolean) : [],
       ratingText: salon.rating || '4.8',
       distanceText: this.formatDistance(salon.distanceKm)
     };
@@ -143,11 +151,60 @@ Page({
       return;
     }
     try {
-      const orders = await api.request('/bookings');
-      const readKey = wx.getStorageSync(messages.READ_KEY) || '';
+      const orders = await api.requestAllPages('/bookings');
+      const readKey = messages.readMessageKey(orders);
       this.setData({ hasUnreadMessages: messages.hasUnreadBookingMessages(orders, readKey) });
     } catch (_) {
       this.setData({ hasUnreadMessages: false });
+    }
+  },
+
+  async loadNewUserGift() {
+    const session = api.session();
+    try {
+      const gift = await api.request(session && session.token
+        ? '/auth/coupon-campaign'
+        : '/coupon-campaign');
+      const image = gift.enabled && gift.promotionImageUrl
+        ? await api.displayImageUrl(gift.promotionImageUrl)
+        : '';
+      this.setData({
+        newUserGiftVisible: Boolean(image) && !this.data.newUserGiftDismissed,
+        newUserGiftImage: image
+      });
+    } catch (_) {
+      this.setData({ newUserGiftVisible: false, newUserGiftImage: '' });
+    }
+  },
+
+  dismissNewUserGift() {
+    this.setData({
+      newUserGiftVisible: false,
+      newUserGiftDismissed: true
+    });
+  },
+
+  async claimNewUserGift() {
+    if (this.data.claimingNewUserGift || !api.requireLogin()) return;
+    this.setData({ claimingNewUserGift: true });
+    try {
+      await api.request('/auth/coupon-campaign/claim', { method: 'POST' });
+      this.setData({ newUserGiftVisible: false });
+      wx.showToast({ title: '新人礼包领取成功', icon: 'success' });
+      wx.switchTab({
+        url: '/pages/profile/profile',
+        success() {
+          const pages = getCurrentPages();
+          const profile = pages[pages.length - 1];
+          if (profile && profile.route === 'pages/profile/profile') {
+            profile.setData({ activeTab: 'coupons' });
+          }
+        }
+      });
+    } catch (err) {
+      wx.showToast({ title: err.message || '领取失败，请稍后重试', icon: 'none' });
+    } finally {
+      this.setData({ claimingNewUserGift: false });
     }
   },
 
@@ -204,13 +261,21 @@ Page({
     this.applyFilter();
   },
 
+  onListScroll() {
+    clearTimeout(this.supportTimer);
+    if (!this.data.supportHidden) this.setData({ supportHidden: true });
+    this.supportTimer = setTimeout(() => {
+      this.setData({ supportHidden: false });
+    }, 180);
+  },
+
   async toggleFavorite(e) {
     if (!api.requireLogin()) return;
     try {
       const salon = this.data.salons.find((item) => item.id === e.currentTarget.dataset.id);
       if (!salon) return;
       await api.request(`/favorites/${encodeURIComponent(salon.id)}`, {
-        method: salon.isFavorite ? 'DELETE' : 'PUT'
+        method: this.data.favorites.includes(salon.id) ? 'DELETE' : 'PUT'
       });
       await this.loadFavorites();
     } catch (err) {
@@ -225,6 +290,10 @@ Page({
   openMessages() {
     if (!api.requireLogin()) return;
     wx.navigateTo({ url: '/pages/messages/messages' });
+  },
+
+  openSupport() {
+    wx.navigateTo({ url: '/pages/support/support' });
   },
 
   openLocation() {

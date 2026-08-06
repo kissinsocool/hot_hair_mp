@@ -7,9 +7,14 @@
     "pages/staff/staff",
     "pages/booking/booking",
     "pages/confirm/confirm",
+    "pages/coupons/coupons",
     "pages/orders/orders",
     "pages/favorites/favorites",
     "pages/profile/profile",
+    "pages/account/account",
+    "pages/rules/user-agreement",
+    "pages/rules/privacy-policy",
+    "pages/support/support",
     "pages/location/location",
     "pages/messages/messages"
   ],
@@ -51,7 +56,7 @@
       },
       {
         "pagePath": "pages/orders/orders",
-        "text": "我的订单",
+        "text": "订单",
         "iconPath": "assets/icons/receipt_long_outline.png",
         "selectedIconPath": "assets/icons/receipt_long.png"
       },

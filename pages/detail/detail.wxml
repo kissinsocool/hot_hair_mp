@@ -1,11 +1,7 @@
 <view wx:if="{{loading}}" class="empty">正在加载...</view>
 <view wx:else class="detail">
-  <view class="detail-top {{ad.enabled ? '' : 'no-ad'}}">
-    <view class="detail-nav">
-      <view class="back" catchtap="goBack"><image mode="aspectFit" src="/assets/icons/arrow_back_ios_new.png" /></view>
-      <view class="detail-nav-title">店铺详情</view>
-    </view>
-    <navigator wx:if="{{ad.enabled}}" class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
+  <view wx:if="{{ad.enabled}}" class="detail-top">
+    <navigator class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
       <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
     </navigator>
   </view>
@@ -33,8 +29,6 @@
           <image class="promo-image" mode="aspectFill" src="{{item}}" bindtap="previewImage" data-url="{{item}}" />
         </swiper-item>
       </swiper>
-      <view wx:if="{{salon.promoImages.length > 1}}" class="promo-arrow left"></view>
-      <view wx:if="{{salon.promoImages.length > 1}}" class="promo-arrow right"></view>
       <view wx:if="{{salon.promoImages.length > 1}}" class="promo-dots">
         <view wx:for="{{salon.promoImages}}" wx:for-index="index" wx:key="*this" class="promo-dot {{index == currentPromoIndex ? 'active' : ''}}"></view>
       </view>
@@ -61,8 +55,8 @@
             <view wx:if="{{item.noteText}}" class="service-note">{{item.noteText}}</view>
           </view>
           <view class="service-meta">
-            <view class="service-duration">{{item.durationText}}</view>
             <view class="price">{{item.priceText || '免费'}}</view>
+            <view class="service-duration">{{item.durationText}}</view>
           </view>
         </view>
       </view>
@@ -86,7 +80,7 @@
       <view wx:for="{{visibleReviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
           <view class="review-user">
-            <image class="avatar" mode="aspectFit" src="/assets/icons/person.png" />
+            <image class="avatar" mode="{{item.avatarUrl ? 'aspectFill' : 'aspectFit'}}" src="{{item.avatarUrl || '/assets/icons/person.png'}}" />
             <view>
               <view class="review-name">{{item.userText}}</view>
               <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>

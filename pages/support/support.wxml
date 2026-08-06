@@ -1,0 +1,23 @@
+<view class="support-page">
+  <textarea
+    class="problem-input"
+    value="{{problem}}"
+    maxlength="500"
+    placeholder="请描述您遇到的问题"
+    show-confirm-bar="{{false}}"
+    bindinput="onProblem"
+  />
+  <view class="counter">{{problem.length}}/500</view>
+  <input
+    class="contact-input"
+    value="{{contact}}"
+    maxlength="100"
+    placeholder="联系方式"
+    confirm-type="done"
+    bindinput="onContact"
+    bindconfirm="submit"
+  />
+  <button class="submit-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="submit">
+    {{submitting ? '提交中...' : '提交'}}
+  </button>
+</view>

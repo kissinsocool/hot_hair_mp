@@ -29,8 +29,8 @@ Page({
   async load() {
     try {
       const salon = await api.request(`/salons/${this.salonId}`);
-      const dates = nextDates(salon.closedDates);
-      const selectedDate = (dates.find((date) => !date.isClosed) || {}).value || '';
+      const dates = nextDates(salon.closedDates, salon.acceptsSameDayBooking !== false);
+      const selectedDate = (dates.find((date) => !date.isDisabled) || {}).value || '';
       const requestedServiceId = String(this.initialServiceId || '');
       const selectedServiceId = (salon.services || []).some(
         (service) => String(service.id) === requestedServiceId
@@ -80,8 +80,8 @@ Page({
   },
 
   selectDate(e) {
-    const isClosed = e.currentTarget.dataset.closed;
-    if (isClosed === true || isClosed === 'true') return;
+    const isDisabled = e.currentTarget.dataset.disabled;
+    if (isDisabled === true || isDisabled === 'true') return;
     this.setData({ selectedDate: e.currentTarget.dataset.value });
     this.refreshOptions();
     this.loadSlots();
@@ -122,7 +122,7 @@ Page({
     }));
     const dates = this.data.dates.map((date) => ({
       ...date,
-      className: date.isClosed ? 'disabled' : this.data.selectedDate === date.value ? 'active' : ''
+      className: date.isDisabled ? 'disabled' : this.data.selectedDate === date.value ? 'active' : ''
     }));
     const slotOptions = this.data.slots.map((slot) => {
       const isAvailable = isSlotAvailable(slot, this.data.selectedDate);
@@ -178,7 +178,7 @@ Page({
   }
 });
 
-function nextDates(closedDates = []) {
+function nextDates(closedDates = [], acceptsSameDayBooking = true) {
   const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   const closedDateSet = new Set(closedDates || []);
   const today = new Date();
@@ -191,7 +191,8 @@ function nextDates(closedDates = []) {
       value,
       label: week[date.getDay()],
       day,
-      isClosed: closedDateSet.has(value)
+      isClosed: closedDateSet.has(value),
+      isDisabled: closedDateSet.has(value) || (!acceptsSameDayBooking && index === 0)
     };
   });
 }
