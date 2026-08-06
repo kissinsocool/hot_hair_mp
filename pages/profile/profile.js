@@ -77,7 +77,7 @@ Page({
   },
 
   onHide() {
-    if (this.data.sheetVisible) this.getTabBar().show();
+    if (!this.data.sheetVisible) this.getTabBar().show();
   },
 
   openSettings() {

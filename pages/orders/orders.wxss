@@ -14,7 +14,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 28rpx;
-  background: #e8a2b0;
+  background: #2B2726;
   box-sizing: border-box;
 }
 
@@ -47,7 +47,7 @@
   right: -6rpx;
   width: 18rpx;
   height: 18rpx;
-  border: 3rpx solid #e8a2b0;
+  border: 3rpx solid #2B2726;
   border-radius: 50%;
   background: #ff3b30;
 }

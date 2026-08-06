@@ -1,3 +1,4 @@
+<page-meta page-style="{{sheetVisible ? 'overflow: hidden;' : ''}}" />
 <view class="profile-page">
   <view wx:if="{{loggedIn}}">
     <view class="profile-card">
