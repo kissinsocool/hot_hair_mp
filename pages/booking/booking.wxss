@@ -43,13 +43,8 @@
 }
 
 .staff-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 38rpx;
   background: rgba(232, 162, 176, 0.12);
-  color: #d06884;
-  font-size: 72rpx;
-  font-weight: 800;
 }
 
 .staff-copy {
@@ -76,6 +71,7 @@
 }
 
 .fee {
+  margin-left: 8rpx;
   padding: 1rpx 8rpx;
   border-radius: 6rpx;
   background: #000;
