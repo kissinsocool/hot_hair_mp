@@ -77,10 +77,12 @@ Component({
     },
 
     hide() {
+      if (this.data.hidden) return;
       this.setData({ hidden: true });
     },
 
     show() {
+      if (!this.data.hidden) return;
       this.setData({ hidden: false });
     }
   }

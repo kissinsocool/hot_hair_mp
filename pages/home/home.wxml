@@ -26,7 +26,7 @@
     </view>
   </view>
 
-  <scroll-view scroll-y class="list" style="height: calc(100vh - {{appBarHeight}}px - 80px - env(safe-area-inset-bottom));" bindscroll="onListScroll" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
+  <scroll-view scroll-y class="list" style="height: calc(100vh - {{appBarHeight}}px);" bindscroll="onListScroll" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
     <navigator wx:if="{{ad.enabled}}" class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
       <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
     </navigator>
@@ -72,6 +72,7 @@
     </view>
 
     <view wx:if="{{visibleSalons.length < filteredSalons.length}}" class="load-more">继续下拉加载更多</view>
+    <view class="tabbar-spacer" aria-hidden="true"></view>
   </scroll-view>
 
   <view wx:if="{{newUserGiftVisible}}" class="new-user-gift">

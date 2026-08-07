@@ -11,7 +11,7 @@
   <scroll-view
     scroll-y
     class="orders-list"
-    style="height: calc(100vh - {{appBarHeight}}px - 80px - env(safe-area-inset-bottom));"
+    style="height: calc(100vh - {{appBarHeight}}px - 54px - env(safe-area-inset-bottom));"
     refresher-enabled
     refresher-triggered="{{refreshing}}"
     bindrefresherrefresh="refresh"

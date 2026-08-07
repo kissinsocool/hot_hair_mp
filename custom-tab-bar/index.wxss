@@ -5,10 +5,18 @@
   left: 0;
   z-index: 1000;
   display: flex;
-  height: calc(80px + env(safe-area-inset-bottom));
+  height: calc(54px + env(safe-area-inset-bottom));
   padding-bottom: env(safe-area-inset-bottom);
   border-top: 1rpx solid #f4eeee;
   background: #fff;
+  transform: translateY(0);
+  transition: transform 220ms ease-out;
+  will-change: transform;
+}
+
+.tabbar-hidden {
+  pointer-events: none;
+  transform: translateY(100%);
 }
 
 .tab {
@@ -18,7 +26,7 @@
   align-items: center;
   justify-content: flex-start;
   min-width: 0;
-  padding-top: 17px;
+  padding-top: 7px;
   color: #4d4a54;
 }
 
@@ -33,7 +41,7 @@
   justify-content: center;
   width: 56px;
   height: 28px;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
   border-radius: 999px;
 }
 

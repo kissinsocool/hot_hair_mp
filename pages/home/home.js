@@ -3,6 +3,7 @@ const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const messages = require('../../utils/messages');
 const ad = require('../../utils/ad');
+const TAB_BAR_SCROLL_TRIGGER = 8;
 
 Page({
   data: {
@@ -45,6 +46,9 @@ Page({
   },
 
   onShow() {
+    this.tabBarScrollAnchor = 0;
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.show();
     this.setData({ supportHidden: false });
     ad.load().then((config) => this.setData({ ad: config }));
     this.loadNewUserGift();
@@ -261,7 +265,17 @@ Page({
     this.applyFilter();
   },
 
-  onListScroll() {
+  onListScroll(e) {
+    const scrollTop = Math.max(0, Number(e.detail.scrollTop) || 0);
+    const distance = scrollTop - this.tabBarScrollAnchor;
+    if (scrollTop === 0 || Math.abs(distance) >= TAB_BAR_SCROLL_TRIGGER) {
+      this.tabBarScrollAnchor = scrollTop;
+      const tabBar = this.getTabBar && this.getTabBar();
+      if (tabBar) {
+        if (scrollTop === 0 || distance < 0) tabBar.show();
+        else if (distance > 0) tabBar.hide();
+      }
+    }
     clearTimeout(this.supportTimer);
     if (!this.data.supportHidden) this.setData({ supportHidden: true });
     this.supportTimer = setTimeout(() => {

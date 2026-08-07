@@ -40,7 +40,7 @@
     "backgroundColor": "#ffffff",
     "fontSize": "14px",
     "iconWidth": "29.16px",
-    "height": "80px",
+    "height": "54px",
     "list": [
       {
         "pagePath": "pages/home/home",
