@@ -1,5 +1,6 @@
 const api = require('../../utils/api');
 const couponUtils = require('../../utils/coupons');
+const { formatFen } = require('../../utils/money');
 
 Page({
   data: {
@@ -12,6 +13,7 @@ Page({
     couponText: '请选择优惠券',
     couponDiscountText: '',
     payableText: '¥0.00',
+    bookingStatusTemplateIds: [],
     submitting: false,
     successVisible: false
   },
@@ -19,13 +21,13 @@ Page({
   onLoad(query) {
     const booking = query.data ? JSON.parse(decodeURIComponent(query.data)) : {};
     const start = new Date(booking.startTime);
-    const servicePrice = parsePrice(booking.servicePrice);
-    const extraFee = Number(booking.extraServiceFee || 0);
-    const totalFen = Math.max(0, Math.round((servicePrice + extraFee) * 100));
-    booking.servicePriceText = formatPrice(servicePrice) || booking.servicePrice || '到店确认';
-    booking.extraFeeText = formatPrice(extraFee);
+    const servicePriceFen = nonNegativeFen(booking.servicePriceFen);
+    const extraServiceFeeFen = nonNegativeFen(booking.extraServiceFeeFen);
+    const totalFen = servicePriceFen + extraServiceFeeFen;
+    booking.servicePriceText = formatFen(servicePriceFen);
+    booking.extraFeeText = formatFen(extraServiceFeeFen);
     booking.totalFen = totalFen;
-    booking.totalText = servicePrice ? formatFen(totalFen) : booking.servicePriceText;
+    booking.totalText = formatFen(totalFen);
     booking.dateText = Number.isNaN(start.getTime()) ? '' : booking.startTime.slice(0, 10);
     booking.arrivalTimeText = Number.isNaN(start.getTime()) ? '' : booking.startTime.slice(11, 16);
     this.setData({
@@ -34,6 +36,42 @@ Page({
       payableText: booking.totalText
     });
     this.loadCoupons();
+    this.loadSubscriptionSettings();
+  },
+
+  async loadSubscriptionSettings() {
+    try {
+      const settings = await api.request('/auth/subscription-settings');
+      this.setData({
+        bookingStatusTemplateIds: Array.isArray(settings.bookingStatusTemplateIds)
+          ? settings.bookingStatusTemplateIds.filter(Boolean).slice(0, 3)
+          : []
+      });
+    } catch (_) {}
+  },
+
+  requestBookingSubscription() {
+    const tmplIds = this.data.bookingStatusTemplateIds;
+    if (!tmplIds.length || !wx.requestSubscribeMessage) return Promise.resolve();
+    return new Promise((resolve) => {
+      wx.requestSubscribeMessage({
+        tmplIds,
+        success: (result) => {
+          if (!tmplIds.some((id) => result[id] === 'accept')) return resolve();
+          wx.login({
+            success: ({ code }) => {
+              if (!code) return resolve();
+              api.request('/auth/wechat/openid', {
+                method: 'POST',
+                data: { loginCode: code }
+              }).then(resolve).catch(resolve);
+            },
+            fail: resolve
+          });
+        },
+        fail: resolve
+      });
+    });
   },
 
   async loadCoupons() {
@@ -92,8 +130,11 @@ Page({
   },
 
   async submit() {
+    if (this._submitting) return;
+    this._submitting = true;
     this.setData({ submitting: true });
     try {
+      await this.requestBookingSubscription();
       const booking = this.data.booking;
       const data = {
         salonId: booking.salonId,
@@ -110,6 +151,7 @@ Page({
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
+      this._submitting = false;
       this.setData({ submitting: false });
     }
   },
@@ -120,17 +162,7 @@ Page({
   }
 });
 
-function parsePrice(value) {
-  const digits = String(value || '').replace(/[^\d]/g, '');
-  return Number(digits || 0);
-}
-
-function formatPrice(value) {
-  if (!value) return '¥0';
-  return `¥${String(value).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-}
-
-function formatFen(value) {
-  const amount = Number(value || 0) / 100;
-  return `¥${amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
+function nonNegativeFen(value) {
+  const amount = Number(value);
+  return Number.isSafeInteger(amount) && amount >= 0 ? amount : 0;
 }

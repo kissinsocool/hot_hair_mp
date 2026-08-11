@@ -22,6 +22,12 @@
   </view>
 
   <view class="block-title">选择服务项目</view>
+  <view class="service-tabs" role="tablist">
+    <view wx:for="{{serviceTabs}}" wx:key="id" class="service-tab {{item.className}}" bindtap="selectServiceCategory" data-category="{{item.id}}" role="tab" aria-selected="{{item.className == 'active'}}">{{item.label}}</view>
+    <view class="service-tab-slider {{activeServiceCategory}}"></view>
+  </view>
+  <view class="service-count">共<text class="service-count-number">{{serviceOptions.length}}</text>个服务</view>
+  <view wx:if="{{!serviceOptions.length}}" class="service-empty">该分类暂无服务</view>
   <view wx:for="{{serviceOptions}}" wx:key="id" class="service-option {{item.className}}" bindtap="selectService" data-id="{{item.id}}">
     <image class="service-img" mode="aspectFill" src="{{item.imageUrl}}" />
     <view class="service-copy">

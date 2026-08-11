@@ -1,3 +1,5 @@
+const { formatFenAmount } = require('../../utils/money');
+
 Component({
   properties: {
     coupon: {
@@ -27,8 +29,8 @@ Component({
       const status = String((coupon && coupon.status) || '').toLowerCase();
       this.setData({
         title: coupon && coupon.title ? coupon.title : '优惠券',
-        discountText: formatFen(coupon && coupon.discountFen),
-        minimumText: formatFen(coupon && coupon.minimumSpendFen),
+        discountText: formatFenAmount(coupon && coupon.discountFen),
+        minimumText: formatFenAmount(coupon && coupon.minimumSpendFen),
         expiryText: formatExpiry(coupon && (coupon.validUntil || coupon.endDate || coupon.expiresAt)),
         disabled: Boolean(status && !['available', 'unclaimed', 'pending'].includes(status))
       });
@@ -42,11 +44,6 @@ Component({
     }
   }
 });
-
-function formatFen(value) {
-  const amount = Number(value || 0) / 100;
-  return Number.isInteger(amount) ? String(amount) : amount.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
-}
 
 function formatExpiry(value) {
   if (!value) return '有效期未设置';

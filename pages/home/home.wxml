@@ -6,12 +6,12 @@
         <text class="location-text">{{locationText}}</text>
         <image class="arrow-icon" mode="aspectFit" src="/assets/icons/keyboard_arrow_down_white.png" />
       </view>
-      <button class="message-btn" style="margin-right: {{menuButtonOffset}}px;" hover-class="none" bindtap="openMessages" aria-label="消息">
+      <view class="message-btn" style="margin-right: calc({{menuButtonOffset}}px + 5rpx);" bindtap="openMessages" role="button" aria-label="消息">
         <view class="message-wrap">
           <image class="message-icon" mode="aspectFit" src="/assets/icons/notifications_none.png" />
-          <view wx:if="{{hasUnreadMessages}}" class="message-dot"></view>
+          <view wx:if="{{unreadMessageCount}}" class="message-dot">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</view>
         </view>
-      </button>
+      </view>
     </view>
     <view class="search">
       <input value="{{keyword}}" bindinput="onKeyword" bindconfirm="submitSearch" placeholder="按名称搜索沙龙..." />
@@ -52,7 +52,7 @@
     <view wx:for="{{visibleSalons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
       <image class="salon-image" mode="aspectFill" src="{{item.image}}" />
       <view wx:if="{{item.tags.length}}" class="salon-tags">
-        <view wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="salon-tag">
+        <view wx:for="{{item.tags}}" wx:for-item="tag" wx:for-index="tagIndex" wx:key="*this" class="salon-tag {{tagIndex == 1 ? 'salon-tag-lime' : ''}}">
           <text class="salon-tag-text">{{tag}}</text>
         </view>
       </view>

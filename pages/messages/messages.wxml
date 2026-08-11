@@ -8,9 +8,9 @@
   </view>
 
   <view class="messages-list">
-    <view wx:if="{{loading && !orders.length}}" class="empty">正在加载...</view>
-    <view wx:elif="{{!orders.length}}" class="empty">暂无预约消息</view>
-    <view wx:for="{{orders}}" wx:key="id" class="msg-card">
+    <view wx:if="{{loading && !messages.length}}" class="empty">正在加载...</view>
+    <view wx:elif="{{!messages.length}}" class="empty">暂无预约消息</view>
+    <view wx:for="{{messages}}" wx:key="id" class="msg-card">
       <view class="status-dot {{item.status}}"></view>
       <view class="msg-body">
         <view class="status {{item.status}}">{{item.statusLabel}}</view>

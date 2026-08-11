@@ -1,36 +1,16 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
-const messages = require('../utils/messages');
+const root = path.join(__dirname, '..');
+const home = fs.readFileSync(path.join(root, 'pages/home/home.js'), 'utf8');
+const orders = fs.readFileSync(path.join(root, 'pages/orders/orders.js'), 'utf8');
+const messages = fs.readFileSync(path.join(root, 'pages/messages/messages.js'), 'utf8');
+const template = fs.readFileSync(path.join(root, 'pages/messages/messages.wxml'), 'utf8');
 
-const readOrders = [
-  { id: 'booking-2', status: 'completed', updatedAt: '2026-08-01T10:00:00.000Z', reviewed: true },
-  { id: 'booking-1', status: 'accepted', updatedAt: '2026-08-01T09:00:00.000Z' }
-];
-const readKey = messages.latestMessageKey(readOrders);
-
-const reviewDeleted = readOrders.map((order) => order.id === 'booking-2'
-  ? { ...order, reviewed: false, updatedAt: '2026-08-02T10:00:00.000Z' }
-  : order);
-
-assert.equal(messages.hasUnreadBookingMessages(reviewDeleted, readKey), false);
-assert.equal(messages.hasUnreadBookingMessages(reviewDeleted.slice().reverse(), readKey), false);
-assert.equal(messages.hasUnreadBookingMessages([
-  reviewDeleted[0],
-  { ...reviewDeleted[1], status: 'completed', updatedAt: '2026-08-02T11:00:00.000Z' }
-], readKey), true);
-assert.equal(messages.hasUnreadBookingMessages([
-  ...reviewDeleted,
-  { id: 'booking-3', status: 'pending', updatedAt: '2026-08-02T12:00:00.000Z' }
-], readKey), true);
-
-let storedKey = 'booking-2:completed:2026-08-01T10:00:00.000Z';
-global.wx = {
-  getStorageSync: () => storedKey,
-  setStorageSync: (_key, value) => { storedKey = value; }
-};
-assert.equal(messages.readMessageKey(reviewDeleted), messages.latestMessageKey(reviewDeleted));
-assert.equal(storedKey, messages.latestMessageKey(reviewDeleted));
-
-storedKey = 'booking-2:accepted:2026-08-01T10:00:00.000Z';
-assert.equal(messages.readMessageKey(reviewDeleted), storedKey);
-delete global.wx;
+assert.match(home, /api\.request\('\/booking-messages\/unread-count'\)/);
+assert.doesNotMatch(home, /requestAllPages\('\/bookings'\)[\s\S]*unreadBookingMessageCount/);
+assert.match(orders, /api\.request\('\/booking-messages\/unread-count'\)/);
+assert.match(messages, /requestAllPages\('\/booking-messages'\)/);
+assert.match(messages, /method: 'PATCH',[\s\S]*through: messages\[0\]\.createdAt/);
+assert.match(template, /wx:for="\{\{messages\}\}"/);

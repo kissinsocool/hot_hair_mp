@@ -13,8 +13,11 @@ assert.match(template, /class="orders-appbar-spacer" style="height: \{\{appBarHe
 assert.match(template, /class="orders-list"/);
 assert.match(template, /bindrefresherrefresh="refresh"/);
 assert.match(homeTemplate, /class="location" style="max-width: calc\(100% - \{\{menuButtonOffset\}\}px - 62rpx\);"/);
-assert.match(homeTemplate, /class="message-btn" style="margin-right: \{\{menuButtonOffset\}\}px;"/);
-assert.match(template, /class="orders-bell" style="margin-right: \{\{menuButtonOffset\}\}px;"/);
+assert.match(homeTemplate, /class="message-btn" style="margin-right: calc\(\{\{menuButtonOffset\}\}px \+ 5rpx\);"/);
+assert.match(homeTemplate, /<view class="message-btn"/);
+assert.match(homeTemplate, /class="message-dot">\{\{unreadMessageCount > 99 \? '99\+' : unreadMessageCount\}\}/);
+assert.match(template, /class="orders-bell" style="margin-right: calc\(\{\{menuButtonOffset\}\}px \+ 5rpx\);"/);
+assert.match(template, /class="orders-bell-dot">\{\{unreadMessageCount > 99 \? '99\+' : unreadMessageCount\}\}/);
 assert.match(styles, /\.orders-appbar\s*\{[^}]*position:\s*fixed;/s);
 assert.equal(config.enablePullDownRefresh, undefined);
 

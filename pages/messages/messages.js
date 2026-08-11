@@ -1,12 +1,11 @@
 const api = require('../../utils/api');
 const bookingSocket = require('../../utils/bookingSocket');
-const messages = require('../../utils/messages');
 const orderUtils = require('../../utils/orders');
 
 Page({
   data: {
     loading: true,
-    orders: []
+    messages: []
   },
 
   onLoad() {
@@ -39,9 +38,14 @@ Page({
   async load() {
     this.setData({ loading: true });
     try {
-      const orders = await api.requestAllPages('/bookings');
-      this.setData({ orders: orders.map(orderUtils.formatMessage) });
-      wx.setStorageSync(messages.READ_KEY, messages.latestMessageKey(orders));
+      const messages = await api.requestAllPages('/booking-messages');
+      this.setData({ messages: messages.map(orderUtils.formatMessage) });
+      if (messages.length) {
+        await api.request('/booking-messages/read', {
+          method: 'PATCH',
+          data: { through: messages[0].createdAt }
+        });
+      }
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {

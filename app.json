@@ -9,6 +9,7 @@
     "pages/confirm/confirm",
     "pages/coupons/coupons",
     "pages/orders/orders",
+    "pages/order-detail/order-detail",
     "pages/favorites/favorites",
     "pages/profile/profile",
     "pages/account/account",
@@ -19,7 +20,7 @@
     "pages/messages/messages"
   ],
   "window": {
-    "navigationBarTitleText": "麻辣烫",
+    "navigationBarTitleText": "靓丝美约",
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#fdfbf9"

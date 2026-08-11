@@ -1,5 +1,6 @@
 const api = require('../../utils/api');
 const ad = require('../../utils/ad');
+const analytics = require('../../utils/analytics');
 
 Page({
   data: {
@@ -127,9 +128,20 @@ Page({
     wx.makePhoneCall({ phoneNumber: this.data.salon.phone });
   },
 
-  copyAddress() {
-    if (!this.data.salon.address) return;
-    wx.setClipboardData({ data: this.data.salon.address });
+  openMap() {
+    const salon = this.data.salon || {};
+    const coordinates = salonCoordinates(salon);
+    if (!coordinates) {
+      wx.showToast({ title: '商家暂未配置导航位置', icon: 'none' });
+      return;
+    }
+    wx.openLocation({
+      ...coordinates,
+      name: salon.name || '预约门店',
+      address: salon.address || salon.addressText || '',
+      scale: 16,
+      fail: () => wx.showToast({ title: '地图打开失败', icon: 'none' })
+    });
   },
 
   previewImage(e) {
@@ -154,7 +166,9 @@ Page({
   },
 
   openService(e) {
-    wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.id}&serviceId=${e.currentTarget.dataset.id}` });
+    const serviceId = e.currentTarget.dataset.id;
+    analytics.track('service_click', { salonId: this.data.id, serviceId });
+    wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.id}&serviceId=${serviceId}` });
   },
 
   openStaff(e) {
@@ -176,4 +190,17 @@ function starIcons(value) {
     if (index === full && hasHalf) return '/assets/icons/star_half_gold.png';
     return '/assets/icons/star_border_gold.png';
   });
+}
+
+function salonCoordinates(salon = {}) {
+  const location = salon.location || {};
+  const geoCoordinates = salon.geoLocation && salon.geoLocation.coordinates;
+  const latitudeValue = location.latitude ?? location.lat ?? (geoCoordinates && geoCoordinates[1]);
+  const longitudeValue = location.longitude ?? location.lng ?? location.lon ?? (geoCoordinates && geoCoordinates[0]);
+  if (latitudeValue === '' || longitudeValue === '') return null;
+  const latitude = Number(latitudeValue);
+  const longitude = Number(longitudeValue);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude };
 }

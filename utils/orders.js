@@ -1,4 +1,5 @@
 const api = require('./api');
+const { formatFen } = require('./money');
 
 function displayStaffName(order) {
   return order.isNoPreference || !order.staffId ? '无需指定' : order.staffName;
@@ -54,11 +55,53 @@ function formatOrder(order) {
     canCancel: ['pending', 'accepted'].includes(order.status),
     canReview: order.status === 'completed',
     canComplain: order.status === 'completed',
+    canRebook: order.status === 'completed',
     reviewButtonText: order.reviewed ? '已评价' : '评价晒单',
     complaintButtonText: order.complained ? '已投诉' : '投诉',
     reviewButtonClass: order.reviewed ? ' disabled-btn' : '',
     complaintButtonClass: order.complained ? ' disabled-btn' : ''
   };
+}
+
+function formatOrderDetail(order) {
+  const formatted = formatOrder(order);
+  const servicePriceFen = nonNegativeFen(order.servicePriceFen);
+  const staffExtraServiceFeeFen = nonNegativeFen(order.staffExtraServiceFeeFen);
+  const couponDiscountFen = nonNegativeFen(order.couponDiscountFen);
+  const originalAmountFen = Number.isSafeInteger(order.originalAmountFen)
+    ? order.originalAmountFen
+    : servicePriceFen + staffExtraServiceFeeFen;
+  const payableAmountFen = Number.isSafeInteger(order.payableAmountFen)
+    ? order.payableAmountFen
+    : Math.max(0, originalAmountFen - couponDiscountFen);
+  const complaint = order.complaint || null;
+  return {
+    ...formatted,
+    servicePriceText: formatFen(servicePriceFen),
+    staffExtraServiceFeeText: formatFen(staffExtraServiceFeeFen),
+    originalAmountText: formatFen(originalAmountFen),
+    couponDiscountText: `- ${formatFen(couponDiscountFen)}`,
+    payableAmountText: formatFen(payableAmountFen),
+    hasStaffExtraServiceFee: staffExtraServiceFeeFen > 0,
+    reasonTitle: order.status === 'rejected' ? '拒绝原因' : order.status === 'no_show' ? '爽约说明' : '取消原因',
+    reasonText: ['rejected', 'canceled', 'cancelled', 'no_show'].includes(order.status)
+      ? order.rejectReason || ''
+      : '',
+    complaint: complaint && {
+      ...complaint,
+      statusText: {
+        pending: '审核中',
+        approved: '已通过审核',
+        rejected: '未通过审核'
+      }[complaint.reviewStatus] || '已提交',
+      createdTimeText: api.formatTime(complaint.createdAt)
+    }
+  };
+}
+
+function nonNegativeFen(value) {
+  const amount = Number(value);
+  return Number.isSafeInteger(amount) && amount >= 0 ? amount : 0;
 }
 
 function formatMessage(order) {
@@ -72,11 +115,8 @@ function formatMessage(order) {
   };
 }
 
-function formatFen(value) {
-  return `¥${(Number(value || 0) / 100).toFixed(2)}`;
-}
-
 module.exports = {
   formatMessage,
-  formatOrder
+  formatOrder,
+  formatOrderDetail
 };

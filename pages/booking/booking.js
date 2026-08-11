@@ -1,4 +1,6 @@
 const api = require('../../utils/api');
+const { SERVICE_TABS, serviceCategory, serviceMatchesCategory } = require('../../utils/serviceCategories.js');
+const analytics = require('../../utils/analytics');
 
 Page({
   data: {
@@ -6,7 +8,9 @@ Page({
     dates: [],
     slots: [],
     staffOptions: [],
+    serviceTabs: SERVICE_TABS,
     serviceOptions: [],
+    activeServiceCategory: 'cut',
     slotOptions: [],
     selectedStaffId: '__no_preference__',
     selectedServiceId: '',
@@ -32,21 +36,30 @@ Page({
       const dates = nextDates(salon.closedDates, salon.acceptsSameDayBooking !== false);
       const selectedDate = (dates.find((date) => !date.isDisabled) || {}).value || '';
       const requestedServiceId = String(this.initialServiceId || '');
-      const selectedServiceId = (salon.services || []).some(
-        (service) => String(service.id) === requestedServiceId
-      ) ? requestedServiceId : '';
+      const services = salon.services || [];
+      const selectedService = services.find((service) => String(service.id) === requestedServiceId);
+      const selectedServiceId = selectedService ? requestedServiceId : '';
+      const firstAvailableCategory = (SERVICE_TABS.find((tab) =>
+        services.some((service) => serviceMatchesCategory(service, tab.id))) || SERVICE_TABS[0]).id;
       this.setData({
         salon,
         dates,
         selectedDate,
         selectedStaffId: this.initialStaffId || '__no_preference__',
-        selectedServiceId
+        selectedServiceId,
+        activeServiceCategory: selectedService
+          ? serviceCategory(selectedService)
+          : firstAvailableCategory
       });
       if (requestedServiceId && !selectedServiceId) {
         wx.showToast({ title: '套餐已更新，请重新选择', icon: 'none' });
       }
       this.refreshOptions();
       if (selectedDate) await this.loadSlots();
+      analytics.track('booking_started', {
+        salonId: this.salonId,
+        serviceId: selectedServiceId
+      });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
@@ -75,7 +88,16 @@ Page({
   },
 
   selectService(e) {
-    this.setData({ selectedServiceId: String(e.currentTarget.dataset.id || '') });
+    const selectedServiceId = String(e.currentTarget.dataset.id || '');
+    this.setData({ selectedServiceId });
+    this.refreshOptions();
+    analytics.track('service_click', { salonId: this.salonId, serviceId: selectedServiceId });
+  },
+
+  selectServiceCategory(e) {
+    const category = String(e.currentTarget.dataset.category || '');
+    if (!SERVICE_TABS.some((tab) => tab.id === category)) return;
+    this.setData({ activeServiceCategory: category });
     this.refreshOptions();
   },
 
@@ -92,6 +114,13 @@ Page({
     if (available === false || available === 'false') return;
     this.setData({ selectedTime: e.currentTarget.dataset.time });
     this.refreshOptions();
+    if (!this.slotSelectedTracked && this.data.canSubmit) {
+      this.slotSelectedTracked = true;
+      analytics.track('slot_selected', {
+        salonId: this.salonId,
+        serviceId: this.data.selectedServiceId
+      });
+    }
   },
 
   refreshOptions() {
@@ -111,6 +140,10 @@ Page({
       ...staff,
       className: this.data.selectedStaffId === staff.id ? 'active' : ''
     }));
+    const serviceTabs = SERVICE_TABS.map((tab) => ({
+      ...tab,
+      className: this.data.activeServiceCategory === tab.id ? 'active' : ''
+    }));
     const serviceOptions = (salon.services || []).map((service) => ({
       ...service,
       imageUrl: api.mediaUrl(service.imageUrl || ''),
@@ -119,7 +152,7 @@ Page({
       durationText: service.duration || (service.durationMinutes ? `${service.durationMinutes} min` : ''),
       priceText: formatPrice(service.price || service.priceLabel),
       className: this.data.selectedServiceId === String(service.id) ? 'active-card' : ''
-    }));
+    })).filter((service) => serviceMatchesCategory(service, this.data.activeServiceCategory));
     const dates = this.data.dates.map((date) => ({
       ...date,
       className: date.isDisabled ? 'disabled' : this.data.selectedDate === date.value ? 'active' : ''
@@ -142,7 +175,7 @@ Page({
         : !this.data.selectedTime
           ? '请选择时间段'
           : '确认预约';
-    this.setData({ staffOptions, serviceOptions, dates, slotOptions, canSubmit, submitText });
+    this.setData({ staffOptions, serviceTabs, serviceOptions, dates, slotOptions, canSubmit, submitText });
   },
 
   async submit() {
@@ -169,8 +202,8 @@ Page({
       staffName: staff.name,
       serviceId: selectedServiceId,
       serviceName: service.name,
-      servicePrice: service.price || service.priceLabel || '',
-      extraServiceFee: staff.extraServiceFee || 0,
+      servicePriceFen: Number.isSafeInteger(service.priceFen) ? service.priceFen : 0,
+      extraServiceFeeFen: Number.isSafeInteger(staff.extraServiceFeeFen) ? staff.extraServiceFeeFen : 0,
       selectedStaffId,
       startTime: `${selectedDate}T${selectedTime}:00`
     };

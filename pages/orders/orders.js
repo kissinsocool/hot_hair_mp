@@ -2,8 +2,8 @@ const api = require('../../utils/api');
 const app = getApp();
 const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
-const messages = require('../../utils/messages');
 const orderUtils = require('../../utils/orders');
+const analytics = require('../../utils/analytics');
 const MAX_IMAGE_BYTES = 800 * 1024;
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
@@ -24,7 +24,7 @@ Page({
     statusBarHeight: 0,
     navBarHeight: 44,
     appBarHeight: 44,
-    hasUnreadMessages: false
+    unreadMessageCount: 0
   },
 
   onLoad() {
@@ -42,7 +42,7 @@ Page({
     const loggedIn = Boolean(session && session.token);
     this.setData({ loggedIn });
     if (!loggedIn) {
-      this.setData({ hasUnreadMessages: false });
+      this.setData({ unreadMessageCount: 0 });
       if (app.globalData.pendingLoginReturnRoute === 'pages/orders/orders') {
         app.globalData.pendingLoginReturnRoute = '';
         wx.switchTab({ url: '/pages/home/home' });
@@ -79,11 +79,13 @@ Page({
   async load() {
     this.setData({ loading: !this.data.orders.length });
     try {
-      const orders = await api.requestAllPages('/bookings');
-      const readKey = messages.readMessageKey(orders);
+      const [orders, unread] = await Promise.all([
+        api.requestAllPages('/bookings'),
+        api.request('/booking-messages/unread-count')
+      ]);
       this.setData({
         orders: orders.map(orderUtils.formatOrder),
-        hasUnreadMessages: messages.hasUnreadBookingMessages(orders, readKey)
+        unreadMessageCount: Number(unread.count) || 0
       });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
@@ -144,10 +146,23 @@ Page({
     });
   },
 
-  openOrderSalon(e) {
-    const salonId = e.currentTarget.dataset.salonId;
-    if (!salonId) return;
-    wx.navigateTo({ url: `/pages/detail/detail?id=${salonId}` });
+  openOrderDetail(e) {
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/order-detail/order-detail?id=${encodeURIComponent(id)}` });
+  },
+
+  rebook(e) {
+    const order = this.data.orders.find((item) => item.id === e.currentTarget.dataset.id);
+    if (!order) return;
+    analytics.track('rebooking_started', {
+      salonId: order.salonId,
+      serviceId: order.serviceId,
+      sourceBookingId: order.id
+    });
+    wx.navigateTo({
+      url: `/pages/booking/booking?id=${order.salonId}&serviceId=${order.serviceId}`
+    });
   },
 
   openMessages() {

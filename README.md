@@ -32,5 +32,24 @@ apiBaseUrl: 'https://api.hothaircc.cn/api'
 ## 未做
 
 - 微信支付
-- 微信一键登录
 - 复杂地图选点
+
+## 预约订阅消息
+
+在微信公众平台选择“预约状态通知”类的一次性订阅模板，模板字段需与以下顺序一致：
+
+- `thing1`：服务项目
+- `time2`：预约时间
+- `phrase3`：预约状态
+- `thing4`：门店名称
+- `thing5`：状态说明
+
+然后在服务端环境变量中配置：
+
+```bash
+WECHAT_BOOKING_STATUS_TEMPLATE_ID=微信订阅模板ID
+# 可选：developer、trial 或 formal，默认 formal
+WECHAT_MINIPROGRAM_STATE=formal
+```
+
+配置后，用户提交预约时会申请授权，商家接单、拒单、取消或改期后发送一次微信订阅消息。

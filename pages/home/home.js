@@ -1,8 +1,8 @@
 const api = require('../../utils/api');
 const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
-const messages = require('../../utils/messages');
 const ad = require('../../utils/ad');
+const analytics = require('../../utils/analytics');
 const TAB_BAR_SCROLL_TRIGGER = 8;
 
 Page({
@@ -25,7 +25,7 @@ Page({
     navBarHeight: 44,
     appBarHeight: 148,
     locatedOnce: false,
-    hasUnreadMessages: false,
+    unreadMessageCount: 0,
     supportHidden: false,
     newUserGiftVisible: false,
     newUserGiftImage: '',
@@ -46,6 +46,7 @@ Page({
   },
 
   onShow() {
+    analytics.track('home_exposure');
     this.tabBarScrollAnchor = 0;
     const tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.show();
@@ -151,15 +152,14 @@ Page({
   async loadUnreadMessages() {
     const session = api.session();
     if (!(session && session.token)) {
-      this.setData({ hasUnreadMessages: false });
+      this.setData({ unreadMessageCount: 0 });
       return;
     }
     try {
-      const orders = await api.requestAllPages('/bookings');
-      const readKey = messages.readMessageKey(orders);
-      this.setData({ hasUnreadMessages: messages.hasUnreadBookingMessages(orders, readKey) });
+      const result = await api.request('/booking-messages/unread-count');
+      this.setData({ unreadMessageCount: Number(result.count) || 0 });
     } catch (_) {
-      this.setData({ hasUnreadMessages: false });
+      this.setData({ unreadMessageCount: 0 });
     }
   },
 
@@ -298,7 +298,9 @@ Page({
   },
 
   openDetail(e) {
-    wx.navigateTo({ url: `/pages/detail/detail?id=${e.currentTarget.dataset.id}` });
+    const salonId = e.currentTarget.dataset.id;
+    analytics.track('salon_detail_click', { salonId });
+    wx.navigateTo({ url: `/pages/detail/detail?id=${salonId}` });
   },
 
   openMessages() {

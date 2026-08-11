@@ -17,7 +17,7 @@
     <view wx:if="{{selectedCoupon}}" class="row compact discount-row"><text>优惠券抵扣</text><text>{{couponDiscountText}}</text></view>
     <view class="row total"><text>到店需支付</text><text>{{payableText}}</text></view>
   </view>
-  <button class="primary-btn" loading="{{submitting}}" bindtap="submit">提交预约申请</button>
+  <button class="primary-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="submit">提交预约申请</button>
   <view wx:if="{{successVisible}}" class="sheet-mask"></view>
   <view wx:if="{{successVisible}}" class="success-sheet">
     <image class="success-icon" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />

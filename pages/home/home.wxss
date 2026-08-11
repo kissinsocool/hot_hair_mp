@@ -81,13 +81,21 @@
 
 .message-dot {
   position: absolute;
-  top: -4rpx;
-  right: -6rpx;
-  width: 18rpx;
-  height: 18rpx;
+  top: -17rpx;
+  left: 30rpx;
+  box-sizing: border-box;
+  min-width: 30rpx;
+  height: 30rpx;
+  padding: 0 7rpx;
   border: 3rpx solid #2B2726;
-  border-radius: 50%;
+  border-radius: 999rpx;
   background: #ff3b30;
+  color: #fff;
+  font-size: 18rpx;
+  font-weight: 700;
+  line-height: 24rpx;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .search button::after {
@@ -331,6 +339,18 @@
   text-shadow: 0 1rpx 2rpx rgba(67, 28, 82, 0.18);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+}
+
+.salon-tag-lime {
+  background: linear-gradient(105deg, #e9ff73 0%, #b7ed48 55%, #74cc35 100%);
+  box-shadow: 0 4rpx 10rpx rgba(87, 154, 42, 0.3);
+}
+
+.salon-tag-lime .salon-tag-text {
+  color: #245524;
+  background: none;
+  text-shadow: 0 1rpx 2rpx rgba(255, 255, 255, 0.32);
+  -webkit-text-fill-color: #245524;
 }
 
 @keyframes salon-tag-shine {

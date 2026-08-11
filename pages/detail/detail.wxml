@@ -36,7 +36,7 @@
     <view class="section-title">店铺信息</view>
     <view class="card info-card">
       <view class="info-row" bindtap="callPhone"><image class="icon-img" mode="aspectFit" src="/assets/icons/phone.png" /><text class="info-label">电话</text><text class="info-value">{{salon.phoneText}}</text></view>
-      <view class="info-row" bindtap="copyAddress"><image class="icon-img" mode="aspectFit" src="/assets/icons/location_on.png" /><text class="info-label">地址</text><text class="info-value">{{salon.addressText}}</text></view>
+      <view class="info-row" bindtap="openMap"><image class="icon-img" mode="aspectFit" src="/assets/icons/location_on.png" /><text class="info-label">地址</text><text class="info-value">{{salon.addressText}}</text></view>
     </view>
     <view class="section plain-section">
       <view class="section-title">关于我们</view>
