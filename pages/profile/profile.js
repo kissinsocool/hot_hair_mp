@@ -2,6 +2,7 @@ const api = require('../../utils/api');
 const app = getApp();
 const couponUtils = require('../../utils/coupons');
 const MAX_IMAGE_BYTES = 800 * 1024;
+const PAGE_SIZE = 20;
 const initialSession = api.session();
 const initiallyLoggedIn = Boolean(initialSession && initialSession.token);
 const initialUser = initialSession && initialSession.user || {};
@@ -18,6 +19,9 @@ Page({
     couponsLoadFailed: false,
     reviews: [],
     loadingReviews: initiallyLoggedIn,
+    reviewPage: 0,
+    hasMoreReviews: false,
+    loadingMoreReviews: false,
     sheetVisible: false,
     sheetReview: null,
     sheetRating: 0,
@@ -48,7 +52,7 @@ Page({
     this.applyUser(user);
     this.refreshUser();
     this.loadCoupons();
-    this.loadReviews();
+    if (this.data.activeTab === 'reviews') this.loadReviews();
   },
 
   applyUser(user) {
@@ -72,8 +76,12 @@ Page({
   },
 
   onPullDownRefresh() {
-    Promise.all([this.loadCoupons(), this.loadReviews()])
-      .finally(() => wx.stopPullDownRefresh());
+    const refresh = this.data.activeTab === 'reviews' ? this.loadReviews() : this.loadCoupons();
+    Promise.resolve(refresh).finally(() => wx.stopPullDownRefresh());
+  },
+
+  onReachBottom() {
+    if (this.data.activeTab === 'reviews') this.loadMoreReviews();
   },
 
   onHide() {
@@ -85,7 +93,9 @@ Page({
   },
 
   switchSection(e) {
-    this.setData({ activeTab: e.currentTarget.dataset.tab });
+    const activeTab = e.currentTarget.dataset.tab;
+    this.setData({ activeTab });
+    if (activeTab === 'reviews' && !this.data.reviews.length) this.loadReviews();
   },
 
   async loadCoupons() {
@@ -106,15 +116,44 @@ Page({
   },
 
   async loadReviews() {
-    if (!this.data.loggedIn) return;
-    this.setData({ loadingReviews: true });
+    if (!this.data.loggedIn || this.loadingReviewPage) return;
+    this.loadingReviewPage = true;
+    const version = (this.reviewsVersion || 0) + 1;
+    this.reviewsVersion = version;
+    this.setData({ loadingReviews: true, loadingMoreReviews: false });
     try {
-      const reviews = await api.requestAllPages('/auth/reviews');
-      this.setData({ reviews: reviews.map(normalizeReview) });
+      const result = await api.requestPage('/auth/reviews', { page: 1, limit: PAGE_SIZE });
+      if (version !== this.reviewsVersion) return;
+      this.setData({
+        reviews: result.items.map(normalizeReview),
+        reviewPage: 1,
+        hasMoreReviews: result.hasMore
+      });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
+      this.loadingReviewPage = false;
       this.setData({ loadingReviews: false });
+    }
+  },
+
+  async loadMoreReviews() {
+    if (this.loadingReviewPage || this.data.loadingMoreReviews || !this.data.hasMoreReviews) return;
+    const version = this.reviewsVersion;
+    const page = this.data.reviewPage + 1;
+    this.setData({ loadingMoreReviews: true });
+    try {
+      const result = await api.requestPage('/auth/reviews', { page, limit: PAGE_SIZE });
+      if (version !== this.reviewsVersion) return;
+      this.setData({
+        reviews: this.data.reviews.concat(result.items.map(normalizeReview)),
+        reviewPage: page,
+        hasMoreReviews: result.hasMore
+      });
+    } catch (err) {
+      wx.showToast({ title: err.message, icon: 'none' });
+    } finally {
+      if (version === this.reviewsVersion) this.setData({ loadingMoreReviews: false });
     }
   },
 

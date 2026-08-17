@@ -50,7 +50,7 @@
     </view>
 
     <view wx:for="{{visibleSalons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
-      <image class="salon-image" mode="aspectFill" src="{{item.image}}" />
+      <image class="salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
       <view wx:if="{{item.tags.length}}" class="salon-tags">
         <view wx:for="{{item.tags}}" wx:for-item="tag" wx:for-index="tagIndex" wx:key="*this" class="salon-tag {{tagIndex == 1 ? 'salon-tag-lime' : ''}}">
           <text class="salon-tag-text">{{tag}}</text>

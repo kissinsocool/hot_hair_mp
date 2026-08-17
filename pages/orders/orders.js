@@ -5,6 +5,7 @@ const layout = require('../../utils/layout');
 const orderUtils = require('../../utils/orders');
 const analytics = require('../../utils/analytics');
 const MAX_IMAGE_BYTES = 800 * 1024;
+const PAGE_SIZE = 20;
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 Page({
@@ -13,6 +14,9 @@ Page({
     loading: initiallyLoggedIn,
     refreshing: false,
     orders: [],
+    orderPage: 0,
+    hasMoreOrders: false,
+    loadingMoreOrders: false,
     sheetVisible: false,
     sheetType: 'review',
     sheetOrder: null,
@@ -77,20 +81,48 @@ Page({
   },
 
   async load() {
-    this.setData({ loading: !this.data.orders.length });
+    if (this.loadingOrders) return;
+    this.loadingOrders = true;
+    const version = (this.ordersVersion || 0) + 1;
+    this.ordersVersion = version;
+    this.setData({ loading: !this.data.orders.length, loadingMoreOrders: false });
     try {
-      const [orders, unread] = await Promise.all([
-        api.requestAllPages('/bookings'),
+      const [result, unread] = await Promise.all([
+        api.requestPage('/bookings', { page: 1, limit: PAGE_SIZE }),
         api.request('/booking-messages/unread-count')
       ]);
+      if (version !== this.ordersVersion) return;
       this.setData({
-        orders: orders.map(orderUtils.formatOrder),
+        orders: result.items.map(orderUtils.formatOrder),
+        orderPage: 1,
+        hasMoreOrders: result.hasMore,
         unreadMessageCount: Number(unread.count) || 0
       });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
+      this.loadingOrders = false;
       this.setData({ loading: false });
+    }
+  },
+
+  async loadMore() {
+    if (this.loadingOrders || this.data.loadingMoreOrders || !this.data.hasMoreOrders) return;
+    const version = this.ordersVersion;
+    const page = this.data.orderPage + 1;
+    this.setData({ loadingMoreOrders: true });
+    try {
+      const result = await api.requestPage('/bookings', { page, limit: PAGE_SIZE });
+      if (version !== this.ordersVersion) return;
+      this.setData({
+        orders: this.data.orders.concat(result.items.map(orderUtils.formatOrder)),
+        orderPage: page,
+        hasMoreOrders: result.hasMore
+      });
+    } catch (err) {
+      wx.showToast({ title: err.message, icon: 'none' });
+    } finally {
+      if (version === this.ordersVersion) this.setData({ loadingMoreOrders: false });
     }
   },
 

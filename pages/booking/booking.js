@@ -1,12 +1,15 @@
 const api = require('../../utils/api');
 const { SERVICE_TABS, serviceCategory, serviceMatchesCategory } = require('../../utils/serviceCategories.js');
 const analytics = require('../../utils/analytics');
+const { formatFen } = require('../../utils/money');
 
 Page({
   data: {
     salon: null,
     dates: [],
     slots: [],
+    slotsLoading: false,
+    slotErrorMessage: '',
     staffOptions: [],
     serviceTabs: SERVICE_TABS,
     serviceOptions: [],
@@ -23,14 +26,40 @@ Page({
   },
 
   onLoad(query) {
-    if (!api.requireLogin()) return;
     this.salonId = query.id;
     this.initialStaffId = query.staffId || '';
     this.initialServiceId = query.serviceId || '';
-    this.load();
+    if (!api.requireLogin()) {
+      this.waitingForLogin = true;
+      return;
+    }
+    return this.load();
+  },
+
+  onHide() {
+    if (this.waitingForLogin) this.loginPageWasShown = true;
+  },
+
+  onShow() {
+    const session = api.session();
+    if (!(session && session.token)) {
+      if (this.loginPageWasShown) {
+        this.waitingForLogin = false;
+        this.loginPageWasShown = false;
+        this.setData({ loading: false });
+        wx.navigateBack({ fail: () => wx.switchTab({ url: '/pages/home/home' }) });
+      }
+      return;
+    }
+    this.waitingForLogin = false;
+    this.loginPageWasShown = false;
+    if (!this.salonId || this.data.salon || this.loadingSalon) return;
+    return this.load();
   },
 
   async load() {
+    if (this.loadingSalon) return;
+    this.loadingSalon = true;
     try {
       const salon = await api.request(`/salons/${this.salonId}`);
       const dates = nextDates(salon.closedDates, salon.acceptsSameDayBooking !== false);
@@ -63,28 +92,48 @@ Page({
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
+      this.loadingSalon = false;
       this.setData({ loading: false });
     }
   },
 
   async loadSlots() {
-    if (!this.data.selectedDate) {
-      this.setData({ slots: [], selectedTime: '' });
-      this.refreshOptions();
-      return;
-    }
+    const requestId = (this.slotRequestId || 0) + 1;
+    this.slotRequestId = requestId;
+    const selectedDate = this.data.selectedDate;
     const staffId = this.data.selectedStaffId;
-    const slots = staffId === '__no_preference__'
-      ? await api.request(`/staff/${staffId}/slots?date=${this.data.selectedDate}&salonId=${encodeURIComponent(this.salonId)}`)
-      : await api.request(`/staff/${staffId}/slots?date=${this.data.selectedDate}`);
-    this.setData({ slots, selectedTime: '' });
+    this.setData({
+      slots: [],
+      selectedTime: '',
+      slotsLoading: Boolean(selectedDate),
+      slotErrorMessage: ''
+    });
     this.refreshOptions();
+    if (!selectedDate) return;
+
+    try {
+      const slots = staffId === '__no_preference__'
+        ? await api.request(`/staff/${staffId}/slots?date=${selectedDate}&salonId=${encodeURIComponent(this.salonId)}`)
+        : await api.request(`/staff/${staffId}/slots?date=${selectedDate}`);
+      if (requestId !== this.slotRequestId) return;
+      this.setData({ slots, slotsLoading: false });
+      this.refreshOptions();
+    } catch (err) {
+      if (requestId !== this.slotRequestId) return;
+      this.setData({
+        slots: [],
+        selectedTime: '',
+        slotsLoading: false,
+        slotErrorMessage: err.message || '时间段加载失败'
+      });
+      this.refreshOptions();
+      wx.showToast({ title: err.message || '时间段加载失败', icon: 'none' });
+    }
   },
 
   selectStaff(e) {
     this.setData({ selectedStaffId: e.currentTarget.dataset.id });
-    this.refreshOptions();
-    this.loadSlots();
+    return this.loadSlots();
   },
 
   selectService(e) {
@@ -105,8 +154,7 @@ Page({
     const isDisabled = e.currentTarget.dataset.disabled;
     if (isDisabled === true || isDisabled === 'true') return;
     this.setData({ selectedDate: e.currentTarget.dataset.value });
-    this.refreshOptions();
-    this.loadSlots();
+    return this.loadSlots();
   },
 
   selectTime(e) {
@@ -134,7 +182,7 @@ Page({
         experience: staff.experience || '',
         bio: staff.bio || staff.description || '',
         imageUrl: api.mediaUrl(staff.imageUrl || ''),
-        extraServiceFee: staff.extraServiceFee || 0
+        extraServiceFeeText: staff.extraServiceFeeFen > 0 ? formatFen(staff.extraServiceFeeFen) : ''
       })))
     ].map((staff) => ({
       ...staff,
@@ -149,8 +197,8 @@ Page({
       imageUrl: api.mediaUrl(service.imageUrl || ''),
       tags: service.tags || service.categories || [],
       noteText: service.note || service.description || '',
-      durationText: service.duration || (service.durationMinutes ? `${service.durationMinutes} min` : ''),
-      priceText: formatPrice(service.price || service.priceLabel),
+      durationText: service.durationMinutes ? `${service.durationMinutes} min` : '',
+      priceText: formatFen(service.priceFen),
       className: this.data.selectedServiceId === String(service.id) ? 'active-card' : ''
     })).filter((service) => serviceMatchesCategory(service, this.data.activeServiceCategory));
     const dates = this.data.dates.map((date) => ({
@@ -165,22 +213,33 @@ Page({
         className: !isAvailable ? 'disabled' : this.data.selectedTime === slot.time ? 'active' : ''
       };
     });
-    const canSubmit = Boolean(this.data.selectedStaffId && this.data.selectedServiceId && this.data.selectedDate && this.data.selectedTime);
+    const selectedSlotAvailable = slotOptions.some((slot) => (
+      slot.isAvailable && slot.time === this.data.selectedTime
+    ));
+    const canSubmit = Boolean(
+      !this.data.slotsLoading
+      && this.data.selectedStaffId
+      && this.data.selectedServiceId
+      && this.data.selectedDate
+      && selectedSlotAvailable
+    );
     const submitText = !this.data.selectedStaffId
       ? '请选择理发师'
       : !this.data.selectedDate
         ? '请选择营业日期'
         : !this.data.selectedServiceId
-        ? '请选择服务项目'
-        : !this.data.selectedTime
-          ? '请选择时间段'
-          : '确认预约';
+          ? '请选择服务项目'
+          : this.data.slotsLoading
+            ? '时间段加载中'
+            : !this.data.selectedTime
+              ? '请选择时间段'
+              : '确认预约';
     this.setData({ staffOptions, serviceTabs, serviceOptions, dates, slotOptions, canSubmit, submitText });
   },
 
   async submit() {
     const { selectedServiceId, selectedStaffId, selectedDate, selectedTime, salon } = this.data;
-    if (!selectedStaffId || !selectedServiceId || !selectedDate || !selectedTime) {
+    if (!this.data.canSubmit || !selectedStaffId || !selectedServiceId || !selectedDate || !selectedTime) {
       wx.showToast({ title: '请选完整预约信息', icon: 'none' });
       return;
     }
@@ -228,12 +287,6 @@ function nextDates(closedDates = [], acceptsSameDayBooking = true) {
       isDisabled: closedDateSet.has(value) || (!acceptsSameDayBooking && index === 0)
     };
   });
-}
-
-function formatPrice(value) {
-  if (!value) return '';
-  const text = String(value);
-  return text.startsWith('¥') || !/^\d+(\.\d+)?$/.test(text) ? text : `¥${text}`;
 }
 
 function isSlotAvailable(slot, selectedDate) {

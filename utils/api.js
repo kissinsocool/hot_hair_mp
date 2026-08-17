@@ -2,6 +2,7 @@ const app = getApp();
 const LOGIN_PAGE = '/pages/login/login';
 const PENDING_AVATAR_PREVIEW_KEY = 'pendingAvatarPreview';
 let navigatingToLogin = false;
+const inflightGetRequests = new Map();
 
 function session() {
   return app.globalData.session || wx.getStorageSync('session') || null;
@@ -91,10 +92,15 @@ function salonImage(salon = {}) {
 }
 
 function request(path, options = {}) {
-  const method = options.method || 'GET';
+  const method = String(options.method || 'GET').toUpperCase();
   const currentSession = session();
   const token = currentSession && currentSession.token;
-  return new Promise((resolve, reject) => {
+  const requestKey = method === 'GET'
+    ? `${token || 'anonymous'}:${options.withResponse ? 'response' : 'data'}:${path}:${JSON.stringify(options.data || {})}`
+    : '';
+  if (requestKey && inflightGetRequests.has(requestKey)) return inflightGetRequests.get(requestKey);
+
+  const promise = new Promise((resolve, reject) => {
     wx.request({
       url: `${app.globalData.apiBaseUrl}${path}`,
       method,
@@ -120,6 +126,14 @@ function request(path, options = {}) {
       }
     });
   });
+  if (requestKey) {
+    inflightGetRequests.set(requestKey, promise);
+    promise.then(
+      () => inflightGetRequests.delete(requestKey),
+      () => inflightGetRequests.delete(requestKey)
+    );
+  }
+  return promise;
 }
 
 function uploadFile(url, filePath, formData) {
@@ -143,21 +157,33 @@ function uploadFile(url, filePath, formData) {
 async function requestAllPages(path, options = {}) {
   const limit = Math.min(Number(options.limit) || 100, 100);
   const items = [];
-  // ponytail: preserves the current full-list UI; switch to load-more before lists exceed 10,000 rows.
   for (let page = 1; page <= 100; page += 1) {
-    const separator = path.includes('?') ? '&' : '?';
-    const response = await request(`${path}${separator}page=${page}&limit=${limit}`, {
-      ...options,
-      withResponse: true
-    });
-    const pageItems = Array.isArray(response.data) ? response.data : [];
-    items.push(...pageItems);
-    const totalHeader = Object.entries(response.headers)
-      .find(([key]) => key.toLowerCase() === 'x-total-count');
-    const total = Number(totalHeader && totalHeader[1]);
-    if (!hasMorePages(items.length, pageItems.length, limit, Number.isFinite(total) ? total : null)) break;
+    const result = await requestPage(path, { ...options, page, limit });
+    items.push(...result.items);
+    if (!result.hasMore) break;
   }
   return items;
+}
+
+async function requestPage(path, options = {}) {
+  const page = Math.max(1, Number(options.page) || 1);
+  const limit = Math.min(Math.max(1, Number(options.limit) || 20), 100);
+  const separator = path.includes('?') ? '&' : '?';
+  const response = await request(`${path}${separator}page=${page}&limit=${limit}`, {
+    ...options,
+    withResponse: true
+  });
+  const items = Array.isArray(response.data) ? response.data : [];
+  const totalHeader = Object.entries(response.headers)
+    .find(([key]) => key.toLowerCase() === 'x-total-count');
+  const totalValue = Number(totalHeader && totalHeader[1]);
+  const total = Number.isFinite(totalValue) ? totalValue : null;
+  return {
+    items,
+    page,
+    total,
+    hasMore: hasMorePages((page - 1) * limit + items.length, items.length, limit, total)
+  };
 }
 
 function hasMorePages(loaded, pageLength, pageSize, total) {
@@ -231,6 +257,7 @@ module.exports = {
   mediaUrl,
   request,
   requestAllPages,
+  requestPage,
   requireLogin,
   savePendingAvatarPreview,
   saveSession,

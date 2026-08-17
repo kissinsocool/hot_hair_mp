@@ -52,7 +52,7 @@
         <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" mode="aspectFit" src="{{star}}" /></view>
         <view wx:if="{{item.comment}}" class="review-comment">{{item.comment}}</view>
         <view wx:if="{{item.imageUrls.length}}" class="review-images">
-          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" bindtap="previewReviewImage" data-review-index="{{reviewIndex}}" data-url="{{image}}" />
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-review-index="{{reviewIndex}}" data-url="{{image}}" />
         </view>
         <view wx:if="{{item.replyText}}" class="merchant-reply">商家回复：{{item.replyText}}</view>
         <view class="review-actions">
@@ -60,6 +60,8 @@
           <button class="review-btn delete" loading="{{deletingReviewId == item.bookingId}}" data-index="{{reviewIndex}}" catchtap="deleteReview">删除</button>
         </view>
       </view>
+      <view wx:if="{{loadingMoreReviews}}" class="empty-sub list-footer">正在加载更多...</view>
+      <view wx:elif="{{reviews.length >= 20 && !hasMoreReviews}}" class="empty-sub list-footer">没有更多评价了</view>
     </view>
   </view>
 

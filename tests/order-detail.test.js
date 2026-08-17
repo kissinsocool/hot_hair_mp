@@ -74,10 +74,17 @@ page.load().then(() => {
   const appConfig = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
   const ordersTemplate = fs.readFileSync(path.join(root, 'pages/orders/orders.wxml'), 'utf8');
   const detailTemplate = fs.readFileSync(path.join(root, 'pages/order-detail/order-detail.wxml'), 'utf8');
+  const detailStyles = fs.readFileSync(path.join(root, 'pages/order-detail/order-detail.wxss'), 'utf8');
   assert.ok(appConfig.pages.includes('pages/order-detail/order-detail'));
   assert.match(ordersTemplate, /bindtap="openOrderDetail" data-id="\{\{item\.id\}\}"/);
   assert.match(detailTemplate, /费用明细/);
   assert.match(detailTemplate, /投诉进度/);
+  assert.match(detailTemplate, /订单编号：\{\{order\.orderNo\}\}<\/view>\s*<view class="order-number">下单时间：\{\{order\.createdTimeText\}\}<\/view>/);
+  assert.match(detailTemplate, /class="salon-link" bindtap="openSalon"><text>\{\{order\.salonName\}\}<\/text>/);
+  assert.doesNotMatch(detailTemplate, /联系门店|地图导航|bindtap="cancel"/);
+  assert.match(detailStyles, /\.row > text:first-child/);
+  assert.match(detailStyles, /\.order-number\s*\{[^}]*font-size:\s*26rpx;[^}]*font-weight:\s*400;/s);
+  assert.match(detailStyles, /\.salon-link\s*\{[^}]*color:\s*#d06884;/s);
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

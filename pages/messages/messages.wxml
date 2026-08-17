@@ -1,10 +1,7 @@
 <view class="messages-page">
-  <view class="messages-appbar">
+  <view class="messages-appbar" style="padding-top: {{statusBarHeight}}px; height: {{appBarHeight}}px;">
     <view class="nav-icon nav-back" bindtap="goBack"><image mode="aspectFit" src="/assets/icons/arrow_back.png" /></view>
     <view class="messages-title">预约消息</view>
-    <view class="nav-actions">
-      <view class="nav-icon nav-home" bindtap="goHome"><image mode="aspectFit" src="/assets/icons/home_outlined.png" /></view>
-    </view>
   </view>
 
   <view class="messages-list">
@@ -21,5 +18,7 @@
         <view wx:if="{{item.hasCouponDiscount}}" class="msg-meta coupon-meta">券 · {{item.couponText}}</view>
       </view>
     </view>
+    <view wx:if="{{loadingMoreMessages}}" class="list-footer">正在加载更多...</view>
+    <view wx:elif="{{messages.length >= 20 && !hasMoreMessages}}" class="list-footer">没有更多消息了</view>
   </view>
 </view>

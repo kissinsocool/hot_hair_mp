@@ -2,7 +2,6 @@
   "pages": [
     "pages/home/home",
     "pages/login/login",
-    "pages/ad/ad",
     "pages/detail/detail",
     "pages/staff/staff",
     "pages/booking/booking",
@@ -13,11 +12,19 @@
     "pages/favorites/favorites",
     "pages/profile/profile",
     "pages/account/account",
-    "pages/rules/user-agreement",
-    "pages/rules/privacy-policy",
     "pages/support/support",
     "pages/location/location",
     "pages/messages/messages"
+  ],
+  "subPackages": [
+    {
+      "root": "pages/ad",
+      "pages": ["ad"]
+    },
+    {
+      "root": "pages/rules",
+      "pages": ["user-agreement", "privacy-policy"]
+    }
   ],
   "window": {
     "navigationBarTitleText": "靓丝美约",

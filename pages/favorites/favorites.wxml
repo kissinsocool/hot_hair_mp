@@ -3,7 +3,7 @@
   <view wx:elif="{{loading && !salons.length}}" class="empty">正在加载...</view>
   <view wx:elif="{{!salons.length}}" class="empty">还没有收藏的沙龙</view>
   <view wx:for="{{salons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
-    <image class="salon-image" mode="aspectFill" src="{{item.image}}" />
+    <image class="salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
     <view class="salon-body">
       <view class="salon-head">
         <view class="salon-name">{{item.nameText}}</view>

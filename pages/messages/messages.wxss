@@ -6,9 +6,9 @@
 .messages-appbar {
   display: flex;
   align-items: center;
-  height: calc(90rpx + env(safe-area-inset-top));
-  padding: calc(14rpx + env(safe-area-inset-top)) 20rpx 0;
+  padding: 0 20rpx;
   background: #fff;
+  box-sizing: border-box;
 }
 
 .messages-title {
@@ -18,13 +18,6 @@
   font-size: 40rpx;
   font-weight: 800;
   line-height: 56rpx;
-}
-
-.nav-actions {
-  display: flex;
-  align-items: center;
-  gap: 30rpx;
-  margin-right: 150rpx;
 }
 
 .nav-icon {
@@ -51,18 +44,15 @@
   height: 45rpx;
 }
 
-.nav-home {
-  width: 72rpx;
-  height: 72rpx;
-}
-
-.nav-home image {
-  width: 51rpx;
-  height: 51rpx;
-}
-
 .messages-list {
   padding: 16rpx 16rpx 22rpx;
+}
+
+.list-footer {
+  padding: 24rpx 0 36rpx;
+  color: #aaa;
+  font-size: 24rpx;
+  text-align: center;
 }
 
 .msg-card {

@@ -272,7 +272,7 @@
 .salon-card {
   position: relative;
   display: flex;
-  height: calc(220rpx + 5px);
+  height: calc(220rpx + 10px);
   margin: 0 18rpx 14rpx;
   overflow: hidden;
   border: 1rpx solid #f0e4db;
@@ -283,7 +283,7 @@
 
 .salon-image {
   width: 270rpx;
-  height: calc(220rpx + 5px);
+  height: calc(220rpx + 10px);
   flex: 0 0 270rpx;
   background: #eee;
 }
@@ -420,7 +420,7 @@
 
 .salon-desc {
   display: -webkit-box;
-  height: 59rpx;
+  height: 61rpx;
   margin-top: 6rpx;
   overflow: hidden;
   color: #777;

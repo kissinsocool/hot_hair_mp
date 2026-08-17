@@ -9,7 +9,7 @@
       <view class="staff-copy">
         <view class="staff-head">
           <view class="staff-name">{{item.name}}</view>
-          <view wx:if="{{item.extraServiceFee}}" class="fee">+¥{{item.extraServiceFee}}</view>
+          <view wx:if="{{item.extraServiceFeeText}}" class="fee">+{{item.extraServiceFeeText}}</view>
         </view>
         <view wx:if="{{!item.isNoPreference}}" class="staff-role">{{item.role}}{{item.experience ? '（' + item.experience + '）' : ''}}</view>
         <view wx:if="{{item.bio}}" class="staff-bio">{{item.bio}}</view>
@@ -57,7 +57,10 @@
   </scroll-view>
 
   <view class="block-title">可用时间段</view>
-  <view class="chips">
+  <view wx:if="{{slotsLoading}}" class="slot-state">时间段加载中...</view>
+  <view wx:elif="{{slotErrorMessage}}" class="slot-state retry" bindtap="loadSlots" role="button" aria-label="重新加载时间段">加载失败，点击重试</view>
+  <view wx:elif="{{!slotOptions.length}}" class="slot-state">暂无可用时间段</view>
+  <view wx:else class="chips">
     <view wx:for="{{slotOptions}}" wx:key="startTime" class="chip {{item.className}}" bindtap="selectTime" data-time="{{item.time}}" data-available="{{item.isAvailable}}">
       {{item.time}}
     </view>

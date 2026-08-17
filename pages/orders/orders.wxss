@@ -65,6 +65,13 @@
   box-sizing: border-box;
 }
 
+.list-footer {
+  padding: 24rpx 0 36rpx;
+  color: #aaa;
+  font-size: 24rpx;
+  text-align: center;
+}
+
 .order {
   min-height: 270rpx;
   margin-bottom: 12rpx;
@@ -132,9 +139,16 @@
 }
 
 .order-label {
-  flex: 0 0 128rpx;
+  flex: 0 0 8em;
   color: #777;
   font-weight: 500;
+  text-align: left;
+}
+
+.order-value {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
 }
 
 .coupon-discount {

@@ -25,7 +25,7 @@
         </view>
         <view class="desc">{{item.comment}}</view>
         <view wx:if="{{item.imageUrls.length}}" class="review-images">
-          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
         </view>
       </view>
     </view>

@@ -11,6 +11,6 @@ const template = fs.readFileSync(path.join(root, 'pages/messages/messages.wxml')
 assert.match(home, /api\.request\('\/booking-messages\/unread-count'\)/);
 assert.doesNotMatch(home, /requestAllPages\('\/bookings'\)[\s\S]*unreadBookingMessageCount/);
 assert.match(orders, /api\.request\('\/booking-messages\/unread-count'\)/);
-assert.match(messages, /requestAllPages\('\/booking-messages'\)/);
-assert.match(messages, /method: 'PATCH',[\s\S]*through: messages\[0\]\.createdAt/);
+assert.match(messages, /requestPage\('\/booking-messages'/);
+assert.match(messages, /method: 'PATCH',[\s\S]*through: result\.items\[0\]\.createdAt/);
 assert.match(template, /wx:for="\{\{messages\}\}"/);

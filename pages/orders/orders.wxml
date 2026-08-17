@@ -15,6 +15,8 @@
     refresher-enabled
     refresher-triggered="{{refreshing}}"
     bindrefresherrefresh="refresh"
+    bindscrolltolower="loadMore"
+    lower-threshold="120"
   >
     <view wx:if="{{!loggedIn}}"></view>
     <view wx:elif="{{loading && !orders.length}}" class="empty">正在加载...</view>
@@ -28,19 +30,20 @@
         <view class="name">{{item.serviceName}}</view>
         <view class="status {{item.statusClass}}">{{item.statusLabel}}</view>
       </view>
-      <view class="muted"><text class="order-label">订单编号:</text>{{item.orderNo}}</view>
-      <view class="muted"><text class="order-label">商家名称:</text>{{item.salonName}}</view>
-      <view class="time"><text class="order-label">到店时间:</text>{{item.startTimeText}}</view>
-      <view class="muted"><text class="order-label">理发师:</text>{{item.staffName}}</view>
-      <view class="muted"><text class="order-label">下单时间:</text>{{item.createdTimeText}}</view>
-      <view wx:if="{{item.hasCouponDiscount}}" class="muted coupon-discount"><text class="order-label">优惠券:</text>{{item.couponText}}</view>
+      <view class="muted"><text class="order-label">订单编号:</text><text class="order-value">{{item.orderNo}}</text></view>
+      <view class="muted"><text class="order-label">下单时间:</text><text class="order-value">{{item.createdTimeText}}</text></view>
+      <view class="muted"><text class="order-label">商家名称:</text><text class="order-value">{{item.salonName}}</text></view>
+      <view class="time"><text class="order-label">到店时间:</text><text class="order-value">{{item.startTimeText}}</text></view>
+      <view wx:if="{{item.hasCouponDiscount}}" class="muted coupon-discount"><text class="order-label">优惠券:</text><text class="order-value">{{item.couponText}}</text></view>
       <view class="actions {{item.canCancel && !item.canReview && !item.canComplain ? 'single' : ''}}">
-        <button wx:if="{{item.canRebook}}" class="cancel" catchtap="rebook" data-id="{{item.id}}"><image class="btn-icon" mode="aspectFit" src="/assets/icons/refresh.png" />再次预约</button>
-        <button wx:if="{{item.canCancel}}" class="cancel danger" catchtap="cancel" data-id="{{item.id}}"><image class="btn-icon" mode="aspectFit" src="/assets/icons/cancel.png" />取消订单</button>
-        <button wx:if="{{item.canReview}}" class="cancel{{item.reviewButtonClass}}" catchtap="review" data-id="{{item.id}}" data-type="review" data-disabled="{{item.reviewed}}"><image class="btn-icon" mode="aspectFit" src="{{item.reviewed ? '/assets/icons/check_circle.png' : '/assets/icons/rate_review_outlined.png'}}" />{{item.reviewButtonText}}</button>
-        <button wx:if="{{item.canComplain}}" class="cancel danger{{item.complaintButtonClass}}" catchtap="review" data-id="{{item.id}}" data-type="complaint" data-disabled="{{item.complained}}"><image class="btn-icon" mode="aspectFit" src="{{item.complained ? '/assets/icons/check_circle.png' : '/assets/icons/report_problem_outlined.png'}}" />{{item.complaintButtonText}}</button>
+        <button wx:if="{{item.canRebook}}" class="cancel" catchtap="rebook" data-id="{{item.id}}">再次预约</button>
+        <button wx:if="{{item.canCancel}}" class="cancel danger" catchtap="cancel" data-id="{{item.id}}">取消订单</button>
+        <button wx:if="{{item.canReview}}" class="cancel{{item.reviewButtonClass}}" catchtap="review" data-id="{{item.id}}" data-type="review" data-disabled="{{item.reviewed}}">{{item.reviewButtonText}}</button>
+        <button wx:if="{{item.canComplain}}" class="cancel danger{{item.complaintButtonClass}}" catchtap="review" data-id="{{item.id}}" data-type="complaint" data-disabled="{{item.complained}}">{{item.complaintButtonText}}</button>
       </view>
     </view>
+    <view wx:if="{{loadingMoreOrders}}" class="list-footer">正在加载更多...</view>
+    <view wx:elif="{{orders.length >= 20 && !hasMoreOrders}}" class="list-footer">没有更多订单了</view>
   </scroll-view>
 
   <view wx:if="{{sheetVisible}}" class="sheet-mask" catchtap="closeSheet"></view>

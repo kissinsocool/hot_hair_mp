@@ -1,6 +1,7 @@
 const api = require('../../utils/api');
 const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
+const { formatFen } = require('../../utils/money');
 
 Page({
   data: {
@@ -39,8 +40,8 @@ Page({
         imageUrl: await api.displayImageUrl(service.imageUrl),
         tags: service.tags || service.categories || [],
         noteText: service.note || service.description || '',
-        durationText: this.formatDuration(service.duration || service.durationMinutes),
-        priceText: this.formatPrice(service.price || service.priceLabel)
+        durationText: this.formatDuration(service.durationMinutes),
+        priceText: formatFen(service.priceFen)
       })));
       salon.staff = await Promise.all((salon.staff || []).map(async (staff) => ({
         ...staff,
@@ -76,13 +77,6 @@ Page({
   formatDuration(value) {
     if (!value) return '';
     return /^\d+$/.test(String(value)) ? `${value}分钟` : String(value).replace(/\s*min$/i, '分钟');
-  },
-
-  formatPrice(value) {
-    if (!value) return '';
-    const text = String(value);
-    if (text.startsWith('¥') || !/^\d+(\.\d+)?$/.test(text)) return text;
-    return `¥${text}`;
   },
 
   formatAddress(value) {

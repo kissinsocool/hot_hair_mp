@@ -16,7 +16,7 @@
     <view class="section">
       <view class="section-title"><view class="title-mark"></view><text>1. 酷女孩的清冷滤镜：Hush Cut（轻薄层次剪）</text></view>
       <view class="image-card">
-        <image class="article-image portrait" mode="aspectFill" src="/assets/images/ad/hush-cut.jpg" />
+        <image class="article-image portrait" mode="aspectFill" src="/pages/ad/images/hush-cut.jpg" lazy-load />
         <view class="caption">轻盈飘逸、自带清冷高级感的 Hush Cut</view>
       </view>
       <view class="features">
@@ -30,7 +30,7 @@
     <view class="section">
       <view class="section-title"><view class="title-mark"></view><text>2. 财阀千金的温婉：Build Perm（韩式气垫烫）</text></view>
       <view class="image-card">
-        <image class="article-image landscape" mode="aspectFill" src="/assets/images/ad/build-perm.jpg" />
+        <image class="article-image landscape" mode="aspectFill" src="/pages/ad/images/build-perm.jpg" lazy-load />
         <view class="caption">充满优雅气质与自然蓬松感的 Build Perm</view>
       </view>
       <view class="features">
@@ -44,7 +44,7 @@
     <view class="section">
       <view class="section-title"><view class="title-mark"></view><text>3. 男士的利落与高级：Guile Cut（盖尔剪）</text></view>
       <view class="image-card">
-        <image class="article-image square" mode="aspectFill" src="/assets/images/ad/guile-cut.jpg" />
+        <image class="article-image square" mode="aspectFill" src="/pages/ad/images/guile-cut.jpg" lazy-load />
         <view class="caption">干练又不失雅痞细节的 Guile Cut</view>
       </view>
       <view class="features">

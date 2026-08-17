@@ -105,6 +105,17 @@
   gap: 20rpx 18rpx;
 }
 
+.slot-state {
+  padding: 28rpx 0;
+  color: #999;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.slot-state.retry {
+  color: #d06884;
+}
+
 .chip,
 .date {
   min-width: 82rpx;

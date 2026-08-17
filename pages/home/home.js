@@ -4,6 +4,13 @@ const layout = require('../../utils/layout');
 const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
 const TAB_BAR_SCROLL_TRIGGER = 8;
+const DEFAULT_SERVICE_LOCATION = {
+  latitude: 39.9042,
+  longitude: 116.4074,
+  locationText: '北京服务区'
+};
+const CAMPAIGN_CACHE_MS = 5 * 60 * 1000;
+let campaignCache;
 
 Page({
   data: {
@@ -16,9 +23,9 @@ Page({
     refreshing: false,
     errorMessage: '',
     locating: false,
-    latitude: 31.2304,
-    longitude: 121.4737,
-    locationText: '选择定位',
+    latitude: DEFAULT_SERVICE_LOCATION.latitude,
+    longitude: DEFAULT_SERVICE_LOCATION.longitude,
+    locationText: DEFAULT_SERVICE_LOCATION.locationText,
     keyword: '',
     visibleCount: 10,
     statusBarHeight: 0,
@@ -47,6 +54,8 @@ Page({
 
   onShow() {
     analytics.track('home_exposure');
+    if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
+    this.unsubscribeBookingSocket = null;
     this.tabBarScrollAnchor = 0;
     const tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.show();
@@ -55,11 +64,14 @@ Page({
     this.loadNewUserGift();
     this.loadFavorites(false);
     this.loadUnreadMessages();
-    this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
-      if (event.event === 'booking.created' || event.event === 'booking.updated') {
-        this.loadUnreadMessages();
-      }
-    });
+    const session = api.session();
+    if (session && session.token) {
+      this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
+        if (event.event === 'booking.created' || event.event === 'booking.updated') {
+          this.loadUnreadMessages();
+        }
+      });
+    }
   },
 
   onHide() {
@@ -92,11 +104,18 @@ Page({
         this.setData({
           latitude: res.latitude,
           longitude: res.longitude,
+          locationText: '当前位置',
           locatedOnce: true
         });
         this.loadSalons();
       },
-      fail: () => this.loadSalons(),
+      fail: () => {
+        this.setData({
+          ...DEFAULT_SERVICE_LOCATION,
+          locatedOnce: false
+        });
+        this.loadSalons();
+      },
       complete: () => this.setData({ locating: false })
     });
   },
@@ -109,7 +128,6 @@ Page({
       const normalizedSalons = await Promise.all(salons.map((salon) => this.normalizeSalon(salon)));
       this.setData({ salons: normalizedSalons, visibleCount: 10 });
       this.applyFilter();
-      this.loadFavorites(false);
     } catch (err) {
       this.setData({ errorMessage: err.message || '网络请求失败' });
       wx.showToast({ title: err.message, icon: 'none' });
@@ -141,8 +159,8 @@ Page({
     const session = api.session();
     if (!(session && session.token)) return;
     try {
-      const favorites = await api.request('/favorites');
-      this.setData({ favorites: favorites.map((salon) => salon.id) });
+      const result = await api.request('/favorites/ids');
+      this.setData({ favorites: Array.isArray(result.salonIds) ? result.salonIds : [] });
       this.applyFilter();
     } catch (err) {
       if (showError) wx.showToast({ title: err.message, icon: 'none' });
@@ -165,13 +183,24 @@ Page({
 
   async loadNewUserGift() {
     const session = api.session();
+    const cacheKey = session && session.token ? `authenticated:${session.token}` : 'anonymous';
     try {
-      const gift = await api.request(session && session.token
-        ? '/auth/coupon-campaign'
-        : '/coupon-campaign');
-      const image = gift.enabled && gift.promotionImageUrl
-        ? await api.displayImageUrl(gift.promotionImageUrl)
-        : '';
+      let image;
+      if (campaignCache && campaignCache.key === cacheKey && campaignCache.expiresAt > Date.now()) {
+        image = campaignCache.image;
+      } else {
+        const gift = await api.request(session && session.token
+          ? '/auth/coupon-campaign'
+          : '/coupon-campaign');
+        image = gift.enabled && gift.promotionImageUrl
+          ? await api.displayImageUrl(gift.promotionImageUrl)
+          : '';
+        campaignCache = {
+          key: cacheKey,
+          image,
+          expiresAt: Date.now() + CAMPAIGN_CACHE_MS
+        };
+      }
       this.setData({
         newUserGiftVisible: Boolean(image) && !this.data.newUserGiftDismissed,
         newUserGiftImage: image
@@ -193,6 +222,7 @@ Page({
     this.setData({ claimingNewUserGift: true });
     try {
       await api.request('/auth/coupon-campaign/claim', { method: 'POST' });
+      campaignCache = null;
       this.setData({ newUserGiftVisible: false });
       wx.showToast({ title: '新人礼包领取成功', icon: 'success' });
       wx.switchTab({
