@@ -3,11 +3,12 @@ const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
+const { ratingDisplay } = require('../../utils/rating');
 const TAB_BAR_SCROLL_TRIGGER = 8;
 const DEFAULT_SERVICE_LOCATION = {
   latitude: 39.9042,
   longitude: 116.4074,
-  locationText: '北京服务区'
+  locationText: '选择定位'
 };
 const CAMPAIGN_CACHE_MS = 5 * 60 * 1000;
 let campaignCache;
@@ -32,6 +33,7 @@ Page({
     navBarHeight: 44,
     appBarHeight: 148,
     locatedOnce: false,
+    locationIsFuzzy: true,
     unreadMessageCount: 0,
     supportHidden: false,
     newUserGiftVisible: false,
@@ -98,14 +100,14 @@ Page({
   async locate() {
     if (this.data.locating) return;
     this.setData({ locating: true });
-    wx.getLocation({
+    wx.getFuzzyLocation({
       type: 'gcj02',
       success: (res) => {
         this.setData({
           latitude: res.latitude,
           longitude: res.longitude,
-          locationText: '当前位置',
-          locatedOnce: true
+          locatedOnce: true,
+          locationIsFuzzy: true
         });
         this.loadSalons();
       },
@@ -144,15 +146,16 @@ Page({
       addressText: salon.address || '',
       descriptionText: salon.description || '暂无描述',
       tags: Array.isArray(salon.tags) ? salon.tags.filter(Boolean) : [],
-      ratingText: salon.rating || '4.8',
+      ...ratingDisplay(salon.rating, salon.reviewCount),
       distanceText: this.formatDistance(salon.distanceKm)
     };
   },
 
   formatDistance(distanceKm) {
     const distance = Number(distanceKm);
-    if (!distance) return '';
-    return distance < 1 ? `距离你 ${Math.round(distance * 1000)} m` : `距离你 ${distance.toFixed(1)} km`;
+    if (!this.data.locatedOnce || !distance) return '';
+    const prefix = this.data.locationIsFuzzy ? '附近约 ' : '距离你 ';
+    return distance < 1 ? `${prefix}${Math.round(distance * 1000)} m` : `${prefix}${distance.toFixed(1)} km`;
   },
 
   async loadFavorites(showError = true) {

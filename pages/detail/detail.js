@@ -2,6 +2,7 @@ const api = require('../../utils/api');
 const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
 const { formatFen } = require('../../utils/money');
+const { ratingDisplay } = require('../../utils/rating');
 
 Page({
   data: {
@@ -27,14 +28,14 @@ Page({
       salon.image = await api.displayImageUrl(api.salonImage(salon));
       salon.promoImages = await Promise.all((salon.promoImages || salon.images || []).map(api.displayImageUrl));
       if (!salon.promoImages.length && salon.image) salon.promoImages = [salon.image];
-      salon.ratingText = salon.rating || '4.8';
-      salon.starIcons = starIcons(salon.ratingText);
       salon.openingHoursText = salon.openingHours || '暂无营业时间';
       salon.phoneText = salon.phone || '暂无电话';
       salon.addressText = this.formatAddress(salon.address);
       salon.descriptionText = salon.fullDescription || salon.description || '暂无详细描述';
       salon.reviews = await Promise.all((salon.reviews || []).map((review) => this.normalizeReview(review)));
-      salon.reviewTotalText = salon.reviewCount || salon.reviews.length || 0;
+      salon.reviewTotalText = salon.reviewCount;
+      Object.assign(salon, ratingDisplay(salon.rating, salon.reviewTotalText));
+      salon.starIcons = salon.hasRating ? starIcons(salon.ratingText) : [];
       salon.services = await Promise.all((salon.services || []).map(async (service) => ({
         ...service,
         imageUrl: await api.displayImageUrl(service.imageUrl),

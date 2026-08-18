@@ -33,12 +33,15 @@
     "backgroundColor": "#fdfbf9"
   },
   "permission": {
+    "scope.userFuzzyLocation": {
+      "desc": "你的模糊位置将用于推荐附近美发店"
+    },
     "scope.userLocation": {
-      "desc": "你的位置信息将用于推荐附近美发店"
+      "desc": "你选择的位置将用于推荐附近美发店"
     }
   },
   "requiredPrivateInfos": [
-    "getLocation",
+    "getFuzzyLocation",
     "chooseLocation"
   ],
   "tabBar": {

@@ -7,7 +7,7 @@
     <view class="rating">
       <text>{{staff.ratingText}}</text>
       <view>
-        <view class="stars"><image wx:for="{{[1,2,3,4,5]}}" wx:key="*this" mode="aspectFit" src="/assets/icons/star_gold.png" /></view>
+        <view wx:if="{{staff.hasRating}}" class="stars"><image wx:for="{{staff.starIcons}}" wx:key="*this" mode="aspectFit" src="{{item}}" /></view>
       </view>
     </view>
   </view>
@@ -16,7 +16,7 @@
       <view class="desc">{{staff.bioText}}</view>
     </view>
     <view class="card section">
-      <view class="section-title">客户评价（{{staff.reviews.length}}）</view>
+      <view class="section-title">客户评价（{{staff.reviewCount}}）</view>
       <view wx:if="{{!staff.reviews.length}}" class="muted">暂无评价</view>
       <view wx:for="{{staff.reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">

@@ -40,6 +40,8 @@ Page({
   },
 
   onShow() {
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.show();
     if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
     this.unsubscribeBookingSocket = null;
     const session = api.session();

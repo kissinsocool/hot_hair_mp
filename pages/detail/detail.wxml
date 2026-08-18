@@ -24,7 +24,7 @@
       </view>
     </view>
     <view wx:if="{{salon.promoImages.length}}" class="promo">
-      <swiper class="promo-swiper" current="{{currentPromoIndex}}" bindchange="onPromoChange" circular="{{salon.promoImages.length > 1}}">
+      <swiper class="promo-swiper" current="{{currentPromoIndex}}" duration="1000" easing-function="easeOutCubic" bindchange="onPromoChange" circular="{{salon.promoImages.length > 1}}">
         <swiper-item wx:for="{{salon.promoImages}}" wx:key="*this">
           <image class="promo-image" mode="aspectFill" src="{{item}}" lazy-load bindtap="previewImage" data-url="{{item}}" />
         </swiper-item>

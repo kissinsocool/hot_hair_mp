@@ -1,5 +1,6 @@
 const api = require('../../utils/api');
 const app = getApp();
+const { ratingDisplay } = require('../../utils/rating');
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 Page({
@@ -10,6 +11,8 @@ Page({
   },
 
   onShow() {
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.show();
     const session = api.session();
     const loggedIn = Boolean(session && session.token);
     this.setData({ loggedIn });
@@ -38,7 +41,7 @@ Page({
         image: await api.displayImageUrl(api.salonImage(salon)),
         nameText: salon.name || '未知沙龙',
         descriptionText: salon.description || '暂无描述',
-        ratingText: salon.rating || '4.8',
+        ...ratingDisplay(salon.rating, salon.reviewCount),
         distanceText: salon.distanceKm ? `距离你 ${Number(salon.distanceKm).toFixed(1)} km` : ''
       }))) });
     } catch (err) {

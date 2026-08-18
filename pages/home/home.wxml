@@ -59,7 +59,7 @@
       <view class="salon-body">
         <view class="salon-head">
           <view class="salon-name">{{item.nameText}}</view>
-          <view class="salon-rating"><image class="star-icon" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
+          <view class="salon-rating"><image wx:if="{{item.hasRating}}" class="star-icon" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
         </view>
         <view class="salon-desc">{{item.descriptionText}}</view>
         <view class="salon-foot">

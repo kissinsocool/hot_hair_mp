@@ -43,6 +43,7 @@ Component({
   pageLifetimes: {
     show() {
       this.syncSelected();
+      if (this.data.hidden) this.setData({ hidden: false });
     }
   },
 
@@ -82,6 +83,7 @@ Component({
     },
 
     show() {
+      this.syncSelected();
       if (!this.data.hidden) return;
       this.setData({ hidden: false });
     }
