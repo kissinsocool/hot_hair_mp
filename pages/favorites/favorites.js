@@ -12,7 +12,7 @@ Page({
 
   onShow() {
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.show();
+    if (tabBar) tabBar.show(1);
     const session = api.session();
     const loggedIn = Boolean(session && session.token);
     this.setData({ loggedIn });

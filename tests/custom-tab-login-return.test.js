@@ -58,9 +58,12 @@ const profile = {
 };
 
 app.globalData.session = { token: 'token', user: { displayName: '用户' } };
-pages = [{ route: 'pages/profile/profile' }];
+tabBar.data.hidden = true;
 profile.onShow();
 
 assert.equal(tabBar.data.initialized, true);
 assert.equal(tabBar.data.selected, 3);
 assert.equal(tabBar.data.hidden, false);
+
+// Android 正式版可能在页面 onShow 之后才从页面栈移除登录页。
+pages = [{ route: 'pages/profile/profile' }];
