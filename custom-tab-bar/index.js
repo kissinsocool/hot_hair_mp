@@ -82,9 +82,8 @@ Component({
       this.setData({ hidden: true });
     },
 
-    show(selected) {
-      if (Number.isInteger(selected)) this.select(selected);
-      else this.syncSelected();
+    show() {
+      this.syncSelected();
       if (!this.data.hidden) return;
       this.setData({ hidden: false });
     }
