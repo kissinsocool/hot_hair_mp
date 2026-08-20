@@ -64,7 +64,7 @@ async function main() {
   assert.deepEqual(page.data.slots, []);
   assert.equal(page.data.selectedTime, '');
   assert.equal(page.data.slotsLoading, false);
-  assert.equal(page.data.slotErrorMessage, 'network unavailable');
+  assert.equal(page.data.slotErrorMessage, '网络连接失败，请检查网络后重试');
 }
 
 main().catch((error) => {

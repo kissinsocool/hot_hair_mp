@@ -3,24 +3,28 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 let definition;
+let mediaPickerOpened = false;
 global.getApp = () => ({ globalData: { apiBaseUrl: 'https://example.com/api' } });
 global.Page = (options) => { definition = options; };
 global.wx = {
   getStorageSync: (key) => key === 'session' ? { token: 'token', user: {} } : null,
-  removeStorageSync() {}
+  removeStorageSync() {},
+  chooseMedia() { mediaPickerOpened = true; }
 };
 
 require('../pages/profile/profile');
 
 let tabBarAction = '';
+let tabBarHidden = false;
 const page = {
   ...definition,
   data: { ...definition.data },
   setData(values) { Object.assign(this.data, values); },
+  sync() {},
   getTabBar() {
     return {
-      hide: () => { tabBarAction = 'hide'; },
-      show: () => { tabBarAction = 'show'; }
+      hide: () => { tabBarAction = 'hide'; tabBarHidden = true; },
+      show: () => { tabBarAction = 'show'; tabBarHidden = false; }
     };
   }
 };
@@ -38,6 +42,24 @@ assert.equal(tabBarAction, '');
 page.data.sheetVisible = false;
 page.onHide();
 assert.equal(tabBarAction, 'show');
+
+page.data.reviews = [{
+  bookingId: 'booking-1',
+  rating: 5,
+  comment: '很好',
+  imageUrls: [],
+  imageKeys: [],
+  isAwaitingReview: false
+}];
+page.editReview({ currentTarget: { dataset: { index: 0 } } });
+assert.equal(tabBarHidden, true);
+page.pickImages();
+assert.equal(mediaPickerOpened, true);
+page.onHide();
+page.onShow();
+assert.equal(tabBarHidden, true, 'returning from the media picker must keep the edit-review tab bar hidden');
+page.closeSheet();
+assert.equal(tabBarHidden, false, 'closing the edit-review sheet must reveal the tab bar');
 
 const pageDir = path.join(__dirname, '..', 'pages', 'profile');
 const template = fs.readFileSync(path.join(pageDir, 'profile.wxml'), 'utf8');

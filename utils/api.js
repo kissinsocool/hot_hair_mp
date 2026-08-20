@@ -91,6 +91,32 @@ function salonImage(salon = {}) {
   return salon.coverImage || salon.coverImageUrl || salon.coverUrl || salon.bannerUrl || salon.image || salon.imageUrl || firstPromo || firstImage || '';
 }
 
+function responseErrorMessage(statusCode, data) {
+  const message = data && data.message && String(data.message).trim();
+  if (isReadableChineseMessage(message)) return message;
+  if (statusCode === 401) return '登录状态已失效，请重新登录';
+  if (statusCode === 403) return '当前账号没有权限执行此操作';
+  if (statusCode === 404) return '请求的内容不存在或已被删除';
+  if (statusCode === 409) return '当前状态已发生变化，请刷新后重试';
+  if (statusCode === 429) return '操作频繁，请稍后再试';
+  if (statusCode >= 500) return '服务暂时不可用，请稍后重试';
+  return '请求失败，请稍后重试';
+}
+
+function isReadableChineseMessage(message) {
+  return Boolean(
+    message
+    && /[\u4e00-\u9fff]/.test(message)
+    && !/\b(?:HTTP|status(?:Code)?)\s*:?\s*\d{3}\b/i.test(message)
+  );
+}
+
+function networkErrorMessage(error) {
+  return /timeout/i.test((error && error.errMsg) || '')
+    ? '请求超时，请稍后重试'
+    : '网络连接失败，请检查网络后重试';
+}
+
 function request(path, options = {}) {
   const method = String(options.method || 'GET').toUpperCase();
   const currentSession = session();
@@ -114,15 +140,11 @@ function request(path, options = {}) {
           resolve(options.withResponse ? { data: res.data, headers: res.header || {} } : res.data);
         } else {
           if (res.statusCode === 401) handleUnauthorized(token);
-          reject(new Error(res.statusCode === 401
-            ? '登录状态已失效，请重新登录'
-            : res.statusCode === 429
-              ? '操作频繁，请稍后再试'
-              : (res.data && res.data.message) || `请求失败 ${res.statusCode}`));
+          reject(new Error(responseErrorMessage(res.statusCode, res.data)));
         }
       },
       fail(err) {
-        reject(new Error(err.errMsg || '网络请求失败'));
+        reject(new Error(networkErrorMessage(err)));
       }
     });
   });
@@ -145,10 +167,10 @@ function uploadFile(url, filePath, formData) {
       formData,
       success(res) {
         if (res.statusCode >= 200 && res.statusCode < 300) return resolve(res);
-        reject(new Error(`图片上传失败 ${res.statusCode}`));
+        reject(new Error('图片上传失败，请稍后重试'));
       },
-      fail(err) {
-        reject(new Error(err.errMsg || '图片上传失败'));
+      fail() {
+        reject(new Error('图片上传失败，请检查网络后重试'));
       }
     });
   });

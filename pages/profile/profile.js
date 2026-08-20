@@ -34,7 +34,7 @@ Page({
 
   onShow() {
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar) tabBar.show();
+    if (tabBar && !this.data.sheetVisible) tabBar.show();
     this.sync();
   },
 

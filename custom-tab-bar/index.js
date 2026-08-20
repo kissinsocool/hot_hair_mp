@@ -43,7 +43,6 @@ Component({
   pageLifetimes: {
     show() {
       this.syncSelected();
-      if (this.data.hidden) this.setData({ hidden: false });
     }
   },
 
