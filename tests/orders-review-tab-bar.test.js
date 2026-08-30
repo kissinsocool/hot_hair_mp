@@ -45,6 +45,8 @@ const page = {
 page.review({ currentTarget: { dataset: { id: 'booking-1', type: 'review' } } });
 assert.equal(tabBar.hidden, true);
 assert.equal(page.data.sheetVisible, true);
+page.chooseReviewTag({ currentTarget: { dataset: { name: '服务周到' } } });
+assert.deepEqual(page.data.sheetTags.filter((tag) => tag.selected).map((tag) => tag.name), ['服务周到']);
 
 page.pickImages();
 assert.equal(mediaPickerOpened, true);

@@ -379,6 +379,21 @@
   background: #fff;
 }
 
+.review-tag-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14rpx;
+  margin: 18rpx 0 24rpx;
+}
+
+.review-tag-count {
+  padding: 12rpx 20rpx;
+  border-radius: 999rpx;
+  background: #f8dce5;
+  color: #b95370;
+  font-size: 25rpx;
+}
+
 .review-head {
   display: flex;
   align-items: flex-start;

@@ -169,14 +169,15 @@
 .actions {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: flex-end;
   gap: 20rpx;
   margin-top: 24rpx;
 }
 
 .cancel {
-  flex: 0 1 270rpx;
+  flex: 1 1 0;
+  min-width: 0;
   width: auto !important;
   height: 64rpx;
   max-width: 270rpx;
@@ -344,6 +345,26 @@
 
 .star-btn.active image {
   opacity: 1;
+}
+
+.review-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 38rpx;
+}
+
+.review-tag {
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  background: #f1f1f1;
+  color: #888;
+  font-size: 27rpx;
+}
+
+.review-tag.active {
+  background: #f8dce5;
+  color: #d06884;
 }
 
 .textarea-wrap {

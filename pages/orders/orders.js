@@ -4,6 +4,7 @@ const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const orderUtils = require('../../utils/orders');
 const analytics = require('../../utils/analytics');
+const { buildReviewTags, selectedReviewTags, toggleReviewTag } = require('../../utils/reviewTags.js');
 const MAX_IMAGE_BYTES = 800 * 1024;
 const PAGE_SIZE = 20;
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
@@ -22,6 +23,7 @@ Page({
     sheetOrder: null,
     sheetRating: 0,
     sheetStars: buildStars(0),
+    sheetTags: buildReviewTags(),
     sheetContent: '',
     sheetImages: [],
     sheetSubmitting: false,
@@ -174,6 +176,7 @@ Page({
       sheetOrder: order,
       sheetRating: 0,
       sheetStars: buildStars(0),
+      sheetTags: buildReviewTags(),
       sheetContent: '',
       sheetImages: [],
       sheetSubmitting: false
@@ -213,6 +216,10 @@ Page({
   chooseRating(e) {
     const rating = Number(e.currentTarget.dataset.value);
     this.setData({ sheetRating: rating, sheetStars: buildStars(rating) });
+  },
+
+  chooseReviewTag(e) {
+    this.setData({ sheetTags: toggleReviewTag(this.data.sheetTags, e.currentTarget.dataset.name) });
   },
 
   onSheetContent(e) {
@@ -275,7 +282,7 @@ Page({
       await api.request(isReview ? `/bookings/${id}/review` : `/bookings/${id}/complaint`, {
         method: 'POST',
         data: isReview
-          ? { rating: this.data.sheetRating, comment: content, imageObjects }
+          ? { rating: this.data.sheetRating, comment: content, tags: selectedReviewTags(this.data.sheetTags), imageObjects }
           : { description: content, imageObjects }
       });
       wx.showToast({ title: isReview ? '评价晒单已提交' : '投诉已提交' });

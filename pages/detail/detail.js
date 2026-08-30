@@ -33,6 +33,7 @@ Page({
       salon.addressText = this.formatAddress(salon.address);
       salon.descriptionText = salon.fullDescription || salon.description || '暂无详细描述';
       salon.reviews = await Promise.all((salon.reviews || []).map((review) => this.normalizeReview(review)));
+      salon.reviewTags = (salon.reviewTags || []).filter((tag) => tag.name && Number(tag.count) > 0);
       salon.reviewTotalText = salon.reviewCount;
       Object.assign(salon, ratingDisplay(salon.rating, salon.reviewTotalText));
       salon.starIcons = salon.hasRating ? starIcons(salon.ratingText) : [];

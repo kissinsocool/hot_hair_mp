@@ -63,6 +63,9 @@
             <image mode="aspectFit" src="{{item.icon}}" />
           </view>
         </view>
+        <view class="review-tags">
+          <view wx:for="{{sheetTags}}" wx:key="name" class="review-tag {{item.selected ? 'active' : ''}}" data-name="{{item.name}}" catchtap="chooseReviewTag">{{item.name}}</view>
+        </view>
       </view>
 
       <view class="textarea-wrap">

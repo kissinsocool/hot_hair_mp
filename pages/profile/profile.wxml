@@ -74,6 +74,7 @@
       <view class="sheet-info"><image class="inline-icon" mode="aspectFit" src="/assets/icons/content_cut.png" />{{sheetReview.serviceName}}</view>
       <view class="field-title">选择星级</view>
       <view class="stars-row"><view wx:for="{{sheetStars}}" wx:key="value" class="star-btn {{item.selected ? 'active' : ''}}" data-value="{{item.value}}" catchtap="chooseRating"><image mode="aspectFit" src="{{item.icon}}" /></view></view>
+      <view class="review-tags"><view wx:for="{{sheetTags}}" wx:key="name" class="review-tag {{item.selected ? 'active' : ''}}" data-name="{{item.name}}" catchtap="chooseReviewTag">{{item.name}}</view></view>
       <view class="textarea-wrap">
         <textarea class="sheet-textarea" placeholder-class="sheet-placeholder" value="{{sheetContent}}" bindinput="onSheetContent" maxlength="200" placeholder="分享这次服务体验..." />
         <view class="textarea-count">{{sheetContent.length}}/200</view>

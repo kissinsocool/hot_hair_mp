@@ -47,12 +47,14 @@ page.data.reviews = [{
   bookingId: 'booking-1',
   rating: 5,
   comment: '很好',
+  tags: ['善于沟通'],
   imageUrls: [],
   imageKeys: [],
   isAwaitingReview: false
 }];
 page.editReview({ currentTarget: { dataset: { index: 0 } } });
 assert.equal(tabBarHidden, true);
+assert.deepEqual(page.data.sheetTags.filter((tag) => tag.selected).map((tag) => tag.name), ['善于沟通']);
 page.pickImages();
 assert.equal(mediaPickerOpened, true);
 page.onHide();

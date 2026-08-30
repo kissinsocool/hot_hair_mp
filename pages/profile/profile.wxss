@@ -142,6 +142,9 @@
 .star-btn image { width: 54rpx; height: 54rpx; }
 .star-btn image { opacity: 0.22; }
 .star-btn.active image { opacity: 1; }
+.review-tags { display: flex; flex-wrap: wrap; gap: 16rpx; margin-bottom: 26rpx; }
+.review-tag { padding: 12rpx 24rpx; border-radius: 999rpx; background: #f1f1f1; color: #888; font-size: 27rpx; }
+.review-tag.active { background: #f8dce5; color: #d06884; }
 .textarea-wrap { margin-top: 8rpx; }
 .sheet-textarea { width: 100%; height: 200rpx; padding: 22rpx; border: 2rpx solid #eadbd1; border-radius: 14rpx; background: #fffdfb; color: #4d4a54; font-size: 30rpx; line-height: 1.45; }
 .sheet-placeholder { color: #8f8a91; }

@@ -1,6 +1,7 @@
 const api = require('../../utils/api');
 const app = getApp();
 const couponUtils = require('../../utils/coupons');
+const { buildReviewTags, selectedReviewTags, toggleReviewTag } = require('../../utils/reviewTags.js');
 const MAX_IMAGE_BYTES = 800 * 1024;
 const PAGE_SIZE = 20;
 const initialSession = api.session();
@@ -26,6 +27,7 @@ Page({
     sheetReview: null,
     sheetRating: 0,
     sheetStars: buildStars(0),
+    sheetTags: buildReviewTags(),
     sheetContent: '',
     sheetImages: [],
     sheetSubmitting: false,
@@ -174,6 +176,7 @@ Page({
       sheetReview: review,
       sheetRating: review.rating,
       sheetStars: buildStars(review.rating),
+      sheetTags: buildReviewTags(review.tags),
       sheetContent: review.comment,
       sheetImages: review.imageUrls.map((tempPath, index) => ({
         tempPath,
@@ -193,6 +196,10 @@ Page({
   chooseRating(e) {
     const rating = Number(e.currentTarget.dataset.value);
     this.setData({ sheetRating: rating, sheetStars: buildStars(rating) });
+  },
+
+  chooseReviewTag(e) {
+    this.setData({ sheetTags: toggleReviewTag(this.data.sheetTags, e.currentTarget.dataset.name) });
   },
 
   onSheetContent(e) {
@@ -231,6 +238,7 @@ Page({
         data: {
           rating: this.data.sheetRating,
           comment: content,
+          tags: selectedReviewTags(this.data.sheetTags),
           retainedImageUrls: this.data.sheetImages.filter((image) => image.existing).map((image) => image.retainedUrl),
           imageObjects
         }

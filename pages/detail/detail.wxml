@@ -76,6 +76,9 @@
     </view>
     <view class="card section">
       <view class="section-title">客户评价</view>
+      <view wx:if="{{salon.reviewTags.length}}" class="review-tag-summary">
+        <view wx:for="{{salon.reviewTags}}" wx:key="name" class="review-tag-count">{{item.name}}（{{item.count}}）</view>
+      </view>
       <view wx:if="{{!visibleReviews.length}}" class="muted">暂无评价</view>
       <view wx:for="{{visibleReviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
