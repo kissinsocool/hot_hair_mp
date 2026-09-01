@@ -6,7 +6,7 @@
     </navigator>
   </view>
   <view class="hero">
-    <image class="hero-img" mode="aspectFill" src="{{salon.image}}" />
+    <view class="hero-img" style="background-image: url('{{salon.image}}');"></view>
     <view class="hero-mask"></view>
     <view class="hero-title">{{salon.name}}</view>
   </view>

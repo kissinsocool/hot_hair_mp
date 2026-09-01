@@ -30,6 +30,9 @@
   width: 100%;
   height: 254rpx;
   background: #e8dcd0;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .hero-mask {

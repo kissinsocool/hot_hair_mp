@@ -2,6 +2,9 @@
   <view class="messages-appbar" style="padding-top: {{statusBarHeight}}px; height: {{appBarHeight}}px;">
     <view class="nav-icon nav-back" bindtap="goBack"><image mode="aspectFit" src="/assets/icons/arrow_back.png" /></view>
     <view class="messages-title">预约消息</view>
+    <view class="nav-icon nav-home" style="top: {{statusBarHeight}}px; height: {{navBarHeight}}px;" bindtap="goHome" role="button" aria-label="返回首页">
+      <image mode="aspectFit" src="/assets/icons/home_outlined.png" />
+    </view>
   </view>
 
   <view class="messages-list">

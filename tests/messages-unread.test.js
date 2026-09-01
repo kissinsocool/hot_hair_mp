@@ -13,4 +13,6 @@ assert.doesNotMatch(home, /requestAllPages\('\/bookings'\)[\s\S]*unreadBookingMe
 assert.match(orders, /api\.request\('\/booking-messages\/unread-count'\)/);
 assert.match(messages, /requestPage\('\/booking-messages'/);
 assert.match(messages, /method: 'PATCH',[\s\S]*through: result\.items\[0\]\.createdAt/);
+assert.match(messages, /goHome\(\)[\s\S]*wx\.switchTab\(\{ url: '\/pages\/home\/home' \}\)/);
 assert.match(template, /wx:for="\{\{messages\}\}"/);
+assert.match(template, /class="nav-icon nav-home"[\s\S]*bindtap="goHome"[\s\S]*home_outlined\.png/);

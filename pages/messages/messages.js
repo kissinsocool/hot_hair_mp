@@ -43,6 +43,10 @@ Page({
     wx.navigateBack();
   },
 
+  goHome() {
+    wx.switchTab({ url: '/pages/home/home' });
+  },
+
   async load() {
     if (this.loadingMessages) return;
     this.loadingMessages = true;

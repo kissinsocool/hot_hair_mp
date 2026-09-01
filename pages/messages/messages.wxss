@@ -4,6 +4,7 @@
 }
 
 .messages-appbar {
+  position: relative;
   display: flex;
   align-items: center;
   padding: 0 20rpx;
@@ -42,6 +43,18 @@
 .nav-back image {
   width: 45rpx;
   height: 45rpx;
+}
+
+.nav-home {
+  position: absolute;
+  left: 50%;
+  width: 80rpx;
+  transform: translateX(-50%);
+}
+
+.nav-home image {
+  width: 44rpx;
+  height: 44rpx;
 }
 
 .messages-list {

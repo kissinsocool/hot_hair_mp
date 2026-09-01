@@ -121,6 +121,24 @@
   font-weight: 700;
 }
 
+.search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 68rpx;
+  width: 68rpx;
+  height: 68rpx;
+  margin-right: 8rpx;
+}
+
+.search-clear image {
+  width: 45rpx;
+  height: 45rpx;
+  padding: 3rpx;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.12);
+}
+
 .search button {
   width: 90rpx;
   height: 58rpx;

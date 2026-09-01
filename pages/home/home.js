@@ -262,10 +262,18 @@ Page({
       const { latitude, longitude } = this.data;
       const suggestions = await api.request(`/salons/suggestions?keyword=${encodeURIComponent(keyword)}&latitude=${latitude}&longitude=${longitude}`);
       const normalizedSuggestions = await Promise.all(suggestions.slice(0, 5).map((salon) => this.normalizeSalon(salon)));
+      if (keyword !== this.data.keyword) return;
       this.setData({ suggestions: normalizedSuggestions });
     } catch (_) {
-      this.setData({ suggestions: [] });
+      if (keyword === this.data.keyword) this.setData({ suggestions: [] });
     }
+  },
+
+  clearSearch() {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = null;
+    this.setData({ keyword: '', suggestions: [], visibleCount: 10 });
+    this.applyFilter();
   },
 
   chooseSuggestion(e) {
