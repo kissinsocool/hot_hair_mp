@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 global.getApp = () => ({
   globalData: {
     apiBaseUrl: 'https://api.hothaircc.cn/api',
-    mediaBaseUrl: 'https://oss.hothaircc.cn'
+    mediaBaseUrl: 'https://media.hothaircc.cn'
   }
 });
 let storedPreview = null;
@@ -18,6 +18,15 @@ global.wx = {
 };
 
 const api = require('../utils/api');
+
+assert.equal(
+  api.mediaUrl('https://hothairmedia.oss-cn-beijing.aliyuncs.com/uploads/new.jpg'),
+  'https://media.hothaircc.cn/uploads/new.jpg'
+);
+assert.equal(
+  api.mediaUrl('https://hothairapp.oss-cn-beijing.aliyuncs.com/uploads/legacy.jpg'),
+  'https://media.hothaircc.cn/uploads/legacy.jpg'
+);
 
 assert.equal(api.userAvatarUrl({
   id: 'user-1',

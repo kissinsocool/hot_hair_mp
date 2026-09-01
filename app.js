@@ -1,7 +1,7 @@
 App({
   globalData: {
     apiBaseUrl: 'https://api.hothaircc.cn/api',
-    mediaBaseUrl: 'https://oss.hothaircc.cn',
+    mediaBaseUrl: 'https://media.hothaircc.cn',
     pendingLoginReturnRoute: ''
   },
 

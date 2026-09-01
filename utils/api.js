@@ -15,7 +15,7 @@ function mediaUrl(value) {
   if (!text || text.startsWith('data:')) return text;
   if (mediaOrigin) {
     const publicOssUrl = text.replace(
-      /^https?:\/\/hothairapp\.oss-cn-beijing\.aliyuncs\.com(?=\/)/,
+      /^https?:\/\/hothair(?:app|media)\.oss-cn-beijing\.aliyuncs\.com(?=\/)/,
       mediaOrigin
     );
     if (publicOssUrl !== text) return encodeURI(publicOssUrl);

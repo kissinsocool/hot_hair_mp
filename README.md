@@ -16,8 +16,8 @@ apiBaseUrl: 'https://api.hothaircc.cn/api'
 
 - request 合法域名：`https://api.hothaircc.cn`
 - socket 合法域名：`wss://api.hothaircc.cn`
-- uploadFile 合法域名：`https://hothairapp.oss-cn-beijing.aliyuncs.com`、`https://hothairprivate.oss-cn-beijing.aliyuncs.com`
-- downloadFile 合法域名：`https://oss.hothaircc.cn`、`https://oss.hothair.top`、`https://hothairprivate.oss-cn-beijing.aliyuncs.com`
+- uploadFile 合法域名：`https://hothairmedia.oss-cn-beijing.aliyuncs.com`、`https://hothairapp.oss-cn-beijing.aliyuncs.com`（迁移兼容）、`https://hothairprivate.oss-cn-beijing.aliyuncs.com`
+- downloadFile 合法域名：`https://media.hothaircc.cn`、`https://oss.hothaircc.cn`（迁移兼容）、`https://oss.hothair.top`、`https://hothairprivate.oss-cn-beijing.aliyuncs.com`
 
 开发者工具中的 `urlCheck: false` 只对本地调试生效，真机预览和正式版本仍需配置上述域名。
 
