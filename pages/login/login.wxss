@@ -53,6 +53,10 @@
 }
 
 .agreement-icon {
-  width: 34rpx;
-  height: 34rpx;
+  width: 36rpx;
+  height: 36rpx;
+}
+
+.agreement-link {
+  color: #576b95;
 }

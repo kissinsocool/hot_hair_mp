@@ -2,7 +2,7 @@
   <view class="card panel">
     <view class="section-title">当前位置</view>
     <view class="muted">{{addressText}}</view>
-    <button class="primary-btn action" loading="{{locating}}" bindtap="locate">使用当前位置</button>
+    <button class="primary-btn action" loading="{{locating}}" bindtap="locate">重新定位</button>
   </view>
   <view wx:if="{{false}}" class="card panel">
     <view class="section-title">手动输入</view>

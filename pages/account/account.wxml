@@ -1,0 +1,19 @@
+<view class="account-page">
+  <view class="avatar-section">
+    <view class="avatar-wrap" bindtap="pickAvatar">
+      <image wx:if="{{avatarPreview}}" class="avatar" mode="aspectFill" src="{{avatarPreview}}" />
+      <image wx:else class="avatar placeholder" mode="aspectFit" src="/assets/icons/person_outline.png" />
+      <view class="camera"><image mode="aspectFit" src="/assets/icons/photo_camera_outlined.png" /></view>
+    </view>
+    <view wx:if="{{avatarReviewStatus == 'pending'}}" class="avatar-status pending">新头像审核中，审核通过后将公开</view>
+    <view wx:elif="{{avatarReviewStatus == 'rejected'}}" class="avatar-status rejected">头像未通过{{avatarRejectReason ? '：' + avatarRejectReason : ''}}</view>
+    <view wx:else class="avatar-tip">点击更换头像</view>
+  </view>
+
+  <view class="form-card">
+    <view class="input-wrap"><image class="icon-img" mode="aspectFit" src="/assets/icons/person_outline.png" /><input value="{{displayName}}" bindinput="onName" placeholder="昵称" /></view>
+    <picker range="{{genders}}" value="{{genderIndex}}" bindchange="onGender"><view class="picker"><image class="icon-img" mode="aspectFit" src="/assets/icons/wc_outlined.png" /><text>性别</text><view class="picker-value">{{gender}} ›</view></view></picker>
+    <button class="save-btn" loading="{{saving}}" disabled="{{saving}}" bindtap="save">{{saving ? '保存中...' : '保存资料'}}</button>
+    <button class="logout-btn" bindtap="logout">退出登录</button>
+  </view>
+</view>

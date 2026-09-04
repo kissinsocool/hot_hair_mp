@@ -1,5 +1,5 @@
 {
-  "appid": "wx14d9b3951a214af6",
+  "appid": "wxe48f76a4468005a7",
   "projectname": "hot_hair_mp",
   "setting": {
     "urlCheck": false,
@@ -31,7 +31,17 @@
   "miniprogramRoot": "./",
   "simulatorPluginLibVersion": {},
   "packOptions": {
-    "ignore": [],
+    "ignore": [
+      { "type": "folder", "value": "tests" },
+      { "type": "file", "value": ".DS_Store" },
+      { "type": "file", "value": "assets/.DS_Store" },
+      { "type": "file", "value": "assets/images/.DS_Store" },
+      { "type": "file", "value": "assets/icons/.DS_Store" },
+      { "type": "file", "value": "pages/.DS_Store" },
+      { "type": "file", "value": "AGENTS.md" },
+      { "type": "file", "value": "README.md" },
+      { "type": "file", "value": "THIRD_PARTY_NOTICES.md" }
+    ],
     "include": []
   },
   "editorSetting": {}

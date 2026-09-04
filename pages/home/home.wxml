@@ -1,33 +1,45 @@
 <view class="home">
   <view class="appbar" style="padding-top: {{statusBarHeight}}px; min-height: {{appBarHeight}}px;">
     <view class="appbar-row" style="height: {{navBarHeight}}px;">
-      <view class="location" bindtap="openLocation">
+      <view class="location" style="max-width: calc(100% - {{menuButtonOffset}}px - 62rpx);" bindtap="openLocation">
         <image class="top-icon" mode="aspectFit" src="/assets/icons/location_on_outlined.png" />
         <text class="location-text">{{locationText}}</text>
         <image class="arrow-icon" mode="aspectFit" src="/assets/icons/keyboard_arrow_down_white.png" />
       </view>
-      <button class="message-btn" hover-class="none" bindtap="openMessages" aria-label="消息">
+      <view class="message-btn" style="margin-right: calc({{menuButtonOffset}}px + 5rpx);" bindtap="openMessages" role="button" aria-label="消息">
         <view class="message-wrap">
           <image class="message-icon" mode="aspectFit" src="/assets/icons/notifications_none.png" />
-          <view wx:if="{{hasUnreadMessages}}" class="message-dot"></view>
+          <view wx:if="{{unreadMessageCount}}" class="message-dot">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</view>
         </view>
-      </button>
+      </view>
     </view>
     <view class="search">
       <input value="{{keyword}}" bindinput="onKeyword" bindconfirm="submitSearch" placeholder="按名称搜索沙龙..." />
+      <view wx:if="{{keyword}}" class="search-clear" catchtap="clearSearch" role="button" aria-label="清除搜索内容">
+        <image mode="aspectFit" src="/assets/icons/close.png" />
+      </view>
       <button hover-class="none" bindtap="submitSearch">搜索</button>
     </view>
   </view>
 
   <view wx:if="{{suggestions.length}}" class="suggestions">
-    <view wx:for="{{suggestions}}" wx:key="id" class="suggestion" bindtap="chooseSuggestion" data-name="{{item.name}}">
+    <view wx:for="{{suggestions}}" wx:key="id" class="suggestion" bindtap="chooseSuggestion" data-id="{{item.id}}" data-name="{{item.name}}">
       <view class="suggestion-name">{{item.name}}</view>
       <view class="suggestion-sub">{{item.addressText}}</view>
     </view>
   </view>
 
-  <scroll-view scroll-y class="list" style="height: calc(100vh - {{appBarHeight}}px - 80px - env(safe-area-inset-bottom));" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
-    <view class="list-title">{{listTitle}}</view>
+  <scroll-view scroll-y class="list" style="height: calc(100vh - {{appBarHeight}}px);" bindscroll="onListScroll" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
+    <navigator wx:if="{{ad.enabled}}" class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
+      <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
+    </navigator>
+    <view class="notice">
+      <image class="notice-icon" mode="aspectFit" src="/assets/icons/campaign.png" />
+      <view class="notice-window">
+        <text class="notice-text">在服务过程中如果遇到强迫购买产品、升级项目、充值或办理会员卡等问题请第一时间向平台客服举报反馈！</text>
+        <text class="notice-text" aria-hidden="true">在服务过程中如果遇到强迫购买产品、升级项目、充值或办理会员卡等问题请第一时间向平台客服举报反馈！</text>
+      </view>
+    </view>
 
     <view wx:if="{{loading && !visibleSalons.length}}" class="loading">正在加载...</view>
     <view wx:elif="{{errorMessage}}" class="empty">
@@ -41,11 +53,16 @@
     </view>
 
     <view wx:for="{{visibleSalons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
-      <image class="salon-image" mode="aspectFill" src="{{item.image}}" />
+      <image class="salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
+      <view wx:if="{{item.tags.length}}" class="salon-tags">
+        <view wx:for="{{item.tags}}" wx:for-item="tag" wx:for-index="tagIndex" wx:key="*this" class="salon-tag {{tagIndex == 1 ? 'salon-tag-lime' : ''}}">
+          <text class="salon-tag-text">{{tag}}</text>
+        </view>
+      </view>
       <view class="salon-body">
         <view class="salon-head">
           <view class="salon-name">{{item.nameText}}</view>
-          <view class="salon-rating"><image class="star-icon" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
+          <view class="salon-rating"><image wx:if="{{item.hasRating}}" class="star-icon" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
         </view>
         <view class="salon-desc">{{item.descriptionText}}</view>
         <view class="salon-foot">
@@ -58,5 +75,27 @@
     </view>
 
     <view wx:if="{{visibleSalons.length < filteredSalons.length}}" class="load-more">继续下拉加载更多</view>
+    <view class="tabbar-spacer" aria-hidden="true"></view>
   </scroll-view>
+
+  <view wx:if="{{newUserGiftVisible}}" class="new-user-gift">
+    <image
+      class="new-user-gift-image"
+      mode="aspectFill"
+      src="{{newUserGiftImage}}"
+      catchtap="claimNewUserGift"
+      aria-label="领取新人礼包"
+    />
+    <view
+      class="new-user-gift-close-target"
+      catchtap="dismissNewUserGift"
+      aria-label="关闭新人礼包推广图"
+    >
+      <view class="new-user-gift-close">×</view>
+    </view>
+  </view>
+
+  <view class="support-fab {{supportHidden ? 'support-fab-hidden' : ''}}" hover-class="none" bindtap="openSupport" role="button" aria-label="平台客服">
+    <image mode="aspectFit" src="/assets/icons/support_agent.png" />
+  </view>
 </view>

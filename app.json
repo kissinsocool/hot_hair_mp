@@ -6,25 +6,42 @@
     "pages/staff/staff",
     "pages/booking/booking",
     "pages/confirm/confirm",
+    "pages/coupons/coupons",
     "pages/orders/orders",
+    "pages/order-detail/order-detail",
     "pages/favorites/favorites",
     "pages/profile/profile",
+    "pages/account/account",
+    "pages/support/support",
     "pages/location/location",
     "pages/messages/messages"
   ],
+  "subPackages": [
+    {
+      "root": "pages/ad",
+      "pages": ["ad"]
+    },
+    {
+      "root": "pages/rules",
+      "pages": ["user-agreement", "privacy-policy"]
+    }
+  ],
   "window": {
-    "navigationBarTitleText": "麻辣烫",
+    "navigationBarTitleText": "靓丝美约",
     "navigationBarBackgroundColor": "#ffffff",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#fdfbf9"
   },
   "permission": {
+    "scope.userFuzzyLocation": {
+      "desc": "你的模糊位置将用于推荐附近美发店"
+    },
     "scope.userLocation": {
-      "desc": "你的位置信息将用于推荐附近美发店"
+      "desc": "你选择的位置将用于推荐附近美发店"
     }
   },
   "requiredPrivateInfos": [
-    "getLocation",
+    "getFuzzyLocation",
     "chooseLocation"
   ],
   "tabBar": {
@@ -34,7 +51,7 @@
     "backgroundColor": "#ffffff",
     "fontSize": "14px",
     "iconWidth": "29.16px",
-    "height": "80px",
+    "height": "54px",
     "list": [
       {
         "pagePath": "pages/home/home",
@@ -50,7 +67,7 @@
       },
       {
         "pagePath": "pages/orders/orders",
-        "text": "我的订单",
+        "text": "订单",
         "iconPath": "assets/icons/receipt_long_outline.png",
         "selectedIconPath": "assets/icons/receipt_long.png"
       },
@@ -63,5 +80,6 @@
     ]
   },
   "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
   "sitemapLocation": "sitemap.json"
 }

@@ -1,4 +1,8 @@
 const api = require('../../utils/api');
+const ad = require('../../utils/ad');
+const analytics = require('../../utils/analytics');
+const { formatFen } = require('../../utils/money');
+const { ratingDisplay } = require('../../utils/rating');
 
 Page({
   data: {
@@ -8,11 +12,13 @@ Page({
     currentPromoIndex: 0,
     reviewCount: 3,
     visibleReviews: [],
-    loading: true
+    loading: true,
+    ad: ad.DEFAULT
   },
 
   onLoad(query) {
     this.setData({ id: query.id || '' });
+    ad.load().then((config) => this.setData({ ad: config }));
     this.load();
   },
 
@@ -22,20 +28,22 @@ Page({
       salon.image = await api.displayImageUrl(api.salonImage(salon));
       salon.promoImages = await Promise.all((salon.promoImages || salon.images || []).map(api.displayImageUrl));
       if (!salon.promoImages.length && salon.image) salon.promoImages = [salon.image];
-      salon.ratingText = salon.rating || '4.8';
-      salon.starIcons = starIcons(salon.ratingText);
       salon.openingHoursText = salon.openingHours || '暂无营业时间';
       salon.phoneText = salon.phone || '暂无电话';
-      salon.addressText = salon.address || '地址未知';
+      salon.addressText = this.formatAddress(salon.address);
       salon.descriptionText = salon.fullDescription || salon.description || '暂无详细描述';
       salon.reviews = await Promise.all((salon.reviews || []).map((review) => this.normalizeReview(review)));
-      salon.reviewTotalText = salon.reviewCount || salon.reviews.length || 0;
+      salon.reviewTags = (salon.reviewTags || []).filter((tag) => tag.name && Number(tag.count) > 0);
+      salon.reviewTotalText = salon.reviewCount;
+      Object.assign(salon, ratingDisplay(salon.rating, salon.reviewTotalText));
+      salon.starIcons = salon.hasRating ? starIcons(salon.ratingText) : [];
       salon.services = await Promise.all((salon.services || []).map(async (service) => ({
         ...service,
         imageUrl: await api.displayImageUrl(service.imageUrl),
+        tags: service.tags || service.categories || [],
         noteText: service.note || service.description || '',
-        durationText: this.formatDuration(service.duration || service.durationMinutes),
-        priceText: this.formatPrice(service.price || service.priceLabel)
+        durationText: this.formatDuration(service.durationMinutes),
+        priceText: formatFen(service.priceFen)
       })));
       salon.staff = await Promise.all((salon.staff || []).map(async (staff) => ({
         ...staff,
@@ -58,6 +66,7 @@ Page({
     return {
       ...review,
       userText: review.user || review.userName || review.phone || '用户',
+      avatarUrl: api.mediaUrl(review.avatarUrl),
       ratingText: review.rating || 5,
       starIcons: starIcons(review.rating || 5),
       serviceText: review.serviceName || review.service || '染发+修复',
@@ -72,11 +81,11 @@ Page({
     return /^\d+$/.test(String(value)) ? `${value}分钟` : String(value).replace(/\s*min$/i, '分钟');
   },
 
-  formatPrice(value) {
-    if (!value) return '';
-    const text = String(value);
-    if (text.startsWith('¥') || !/^\d+(\.\d+)?$/.test(text)) return text;
-    return `¥${text}`;
+  formatAddress(value) {
+    if (!value) return '地址未知';
+    const address = String(value).trim();
+    const match = address.match(/^(?:(?:北京|天津|上海|重庆)市|.+?(?:省|自治区|特别行政区))?(?:.+?(?:市|自治州|地区|盟))?.+?(?:区|县|旗|市)(.+)$/);
+    return match && match[1].trim() || address;
   },
 
   formatDate(value) {
@@ -100,7 +109,9 @@ Page({
   async toggleFavorite() {
     if (!api.requireLogin()) return;
     try {
-      await api.request('/favorites/toggle', { method: 'POST', data: this.data.salon });
+      await api.request(`/favorites/${encodeURIComponent(this.data.id)}`, {
+        method: this.data.isFavorite ? 'DELETE' : 'PUT'
+      });
       const isFavorite = !this.data.isFavorite;
       this.setData({ isFavorite });
     } catch (err) {
@@ -113,13 +124,29 @@ Page({
     wx.makePhoneCall({ phoneNumber: this.data.salon.phone });
   },
 
-  copyAddress() {
-    if (!this.data.salon.address) return;
-    wx.setClipboardData({ data: this.data.salon.address });
+  openMap() {
+    const salon = this.data.salon || {};
+    const coordinates = salonCoordinates(salon);
+    if (!coordinates) {
+      wx.showToast({ title: '商家暂未配置导航位置', icon: 'none' });
+      return;
+    }
+    wx.openLocation({
+      ...coordinates,
+      name: salon.name || '预约门店',
+      address: salon.address || salon.addressText || '',
+      scale: 16,
+      fail: () => wx.showToast({ title: '地图打开失败', icon: 'none' })
+    });
   },
 
   previewImage(e) {
     wx.previewImage({ urls: this.data.salon.promoImages, current: e.currentTarget.dataset.url });
+  },
+
+  previewHeroImage() {
+    const current = this.data.salon.image;
+    if (current) wx.previewImage({ urls: [current], current });
   },
 
   onPromoChange(e) {
@@ -131,13 +158,6 @@ Page({
     wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
-  goBack() {
-    wx.switchTab({
-      url: '/pages/home/home',
-      fail: () => wx.reLaunch({ url: '/pages/home/home' })
-    });
-  },
-
   showMoreReviews() {
     const reviewCount = this.data.reviewCount + 3;
     this.setData({
@@ -147,7 +167,9 @@ Page({
   },
 
   openService(e) {
-    wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.id}&serviceId=${e.currentTarget.dataset.id}` });
+    const serviceId = e.currentTarget.dataset.id;
+    analytics.track('service_click', { salonId: this.data.id, serviceId });
+    wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.id}&serviceId=${serviceId}` });
   },
 
   openStaff(e) {
@@ -169,4 +191,17 @@ function starIcons(value) {
     if (index === full && hasHalf) return '/assets/icons/star_half_gold.png';
     return '/assets/icons/star_border_gold.png';
   });
+}
+
+function salonCoordinates(salon = {}) {
+  const location = salon.location || {};
+  const geoCoordinates = salon.geoLocation && salon.geoLocation.coordinates;
+  const latitudeValue = location.latitude ?? location.lat ?? (geoCoordinates && geoCoordinates[1]);
+  const longitudeValue = location.longitude ?? location.lng ?? location.lon ?? (geoCoordinates && geoCoordinates[0]);
+  if (latitudeValue === '' || longitudeValue === '') return null;
+  const latitude = Number(latitudeValue);
+  const longitude = Number(longitudeValue);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude };
 }

@@ -1,9 +1,13 @@
 <view wx:if="{{loading}}" class="empty">正在加载...</view>
 <view wx:else class="detail">
-  <view class="hero">
-    <image class="hero-img" mode="aspectFill" src="{{salon.image}}" />
+  <view wx:if="{{ad.enabled}}" class="detail-top">
+    <navigator class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
+      <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
+    </navigator>
+  </view>
+  <view class="hero" bindtap="previewHeroImage" aria-role="button" aria-label="查看店铺大图">
+    <view class="hero-img" style="background-image: url('{{salon.image}}');"></view>
     <view class="hero-mask"></view>
-    <view class="back" catchtap="goBack"><image mode="aspectFit" src="/assets/icons/arrow_back_ios_new.png" /></view>
     <view class="hero-title">{{salon.name}}</view>
   </view>
   <view class="body">
@@ -22,11 +26,9 @@
     <view wx:if="{{salon.promoImages.length}}" class="promo">
       <swiper class="promo-swiper" current="{{currentPromoIndex}}" bindchange="onPromoChange" circular="{{salon.promoImages.length > 1}}">
         <swiper-item wx:for="{{salon.promoImages}}" wx:key="*this">
-          <image class="promo-image" mode="aspectFill" src="{{item}}" bindtap="previewImage" data-url="{{item}}" />
+          <image class="promo-image" mode="aspectFill" src="{{item}}" lazy-load bindtap="previewImage" data-url="{{item}}" />
         </swiper-item>
       </swiper>
-      <view wx:if="{{salon.promoImages.length > 1}}" class="promo-arrow left"></view>
-      <view wx:if="{{salon.promoImages.length > 1}}" class="promo-arrow right"></view>
       <view wx:if="{{salon.promoImages.length > 1}}" class="promo-dots">
         <view wx:for="{{salon.promoImages}}" wx:for-index="index" wx:key="*this" class="promo-dot {{index == currentPromoIndex ? 'active' : ''}}"></view>
       </view>
@@ -34,7 +36,7 @@
     <view class="section-title">店铺信息</view>
     <view class="card info-card">
       <view class="info-row" bindtap="callPhone"><image class="icon-img" mode="aspectFit" src="/assets/icons/phone.png" /><text class="info-label">电话</text><text class="info-value">{{salon.phoneText}}</text></view>
-      <view class="info-row" bindtap="copyAddress"><image class="icon-img" mode="aspectFit" src="/assets/icons/location_on.png" /><text class="info-label">地址</text><text class="info-value">{{salon.addressText}}</text></view>
+      <view class="info-row" bindtap="openMap"><image class="icon-img" mode="aspectFit" src="/assets/icons/location_on.png" /><text class="info-label">地址</text><text class="info-value">{{salon.addressText}}</text></view>
     </view>
     <view class="section plain-section">
       <view class="section-title">关于我们</view>
@@ -43,15 +45,18 @@
     <view class="card section">
       <view class="section-title">热门套餐</view>
       <view wx:for="{{salon.services}}" wx:key="id" class="service-card" bindtap="openService" data-id="{{item.id}}">
-        <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" />
+        <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
         <view class="service-main">
           <view class="service-copy">
+            <view class="service-tags">
+              <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
+            </view>
             <view class="service-name">{{item.name}}</view>
             <view wx:if="{{item.noteText}}" class="service-note">{{item.noteText}}</view>
           </view>
           <view class="service-meta">
-            <view class="service-duration">{{item.durationText}}</view>
             <view class="price">{{item.priceText || '免费'}}</view>
+            <view class="service-duration">{{item.durationText}}</view>
           </view>
         </view>
       </view>
@@ -60,7 +65,7 @@
       <view class="section-title">我们的理发师</view>
       <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="staff-strip">
         <view wx:for="{{salon.staff}}" wx:key="id" class="staff-card" bindtap="openStaff" data-id="{{item.id}}">
-          <image class="staff-photo" mode="aspectFill" src="{{item.imageUrl}}" />
+          <image class="staff-photo" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
           <view class="staff-info">
             <view class="staff-name">{{item.name}}</view>
             <view wx:if="{{item.roleText || item.experienceText}}" class="staff-role">{{item.roleText}}{{item.roleText && item.experienceText ? ' · ' : ''}}{{item.experienceText}}</view>
@@ -71,11 +76,14 @@
     </view>
     <view class="card section">
       <view class="section-title">客户评价</view>
+      <view wx:if="{{salon.reviewTags.length}}" class="review-tag-summary">
+        <view wx:for="{{salon.reviewTags}}" wx:key="name" class="review-tag-count">{{item.name}}（{{item.count}}）</view>
+      </view>
       <view wx:if="{{!visibleReviews.length}}" class="muted">暂无评价</view>
       <view wx:for="{{visibleReviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
           <view class="review-user">
-            <image class="avatar" mode="aspectFit" src="/assets/icons/person.png" />
+            <image class="avatar" mode="{{item.avatarUrl ? 'aspectFill' : 'aspectFit'}}" src="{{item.avatarUrl || '/assets/icons/person.png'}}" />
             <view>
               <view class="review-name">{{item.userText}}</view>
               <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>
@@ -86,7 +94,7 @@
         <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon" mode="aspectFit" src="{{star}}" /></view>
         <view class="desc">{{item.comment}}</view>
         <view wx:if="{{item.imageUrls.length}}" class="review-images">
-          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
         </view>
       </view>
       <button wx:if="{{visibleReviews.length < salon.reviews.length}}" class="ghost-btn" bindtap="showMoreReviews">查看更多评价</button>
