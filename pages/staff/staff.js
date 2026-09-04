@@ -46,6 +46,11 @@ Page({
     wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.salonId}&staffId=${this.data.id}` });
   },
 
+  previewAvatar() {
+    const current = this.data.staff.imageUrl;
+    if (current) wx.previewImage({ urls: [current], current });
+  },
+
   previewReviewImage(e) {
     const review = this.data.staff.reviews[Number(e.currentTarget.dataset.reviewIndex)] || {};
     wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });

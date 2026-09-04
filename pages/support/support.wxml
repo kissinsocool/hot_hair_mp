@@ -20,4 +20,7 @@
   <button class="submit-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="submit">
     {{submitting ? '提交中...' : '提交'}}
   </button>
+  <view class="support-phone" bindtap="callSupport" aria-role="button" aria-label="拨打平台客服电话 {{supportPhone}}">
+    <text>联系我们：{{supportPhone}}</text>
+  </view>
 </view>

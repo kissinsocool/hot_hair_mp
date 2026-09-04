@@ -1,7 +1,7 @@
 <view wx:if="{{loading}}" class="empty">正在加载...</view>
 <view wx:else class="staff-page">
   <view class="profile">
-    <image class="avatar" mode="aspectFill" src="{{staff.imageUrl}}" />
+    <image class="avatar" mode="aspectFill" src="{{staff.imageUrl}}" bindtap="previewAvatar" aria-role="button" aria-label="查看理发师头像大图" />
     <view class="name">{{staff.name}}</view>
     <view class="role">{{staff.roleText}}</view>
     <view class="rating">

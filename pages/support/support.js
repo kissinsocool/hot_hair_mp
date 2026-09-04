@@ -4,6 +4,7 @@ Page({
   data: {
     problem: '',
     contact: '',
+    supportPhone: '010-89281898',
     submitting: false
   },
 
@@ -13,6 +14,10 @@ Page({
 
   onContact(e) {
     this.setData({ contact: e.detail.value });
+  },
+
+  callSupport() {
+    wx.makePhoneCall({ phoneNumber: this.data.supportPhone.replace(/-/g, '') });
   },
 
   async submit() {

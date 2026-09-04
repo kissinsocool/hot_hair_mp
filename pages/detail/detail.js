@@ -144,6 +144,11 @@ Page({
     wx.previewImage({ urls: this.data.salon.promoImages, current: e.currentTarget.dataset.url });
   },
 
+  previewHeroImage() {
+    const current = this.data.salon.image;
+    if (current) wx.previewImage({ urls: [current], current });
+  },
+
   onPromoChange(e) {
     this.setData({ currentPromoIndex: e.detail.current || 0 });
   },

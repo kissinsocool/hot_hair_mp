@@ -15,6 +15,8 @@ Page({
     serviceOptions: [],
     activeServiceCategory: 'cut',
     slotOptions: [],
+    previousSlotOptions: [],
+    slotsAnimating: false,
     selectedStaffId: '__no_preference__',
     selectedServiceId: '',
     selectedDate: '',
@@ -103,10 +105,11 @@ Page({
     const selectedDate = this.data.selectedDate;
     const staffId = this.data.selectedStaffId;
     this.setData({
-      slots: [],
       selectedTime: '',
       slotsLoading: Boolean(selectedDate),
-      slotErrorMessage: ''
+      slotErrorMessage: '',
+      previousSlotOptions: [],
+      slotsAnimating: false
     });
     this.refreshOptions();
     if (!selectedDate) return;
@@ -116,15 +119,21 @@ Page({
         ? await api.request(`/staff/${staffId}/slots?date=${selectedDate}&salonId=${encodeURIComponent(this.salonId)}`)
         : await api.request(`/staff/${staffId}/slots?date=${selectedDate}`);
       if (requestId !== this.slotRequestId) return;
+      const previousSlotOptions = this.data.slotOptions;
       this.setData({ slots, slotsLoading: false });
-      this.refreshOptions();
+      this.refreshOptions({
+        previousSlotOptions,
+        slotsAnimating: previousSlotOptions.length > 0
+      });
     } catch (err) {
       if (requestId !== this.slotRequestId) return;
       this.setData({
         slots: [],
         selectedTime: '',
         slotsLoading: false,
-        slotErrorMessage: err.message || '时间段加载失败'
+        slotErrorMessage: err.message || '时间段加载失败',
+        previousSlotOptions: [],
+        slotsAnimating: false
       });
       this.refreshOptions();
       wx.showToast({ title: err.message || '时间段加载失败', icon: 'none' });
@@ -171,7 +180,11 @@ Page({
     }
   },
 
-  refreshOptions() {
+  finishSlotAnimation() {
+    this.setData({ previousSlotOptions: [], slotsAnimating: false });
+  },
+
+  refreshOptions(extraData = {}) {
     const salon = this.data.salon || {};
     const staffOptions = [
       { id: '__no_preference__', name: '无需指定', isNoPreference: true },
@@ -234,7 +247,7 @@ Page({
             : !this.data.selectedTime
               ? '请选择时间段'
               : '确认预约';
-    this.setData({ staffOptions, serviceTabs, serviceOptions, dates, slotOptions, canSubmit, submitText });
+    this.setData({ staffOptions, serviceTabs, serviceOptions, dates, slotOptions, canSubmit, submitText, ...extraData });
   },
 
   async submit() {
@@ -281,7 +294,8 @@ function nextDates(closedDates = [], acceptsSameDayBooking = true) {
     const value = `${date.getFullYear()}-${month}-${day}`;
     return {
       value,
-      label: week[date.getDay()],
+      label: index === 0 ? '今天' : index === 1 ? '明天' : week[date.getDay()],
+      isRelativeDate: index < 2,
       day,
       isClosed: closedDateSet.has(value),
       isDisabled: closedDateSet.has(value) || (!acceptsSameDayBooking && index === 0)

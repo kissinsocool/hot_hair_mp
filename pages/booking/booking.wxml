@@ -50,19 +50,27 @@
   <view class="block-title">选择预约日期</view>
   <scroll-view scroll-x class="dates">
     <view wx:for="{{dates}}" wx:key="value" class="date {{item.className}}" bindtap="selectDate" data-value="{{item.value}}" data-disabled="{{item.isDisabled}}">
-      <view class="date-week">{{item.label}}</view>
+      <view class="date-week {{item.isRelativeDate ? 'relative' : ''}}">{{item.label}}</view>
       <view class="date-day">{{item.day}}</view>
       <view wx:if="{{item.isClosed}}" class="date-rest">休息日</view>
     </view>
   </scroll-view>
 
   <view class="block-title">可用时间段</view>
-  <view wx:if="{{slotsLoading}}" class="slot-state">时间段加载中...</view>
-  <view wx:elif="{{slotErrorMessage}}" class="slot-state retry" bindtap="loadSlots" role="button" aria-label="重新加载时间段">加载失败，点击重试</view>
-  <view wx:elif="{{!slotOptions.length}}" class="slot-state">暂无可用时间段</view>
-  <view wx:else class="chips">
-    <view wx:for="{{slotOptions}}" wx:key="startTime" class="chip {{item.className}}" bindtap="selectTime" data-time="{{item.time}}" data-available="{{item.isAvailable}}">
-      {{item.time}}
+  <view class="slots-panel {{slotsLoading ? 'loading' : ''}} {{slotsAnimating ? 'animating' : ''}}">
+    <view wx:if="{{slotsAnimating}}" class="slots-layer slots-previous" bindanimationend="finishSlotAnimation">
+      <view class="chips">
+        <view wx:for="{{previousSlotOptions}}" wx:key="startTime" class="chip {{item.className}}">{{item.time}}</view>
+      </view>
+    </view>
+    <view class="slots-layer slots-current {{slotsAnimating ? 'entering' : ''}}">
+      <view wx:if="{{slotErrorMessage}}" class="slot-state retry" bindtap="loadSlots" role="button" aria-label="重新加载时间段">加载失败，点击重试</view>
+      <view wx:elif="{{!slotOptions.length && !slotsLoading}}" class="slot-state">暂无可用时间段</view>
+      <view wx:else class="chips">
+        <view wx:for="{{slotOptions}}" wx:key="startTime" class="chip {{item.className}}" bindtap="selectTime" data-time="{{item.time}}" data-available="{{item.isAvailable}}">
+          {{item.time}}
+        </view>
+      </view>
     </view>
   </view>
 

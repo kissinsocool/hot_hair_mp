@@ -23,7 +23,7 @@
   </view>
 
   <view wx:if="{{suggestions.length}}" class="suggestions">
-    <view wx:for="{{suggestions}}" wx:key="id" class="suggestion" bindtap="chooseSuggestion" data-name="{{item.name}}">
+    <view wx:for="{{suggestions}}" wx:key="id" class="suggestion" bindtap="chooseSuggestion" data-id="{{item.id}}" data-name="{{item.name}}">
       <view class="suggestion-name">{{item.name}}</view>
       <view class="suggestion-sub">{{item.addressText}}</view>
     </view>

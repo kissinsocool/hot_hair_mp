@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 
 let pageDefinition;
 const requests = [];
@@ -36,10 +38,20 @@ const page = {
 };
 
 async function main() {
+  const bookingDir = path.join(__dirname, '..', 'pages', 'booking');
+  const template = fs.readFileSync(path.join(bookingDir, 'booking.wxml'), 'utf8');
+  const styles = fs.readFileSync(path.join(bookingDir, 'booking.wxss'), 'utf8');
+  assert.doesNotMatch(template, /时间段加载中/);
+  assert.match(template, /slotsAnimating[^>]*slots-previous/);
+  assert.match(template, /slots-current \{\{slotsAnimating \? 'entering' : ''\}\}/);
+  assert.match(styles, /@keyframes slots-slide-out\s*\{[\s\S]*?translateX\(-100%\)/);
+  assert.match(styles, /@keyframes slots-slide-in\s*\{[\s\S]*?translateX\(100%\)/);
+
   const first = page.loadSlots();
   assert.equal(page.data.selectedTime, '');
   assert.equal(page.data.canSubmit, false);
   assert.equal(page.data.slotsLoading, true);
+  assert.deepEqual(page.data.slots.map((slot) => slot.time), ['10:00']);
 
   page.setData({ selectedStaffId: 'staff-b' });
   const second = page.loadSlots();
@@ -56,7 +68,14 @@ async function main() {
   await first;
 
   assert.deepEqual(page.data.slots.map((slot) => slot.time), ['11:00']);
+  assert.deepEqual(page.data.previousSlotOptions.map((slot) => slot.time), ['10:00']);
+  assert.deepEqual(page.data.slotOptions.map((slot) => slot.time), ['11:00']);
+  assert.equal(page.data.slotsAnimating, true);
   assert.equal(page.data.slotsLoading, false);
+
+  page.finishSlotAnimation();
+  assert.deepEqual(page.data.previousSlotOptions, []);
+  assert.equal(page.data.slotsAnimating, false);
 
   const failed = page.loadSlots();
   requests[2].fail({ errMsg: 'network unavailable' });

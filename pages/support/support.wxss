@@ -1,4 +1,6 @@
 .support-page {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   padding: 32rpx;
   background: #fffdfb;
@@ -41,4 +43,15 @@
   color: #fff;
   font-size: 32rpx;
   font-weight: 700;
+}
+
+.support-phone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  padding-top: 48rpx;
+  padding-bottom: env(safe-area-inset-bottom);
+  color: #999;
+  font-size: 28rpx;
 }

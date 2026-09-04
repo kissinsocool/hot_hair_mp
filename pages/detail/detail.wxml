@@ -5,7 +5,7 @@
       <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
     </navigator>
   </view>
-  <view class="hero">
+  <view class="hero" bindtap="previewHeroImage" aria-role="button" aria-label="查看店铺大图">
     <view class="hero-img" style="background-image: url('{{salon.image}}');"></view>
     <view class="hero-mask"></view>
     <view class="hero-title">{{salon.name}}</view>

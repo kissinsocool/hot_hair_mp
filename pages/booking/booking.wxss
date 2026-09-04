@@ -116,6 +116,50 @@
   color: #d06884;
 }
 
+.slots-panel {
+  position: relative;
+  min-height: 86rpx;
+  overflow: hidden;
+}
+
+.slots-panel.loading,
+.slots-panel.animating {
+  pointer-events: none;
+}
+
+.slots-layer {
+  width: 100%;
+}
+
+.slots-previous {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  animation: slots-slide-out 360ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.slots-current.entering {
+  animation: slots-slide-in 360ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes slots-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slots-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 .chip,
 .date {
   min-width: 82rpx;
@@ -378,6 +422,11 @@
   line-height: 27px;
 }
 
+.date-week.relative {
+  color: #48bf37;
+  font-weight: 600;
+}
+
 .date.active {
   border-color: #d06884;
   background: #d06884;
@@ -388,6 +437,10 @@
   color: #fff;
 }
 
+.date.active .date-week.relative {
+  color: #fff;
+}
+
 .date.disabled {
   border-color: #d8d8d8;
   background: #ededed;
@@ -395,6 +448,10 @@
 }
 
 .date.disabled .date-day {
+  color: #999;
+}
+
+.date.disabled .date-week.relative {
   color: #999;
 }
 
