@@ -47,9 +47,12 @@
       <view class="empty-sub">{{errorMessage}}</view>
       <button class="retry" bindtap="loadSalons">重新加载</button>
     </view>
-    <view wx:elif="{{!visibleSalons.length}}" class="empty">
+    <view wx:elif="{{keyword && !visibleSalons.length}}" class="empty">
       <view class="empty-title">没有找到匹配的沙龙</view>
       <view class="empty-sub">换个名称试试看</view>
+    </view>
+    <view wx:elif="{{!visibleSalons.length}}" class="empty">
+      <view class="empty-title">附近暂无沙龙请更换定位重新尝试</view>
     </view>
 
     <view wx:for="{{visibleSalons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
