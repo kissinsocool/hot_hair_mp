@@ -300,9 +300,9 @@
 }
 
 .salon-image {
-  width: 270rpx;
+  width: calc(330rpx + 15px);
   height: calc(220rpx + 10px);
-  flex: 0 0 270rpx;
+  flex: 0 0 calc(330rpx + 15px);
   background: #eee;
 }
 

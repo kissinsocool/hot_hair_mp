@@ -37,14 +37,18 @@ Page({
       salon.reviewTotalText = salon.reviewCount;
       Object.assign(salon, ratingDisplay(salon.rating, salon.reviewTotalText));
       salon.starIcons = salon.hasRating ? starIcons(salon.ratingText) : [];
-      salon.services = await Promise.all((salon.services || []).map(async (service) => ({
-        ...service,
-        imageUrl: await api.displayImageUrl(service.imageUrl),
-        tags: service.tags || service.categories || [],
-        noteText: service.note || service.description || '',
-        durationText: this.formatDuration(service.durationMinutes),
-        priceText: formatFen(service.priceFen)
-      })));
+      salon.services = await Promise.all((salon.services || []).map(async (service) => {
+        const imageUrls = Array.isArray(service.imageUrls) ? service.imageUrls : [service.imageUrl].filter(Boolean);
+        return {
+          ...service,
+          imageUrls,
+          imageUrl: await api.displayImageUrl(imageUrls[0] || ''),
+          tags: service.tags || service.categories || [],
+          noteText: service.note || service.description || '',
+          durationText: this.formatDuration(service.durationMinutes),
+          priceText: formatFen(service.priceFen)
+        };
+      }));
       salon.staff = await Promise.all((salon.staff || []).map(async (staff) => ({
         ...staff,
         imageUrl: await api.displayImageUrl(staff.imageUrl),
@@ -166,10 +170,13 @@ Page({
     });
   },
 
-  openService(e) {
+  async openService(e) {
     const serviceId = e.currentTarget.dataset.id;
     analytics.track('service_click', { salonId: this.data.id, serviceId });
-    wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.id}&serviceId=${serviceId}` });
+    const service = this.data.salon.services.find((item) => item.id === serviceId);
+    if (!service || !service.imageUrl) return;
+    const remainingImages = await Promise.all(service.imageUrls.slice(1).map(api.displayImageUrl));
+    wx.previewImage({ urls: [service.imageUrl, ...remainingImages], current: service.imageUrl });
   },
 
   openStaff(e) {

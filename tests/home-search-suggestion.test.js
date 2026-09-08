@@ -25,7 +25,10 @@ const page = {
   ...pageDefinition,
   data: {
     ...pageDefinition.data,
-    salons: [{ id: 'nearby', name: '附近店铺' }],
+    salons: [
+      { id: 'nearby', name: '附近店铺' },
+      { id: '931870', name: '皇佳尊苑·护肤造型' }
+    ],
     suggestions: [{ id: '931870', name: '皇佳尊苑·护肤造型' }]
   },
   setData(values) { Object.assign(this.data, values); }
@@ -35,5 +38,7 @@ page.chooseSuggestion({
   currentTarget: { dataset: { id: '931870', name: '皇佳尊苑·护肤造型' } }
 });
 
-assert.equal(navigatedUrl, '/pages/detail/detail?id=931870');
+assert.equal(navigatedUrl, undefined);
+assert.equal(page.data.keyword, '皇佳尊苑·护肤造型');
 assert.deepEqual(page.data.suggestions, []);
+assert.deepEqual(page.data.visibleSalons.map((salon) => salon.id), ['931870']);

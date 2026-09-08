@@ -9,6 +9,16 @@ for (const file of ['pages/orders/orders.js', 'pages/profile/profile.js']) {
 }
 
 let tags = buildReviewTags(['环境舒适']);
+assert.deepEqual(tags.map((tag) => tag.name), [
+  '善于沟通',
+  '环境舒适',
+  '技术一流',
+  '服务周到',
+  '无推销',
+  '环镜整洁',
+  '效果好评',
+  '好沟通',
+]);
 assert.deepEqual(selectedReviewTags(tags), ['环境舒适']);
 
 tags = toggleReviewTag(tags, '技术一流');

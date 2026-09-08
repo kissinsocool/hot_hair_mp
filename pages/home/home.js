@@ -278,7 +278,7 @@ Page({
 
   chooseSuggestion(e) {
     this.setData({ keyword: e.currentTarget.dataset.name, suggestions: [] });
-    this.openDetail(e);
+    this.submitSearch();
   },
 
   submitSearch() {

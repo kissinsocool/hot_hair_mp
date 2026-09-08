@@ -1,4 +1,13 @@
-const REVIEW_TAGS = ['善于沟通', '环境舒适', '技术一流', '服务周到'];
+const REVIEW_TAGS = [
+  '善于沟通',
+  '环境舒适',
+  '技术一流',
+  '服务周到',
+  '无推销',
+  '环镜整洁',
+  '效果好评',
+  '好沟通',
+];
 
 const buildReviewTags = (selected = []) => REVIEW_TAGS.map((name) => ({
   name,

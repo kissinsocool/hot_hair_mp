@@ -44,8 +44,11 @@
     </view>
     <view class="card section">
       <view class="section-title">热门套餐</view>
-      <view wx:for="{{salon.services}}" wx:key="id" class="service-card" bindtap="openService" data-id="{{item.id}}">
-        <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
+      <view wx:for="{{salon.services}}" wx:key="id" class="service-card" bindtap="openService" data-id="{{item.id}}" aria-role="{{item.imageUrl ? 'button' : ''}}" aria-label="{{item.imageUrl ? '查看套餐大图：' + item.name : item.name}}">
+        <view class="service-image-wrap">
+          <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
+          <image wx:if="{{item.imageUrls.length > 1}}" class="service-gallery-icon" mode="aspectFit" src="/assets/icons/stack.png" aria-label="点击查看多张图片" />
+        </view>
         <view class="service-main">
           <view class="service-copy">
             <view class="service-tags">

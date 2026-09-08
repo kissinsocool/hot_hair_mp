@@ -228,22 +228,37 @@
   margin-bottom: 18rpx;
   padding: 14rpx;
   border: 1rpx solid #eadbd2;
-  border-radius: 24rpx;
   background: #fff;
 }
 
+.service-image-wrap {
+  position: relative;
+  flex: 0 0 175.01rpx;
+  width: 175.01rpx;
+  height: 224rpx;
+}
+
 .service-image {
-  flex: 0 0 140rpx;
-  width: 140rpx;
-  height: 140rpx;
-  border-radius: 10rpx;
+  display: block;
+  width: 100%;
+  height: 100%;
   background: #eee;
+}
+
+.service-gallery-icon {
+  position: absolute;
+  top: 12rpx;
+  right: 12rpx;
+  width: 34rpx;
+  height: 34rpx;
+  transform: scaleX(-1);
+  filter: brightness(0) invert(1) drop-shadow(0 1rpx 3rpx rgba(0, 0, 0, 0.3));
 }
 
 .service-main {
   display: flex;
   flex: 1;
-  height: 140rpx;
+  height: 224rpx;
   min-width: 0;
   justify-content: space-between;
   gap: 18rpx;
