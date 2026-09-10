@@ -3,6 +3,7 @@ const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
+const { formatFen } = require('../../utils/money');
 const { ratingDisplay } = require('../../utils/rating');
 const TAB_BAR_SCROLL_TRIGGER = 8;
 const DEFAULT_SERVICE_LOCATION = {
@@ -11,6 +12,11 @@ const DEFAULT_SERVICE_LOCATION = {
   locationText: '选择定位'
 };
 const CAMPAIGN_CACHE_MS = 5 * 60 * 1000;
+const INITIAL_SALON_CARD_COUNT = 10;
+const loadingSalonCards = () => Array.from({ length: INITIAL_SALON_CARD_COUNT }, (_, index) => ({
+  cardKey: `salon-card-${index}`,
+  isPlaceholder: true
+}));
 let campaignCache;
 
 Page({
@@ -18,6 +24,9 @@ Page({
     salons: [],
     filteredSalons: [],
     visibleSalons: [],
+    salonCards: loadingSalonCards(),
+    showRecommendedPackages: false,
+    recommendedPackages: [],
     favorites: [],
     suggestions: [],
     loading: true,
@@ -127,21 +136,34 @@ Page({
     try {
       const { latitude, longitude } = this.data;
       const salons = await api.request(`/salons?latitude=${latitude}&longitude=${longitude}`);
-      const normalizedSalons = await Promise.all(salons.map((salon) => this.normalizeSalon(salon)));
+      const normalizedSalons = salons.map((salon) => this.normalizeSalon(salon));
       this.setData({ salons: normalizedSalons, visibleCount: 10 });
       this.applyFilter();
+      if (this.data.showRecommendedPackages) this.loadRecommendedPackages(normalizedSalons);
+      const salonsWithImages = await Promise.all(normalizedSalons.map(async (salon, index) => {
+        try {
+          return { ...salon, image: await api.displayImageUrl(api.salonImage(salons[index])) };
+        } catch (_) {
+          return salon;
+        }
+      }));
+      this.setData({ salons: salonsWithImages });
+      this.applyFilter();
     } catch (err) {
-      this.setData({ errorMessage: err.message || '网络请求失败' });
+      this.setData({
+        errorMessage: err.message || '网络请求失败',
+        salonCards: this.data.salons.length ? this.data.salonCards : []
+      });
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
       this.setData({ loading: false });
     }
   },
 
-  async normalizeSalon(salon) {
+  normalizeSalon(salon) {
     return {
       ...salon,
-      image: await api.displayImageUrl(api.salonImage(salon)),
+      image: '',
       nameText: salon.name || '未知沙龙',
       addressText: salon.address || '',
       descriptionText: salon.description || '暂无描述',
@@ -149,6 +171,53 @@ Page({
       ...ratingDisplay(salon.rating, salon.reviewCount),
       distanceText: this.formatDistance(salon.distanceKm)
     };
+  },
+
+  async loadRecommendedPackages(salons) {
+    const requestId = (this.recommendationRequestId || 0) + 1;
+    this.recommendationRequestId = requestId;
+    try {
+      const details = await Promise.all(salons.slice(0, 6).map((salon) =>
+        api.request(`/salons/${encodeURIComponent(salon.id)}`).catch(() => null)
+      ));
+      const packages = details.flatMap((salon, index) => {
+        const service = salon && salon.services && salon.services[0];
+        if (!service) return [];
+        const summary = salons[index];
+        return [{
+          id: `${salon.id}:${service.id}`,
+          salonId: salon.id,
+          serviceId: service.id,
+          salonName: salon.name || '未知沙龙',
+          salonDescription: salon.description || '暂无简介',
+          distanceText: summary.distanceText,
+          serviceName: service.name || '套餐',
+          serviceNote: service.note || '',
+          priceText: formatFen(service.priceFen),
+          image: api.displayImageUrl(api.salonImage(salon)),
+          isFavorite: this.data.favorites.includes(salon.id)
+        }];
+      });
+      const normalizedPackages = await Promise.all(packages.map(async (item) => ({
+        ...item,
+        image: await item.image
+      })));
+      const shuffledPackages = normalizedPackages.slice();
+      for (let index = shuffledPackages.length - 1; index > 0; index -= 1) {
+        const targetIndex = Math.floor(Math.random() * (index + 1));
+        [shuffledPackages[index], shuffledPackages[targetIndex]] = [shuffledPackages[targetIndex], shuffledPackages[index]];
+      }
+      if (shuffledPackages.length > 1 && shuffledPackages.every((item, index) => item.id === normalizedPackages[index].id)) {
+        shuffledPackages.push(shuffledPackages.shift());
+      }
+      if (requestId === this.recommendationRequestId) {
+        this.setData({ recommendedPackages: shuffledPackages });
+      }
+    } catch (_) {
+      if (requestId === this.recommendationRequestId) {
+        this.setData({ recommendedPackages: [] });
+      }
+    }
   },
 
   formatDistance(distanceKm) {
@@ -295,9 +364,19 @@ Page({
         const isFavorite = favoriteSet.has(salon.id);
         return { ...salon, isFavorite };
       });
+    const visibleSalons = filteredSalons.slice(0, this.data.visibleCount);
     this.setData({
       filteredSalons,
-      visibleSalons: filteredSalons.slice(0, this.data.visibleCount)
+      visibleSalons,
+      salonCards: visibleSalons.map((salon, index) => ({
+        ...salon,
+        cardKey: `salon-card-${index}`,
+        isPlaceholder: false
+      })),
+      recommendedPackages: this.data.recommendedPackages.map((item) => ({
+        ...item,
+        isFavorite: favoriteSet.has(item.salonId)
+      }))
     });
   },
 
@@ -340,8 +419,17 @@ Page({
 
   openDetail(e) {
     const salonId = e.currentTarget.dataset.id;
+    if (!salonId) return;
     analytics.track('salon_detail_click', { salonId });
     wx.navigateTo({ url: `/pages/detail/detail?id=${salonId}` });
+  },
+
+  openRecommendedPackage(e) {
+    const { salonId, serviceId } = e.currentTarget.dataset;
+    analytics.track('service_click', { salonId, serviceId });
+    wx.navigateTo({
+      url: `/pages/booking/booking?id=${encodeURIComponent(salonId)}&serviceId=${encodeURIComponent(serviceId)}`
+    });
   },
 
   openMessages() {

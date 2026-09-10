@@ -5,20 +5,16 @@ const SERVICE_TABS = [
 ];
 
 function serviceCategory(service = {}) {
-  const tags = Array.isArray(service.tags)
-    ? service.tags
-    : Array.isArray(service.categories) ? service.categories : [];
-  if (tags.some((tag) => /染发|烫发/.test(String(tag)))) return 'colorPerm';
-  if (tags.some((tag) => /头皮|护理/.test(String(tag)))) return 'scalpCare';
+  const tagIds = Array.isArray(service.tagIds) ? service.tagIds : [];
+  if (tagIds.some((id) => id === 'color' || id === 'perm')) return 'colorPerm';
+  if (tagIds.some((id) => id === 'scalp_care' || id === 'care' || id === 'nutrition')) return 'scalpCare';
   return 'cut';
 }
 
 function serviceMatchesCategory(service, category) {
   if (category === 'scalpCare') {
-    const tags = Array.isArray(service.tags)
-      ? service.tags
-      : Array.isArray(service.categories) ? service.categories : [];
-    return tags.some((tag) => /头皮|护理/.test(String(tag)));
+    const tagIds = Array.isArray(service.tagIds) ? service.tagIds : [];
+    return tagIds.some((id) => id === 'scalp_care' || id === 'care' || id === 'nutrition');
   }
   return serviceCategory(service) === category;
 }

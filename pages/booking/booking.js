@@ -1,5 +1,6 @@
 const api = require('../../utils/api');
 const { SERVICE_TABS, serviceCategory, serviceMatchesCategory } = require('../../utils/serviceCategories.js');
+const { serviceTagLabels } = require('../../utils/serviceTags.js');
 const analytics = require('../../utils/analytics');
 const { formatFen } = require('../../utils/money');
 
@@ -208,7 +209,7 @@ Page({
     const serviceOptions = (salon.services || []).map((service) => ({
       ...service,
       imageUrl: api.mediaUrl(service.imageUrl || ''),
-      tags: service.tags || service.categories || [],
+      tags: serviceTagLabels(service.tagIds),
       noteText: service.note || service.description || '',
       durationText: service.durationMinutes ? `${service.durationMinutes} min` : '',
       priceText: formatFen(service.priceFen),

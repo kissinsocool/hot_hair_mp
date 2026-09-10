@@ -134,7 +134,7 @@
 .search-clear image {
   width: 45rpx;
   height: 45rpx;
-  padding: 3rpx;
+  padding: 10rpx;
   border-radius: 50%;
   background: rgba(0, 0, 0, 0.12);
 }
@@ -451,9 +451,9 @@
   margin: 0 22rpx 20rpx;
   overflow: hidden;
   border: 1rpx solid #f0e4db;
-  border-radius: 20rpx;
+  border-radius: 24rpx;
   background: #fff;
-  box-shadow: 0 3.2rpx 24rpx rgba(0, 0, 0, 0.124);
+  box-shadow: 0 12rpx 28rpx rgba(0, 0, 0, 0.08);
   animation: salon-card-slide-in 480ms cubic-bezier(0.22, 0.8, 0.32, 1) both;
 }
 
@@ -465,17 +465,17 @@
   bottom: 0;
   left: 0;
   box-sizing: border-box;
-  padding: 4rpx;
+  padding: 5rpx;
   border-radius: inherit;
   overflow: hidden;
   opacity: 0;
-  /* 中间镂空，高光只显示在圆角边框内。 */
+  /* 镂空中间，只显示贴合圆角的边线。 */
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   mask-composite: exclude;
   pointer-events: none;
-  animation: salon-border-fade 1800ms linear both;
+  animation: salon-border-fade 2400ms linear both;
 }
 
 .salon-card-border-light::before {
@@ -485,8 +485,8 @@
   width: 200%;
   padding-bottom: 200%;
   content: '';
-  background: conic-gradient(from 0deg, rgba(235, 202, 133, 0) 0deg 285deg, rgba(235, 202, 133, 0.12) 305deg, rgba(245, 219, 158, 0.65) 330deg, #f8e2ad 346deg, #fff4d6 355deg, rgba(255, 244, 214, 0) 360deg);
-  animation: salon-border-travel 1800ms linear both;
+  background: conic-gradient(from 0deg, transparent 0deg 285deg, rgba(235, 202, 133, 0.12) 305deg, rgba(245, 219, 158, 0.65) 330deg, #f8e2ad 346deg, #fff4d6 355deg, transparent 360deg);
+  animation: salon-border-travel 2400ms linear both;
   animation-delay: inherit;
 }
 
@@ -517,35 +517,11 @@
   .salon-card-border-light::before { animation: none; }
 }
 
-.salon-image-wrap {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
-  width: calc(291.2rpx + 12.6px);
-  height: calc(220rpx + 10px);
-  flex: 0 0 calc(291.2rpx + 12.6px);
-  overflow: hidden;
-  border-right: 1rpx solid #f7f4f2;
-  background: #fff;
-}
-
-.salon-image-placeholder {
-  color: #c8bbb4;
-  font-size: 28rpx;
-  font-weight: 600;
-  letter-spacing: 4rpx;
-}
-
 .salon-image {
-  position: absolute;
-  z-index: 1;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: transparent;
+  width: calc(308rpx + 14px);
+  height: calc(220rpx + 10px);
+  flex: 0 0 calc(308rpx + 14px);
+  background: #eee;
 }
 
 .salon-tags {
@@ -571,7 +547,7 @@
   background: linear-gradient(105deg, #7c4dff 0%, #ff4f91 58%, #ffad63 100%);
   box-shadow: 0 4rpx 10rpx rgba(185, 64, 155, 0.28);
   font-size: 22rpx;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 34rpx;
   text-overflow: ellipsis;
   white-space: nowrap;

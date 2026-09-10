@@ -46,17 +46,23 @@
 
 .hero-title {
   position: absolute;
+  display: -webkit-box;
   right: 34rpx;
   bottom: 34rpx;
   left: 84rpx;
+  max-height: 104rpx;
   overflow: hidden;
   color: #fff;
   font-size: 40rpx;
   font-weight: 800;
+  line-height: 52rpx;
   letter-spacing: 2rpx;
   text-overflow: ellipsis;
   text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.45);
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .body {

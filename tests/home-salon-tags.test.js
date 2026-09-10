@@ -14,7 +14,7 @@ assert.match(template, /wx:for-index="tagIndex"/);
 assert.match(template, /tagIndex == 1 \? 'salon-tag-lime' : ''/);
 assert.match(template, /class="salon-tag-text"/);
 assert.match(styles, /\.salon-tags\s*\{[^}]*position:\s*absolute;[^}]*width:\s*250rpx;/s);
-assert.match(styles, /\.salon-tag\s*\{[^}]*max-width:\s*100%;[^}]*text-overflow:\s*ellipsis;/s);
+assert.match(styles, /\.salon-tag\s*\{[^}]*max-width:\s*100%;[^}]*font-weight:\s*600;[^}]*text-overflow:\s*ellipsis;/s);
 assert.match(styles, /linear-gradient\(105deg, #7c4dff 0%, #ff4f91 58%, #ffad63 100%\)/);
 assert.match(styles, /\.salon-tag-text\s*\{[^}]*linear-gradient\(110deg, #f3c94d 0%, #fff1a6 20%, #ffffea 40%, #f6d55c 57%, #fff9cf 76%, #e8b72f 100%\)/s);
 assert.match(styles, /-webkit-background-clip: text;/);

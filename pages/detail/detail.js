@@ -3,6 +3,7 @@ const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
 const { formatFen } = require('../../utils/money');
 const { ratingDisplay } = require('../../utils/rating');
+const { serviceTagLabels } = require('../../utils/serviceTags');
 
 Page({
   data: {
@@ -43,7 +44,7 @@ Page({
           ...service,
           imageUrls,
           imageUrl: await api.displayImageUrl(imageUrls[0] || ''),
-          tags: service.tags || service.categories || [],
+          tags: serviceTagLabels(service.tagIds),
           noteText: service.note || service.description || '',
           durationText: this.formatDuration(service.durationMinutes),
           priceText: formatFen(service.priceFen)
