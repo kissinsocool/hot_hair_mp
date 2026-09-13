@@ -40,6 +40,15 @@ async function main() {
   const secondResult = await secondPage;
   assert.equal(secondResult.items.length, 5);
   assert.equal(secondResult.hasMore, false);
+
+  const finalSalonPage = api.requestPage('/salons?latitude=1&longitude=2', { page: 2, limit: 10 });
+  assert.match(requests[3].url, /\/salons\?latitude=1&longitude=2&page=2&limit=10$/);
+  requests[3].success({
+    statusCode: 200,
+    data: Array.from({ length: 10 }, (_, id) => ({ id })),
+    header: { 'X-Has-More': 'false' }
+  });
+  assert.equal((await finalSalonPage).hasMore, false);
 }
 
 main().catch((error) => {

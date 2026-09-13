@@ -3,6 +3,7 @@
     "pages/home/home",
     "pages/login/login",
     "pages/detail/detail",
+    "pages/style-gallery/style-gallery",
     "pages/staff/staff",
     "pages/booking/booking",
     "pages/confirm/confirm",

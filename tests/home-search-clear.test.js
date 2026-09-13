@@ -12,7 +12,17 @@ global.wx = {
   request(options) { suggestionRequest = options; }
 };
 
+const api = require('../utils/api');
 require('../pages/home/home');
+
+api.requestPage = async (requestPath, options) => {
+  assert.equal(requestPath, '/salons?latitude=39.9042&longitude=116.4074');
+  assert.deepEqual(options, { page: 1, limit: 10 });
+  return {
+    items: [{ id: 'salon-1', name: 'Alpha' }, { id: 'salon-2', name: 'Beta' }],
+    hasMore: false
+  };
+};
 
 const page = {
   ...pageDefinition,
@@ -28,11 +38,11 @@ const page = {
 
 (async () => {
   const pendingSuggestions = page.loadSuggestions('Alpha');
-  page.clearSearch();
+  await page.clearSearch();
 
   assert.equal(page.data.keyword, '');
   assert.deepEqual(page.data.suggestions, []);
-  assert.equal(page.data.visibleCount, 10);
+  assert.equal(page.data.visibleCount, 2);
   assert.deepEqual(page.data.visibleSalons.map((salon) => salon.id), ['salon-1', 'salon-2']);
 
   suggestionRequest.success({ statusCode: 200, data: [{ id: 'stale', name: 'Alpha stale' }] });

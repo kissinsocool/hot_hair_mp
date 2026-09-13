@@ -17,7 +17,10 @@ const page = {
     hide: () => actions.push('hide'),
     show: () => actions.push('show')
   }),
-  setData(values) { Object.assign(this.data, values); }
+  setData(values, callback) {
+    Object.assign(this.data, values);
+    if (callback) callback();
+  }
 };
 
 page.onListScroll({ detail: { scrollTop: 5 } });
@@ -27,3 +30,7 @@ page.onListScroll({ detail: { scrollTop: 1 } });
 page.onListScroll({ detail: { scrollTop: 0 } });
 
 assert.deepEqual(actions, ['hide', 'show', 'show']);
+
+page.onListScroll({ detail: { scrollTop: 120 } });
+page.scrollToTop();
+assert.equal(page.data.scrollIntoView, 'list-top');

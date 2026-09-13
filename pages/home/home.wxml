@@ -29,7 +29,8 @@
     </view>
   </view>
 
-  <scroll-view scroll-y class="list" style="height: calc(100vh - {{appBarHeight}}px);" bindscroll="onListScroll" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
+  <scroll-view scroll-y scroll-into-view="{{scrollIntoView}}" scroll-with-animation class="list" style="height: calc(100vh - {{appBarHeight}}px);" bindscroll="onListScroll" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
+    <view id="list-top" aria-hidden="true"></view>
     <navigator wx:if="{{ad.enabled}}" class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
       <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
     </navigator>
@@ -81,6 +82,23 @@
       </scroll-view>
     </view>
 
+    <view class="category-finder-title">按分类查找</view>
+    <view class="category-finder" aria-label="按分类查找店铺">
+      <view
+        wx:for="{{salonCategories}}"
+        wx:key="id"
+        class="category-finder-item"
+        bindtap="openSalonCategory"
+        data-category="{{item.id}}"
+        role="button"
+        aria-label="查看{{item.label}}推广图片"
+      >
+        <image class="category-finder-image" mode="aspectFill" src="{{item.image}}" />
+        <text class="category-finder-label">{{item.label}}</text>
+        <view class="category-finder-arrow" aria-hidden="true"></view>
+      </view>
+    </view>
+
     <view class="salon-list-section">
       <view class="salon-list-title">附近店铺</view>
       <view wx:if="{{errorMessage}}" class="empty">
@@ -96,8 +114,8 @@
         <view class="empty-title">附近暂无沙龙请更换定位重新尝试</view>
       </view>
 
-      <view wx:for="{{salonCards}}" wx:for-index="salonIndex" wx:key="cardKey" class="salon-card" style="animation-delay: {{salonIndex * 70}}ms;" bindtap="openDetail" data-id="{{item.id}}">
-        <view class="salon-card-border-light" style="animation-delay: {{salonIndex * 70 + 560}}ms;" aria-hidden="true"></view>
+      <view wx:for="{{salonCards}}" wx:for-index="salonIndex" wx:key="cardKey" class="salon-card" bindtap="openDetail" data-card-index="{{salonIndex}}" data-id="{{item.id}}">
+        <view class="salon-card-border-light {{item.lightActive ? 'salon-card-border-light--active' : ''}}" style="animation-delay: {{salonIndex * 70 + 560}}ms;" aria-hidden="true"></view>
         <view class="salon-image-wrap">
           <text class="salon-image-placeholder" aria-hidden="true">靓丝美约</text>
           <image wx:if="{{!item.isPlaceholder}}" class="salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
@@ -122,7 +140,13 @@
         </view>
       </view>
 
-      <view wx:if="{{visibleSalons.length < filteredSalons.length}}" class="load-more">继续下拉加载更多</view>
+      <view wx:if="{{hasMoreSalons || loadingMore}}" class="load-more">
+        <view wx:if="{{loadingMore}}" class="load-more-dots" role="status" aria-label="正在加载更多店铺">
+          <view class="load-more-dot"></view>
+          <view class="load-more-dot"></view>
+          <view class="load-more-dot"></view>
+        </view>
+      </view>
     </view>
     <view class="tabbar-spacer" aria-hidden="true"></view>
   </scroll-view>
@@ -146,5 +170,8 @@
 
   <view class="support-fab {{supportHidden ? 'support-fab-hidden' : ''}}" hover-class="none" bindtap="openSupport" role="button" aria-label="平台客服">
     <image mode="aspectFit" src="/assets/icons/support_agent.png" />
+  </view>
+  <view class="back-to-top {{supportHidden ? 'support-fab-hidden' : ''}}" hover-class="none" bindtap="scrollToTop" role="button" aria-label="返回顶部">
+    <image mode="aspectFit" src="/assets/icons/keyboard_arrow_down.png" />
   </view>
 </view>

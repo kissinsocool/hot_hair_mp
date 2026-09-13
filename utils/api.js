@@ -198,13 +198,17 @@ async function requestPage(path, options = {}) {
   const items = Array.isArray(response.data) ? response.data : [];
   const totalHeader = Object.entries(response.headers)
     .find(([key]) => key.toLowerCase() === 'x-total-count');
+  const hasMoreHeader = Object.entries(response.headers)
+    .find(([key]) => key.toLowerCase() === 'x-has-more');
   const totalValue = Number(totalHeader && totalHeader[1]);
   const total = Number.isFinite(totalValue) ? totalValue : null;
+  const hasMoreValue = hasMoreHeader && String(hasMoreHeader[1]).toLowerCase();
   return {
     items,
     page,
     total,
-    hasMore: hasMorePages((page - 1) * limit + items.length, items.length, limit, total)
+    hasMore: hasMoreValue === 'true' || (hasMoreValue !== 'false'
+      && hasMorePages((page - 1) * limit + items.length, items.length, limit, total))
   };
 }
 

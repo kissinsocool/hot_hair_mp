@@ -12,6 +12,5 @@ global.wx = { getStorageSync: () => null };
 
 require('../pages/home/home');
 
-pageDefinition.normalizeSalon({ id: 'salon-without-reviews', reviewCount: 0 }).then((salon) => {
-  assert.equal(salon.ratingText, '暂无评分');
-});
+const salon = pageDefinition.normalizeSalon({ id: 'salon-without-reviews', reviewCount: 0 });
+assert.equal(salon.ratingText, '暂无评分');

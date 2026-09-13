@@ -5,6 +5,7 @@ const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
 const { formatFen } = require('../../utils/money');
 const { ratingDisplay } = require('../../utils/rating');
+const { PROMOTION_CATEGORIES, promotionCategory } = require('../../utils/promotionCategories');
 const TAB_BAR_SCROLL_TRIGGER = 8;
 const DEFAULT_SERVICE_LOCATION = {
   latitude: 39.9042,
@@ -13,9 +14,11 @@ const DEFAULT_SERVICE_LOCATION = {
 };
 const CAMPAIGN_CACHE_MS = 5 * 60 * 1000;
 const INITIAL_SALON_CARD_COUNT = 10;
+const SALON_PAGE_SIZE = 10;
 const loadingSalonCards = () => Array.from({ length: INITIAL_SALON_CARD_COUNT }, (_, index) => ({
   cardKey: `salon-card-${index}`,
-  isPlaceholder: true
+  isPlaceholder: true,
+  lightActive: false
 }));
 let campaignCache;
 
@@ -27,9 +30,11 @@ Page({
     salonCards: loadingSalonCards(),
     showRecommendedPackages: false,
     recommendedPackages: [],
+    salonCategories: PROMOTION_CATEGORIES,
     favorites: [],
     suggestions: [],
     loading: true,
+    loadingMore: false,
     refreshing: false,
     errorMessage: '',
     locating: false,
@@ -37,7 +42,10 @@ Page({
     longitude: DEFAULT_SERVICE_LOCATION.longitude,
     locationText: DEFAULT_SERVICE_LOCATION.locationText,
     keyword: '',
-    visibleCount: 10,
+    scrollIntoView: '',
+    visibleCount: SALON_PAGE_SIZE,
+    salonPage: 0,
+    hasMoreSalons: false,
     statusBarHeight: 0,
     navBarHeight: 44,
     appBarHeight: 148,
@@ -55,6 +63,10 @@ Page({
   onLoad() {
     this.setNavSize();
     this.locate();
+  },
+
+  onReady() {
+    this.observeSalonCards();
   },
 
   setNavSize() {
@@ -93,6 +105,7 @@ Page({
 
   onUnload() {
     clearTimeout(this.supportTimer);
+    if (this.salonCardObserver) this.salonCardObserver.disconnect();
     if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
     this.unsubscribeBookingSocket = null;
   },
@@ -132,32 +145,48 @@ Page({
   },
 
   async loadSalons() {
-    this.setData({ loading: !this.data.visibleSalons.length, errorMessage: '' });
+    const version = (this.salonListVersion || 0) + 1;
+    this.salonListVersion = version;
+    this.setData({ loading: !this.data.visibleSalons.length, loadingMore: false, errorMessage: '' });
     try {
-      const { latitude, longitude } = this.data;
-      const salons = await api.request(`/salons?latitude=${latitude}&longitude=${longitude}`);
-      const normalizedSalons = salons.map((salon) => this.normalizeSalon(salon));
-      this.setData({ salons: normalizedSalons, visibleCount: 10 });
+      const result = await api.requestPage(this.salonListPath(), { page: 1, limit: SALON_PAGE_SIZE });
+      const normalizedSalons = await this.normalizeSalonPage(result.items);
+      if (version !== this.salonListVersion) return;
+      this.setData({
+        salons: normalizedSalons,
+        visibleCount: normalizedSalons.length,
+        salonPage: 1,
+        hasMoreSalons: result.hasMore
+      });
       this.applyFilter();
       if (this.data.showRecommendedPackages) this.loadRecommendedPackages(normalizedSalons);
-      const salonsWithImages = await Promise.all(normalizedSalons.map(async (salon, index) => {
-        try {
-          return { ...salon, image: await api.displayImageUrl(api.salonImage(salons[index])) };
-        } catch (_) {
-          return salon;
-        }
-      }));
-      this.setData({ salons: salonsWithImages });
-      this.applyFilter();
     } catch (err) {
+      if (version !== this.salonListVersion) return;
       this.setData({
         errorMessage: err.message || '网络请求失败',
         salonCards: this.data.salons.length ? this.data.salonCards : []
-      });
+      }, () => this.observeSalonCards());
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
-      this.setData({ loading: false });
+      if (version === this.salonListVersion) this.setData({ loading: false });
     }
+  },
+
+  salonListPath() {
+    const { latitude, longitude } = this.data;
+    const keyword = this.data.keyword.trim();
+    return `/salons?latitude=${latitude}&longitude=${longitude}${keyword ? `&keyword=${encodeURIComponent(keyword)}` : ''}`;
+  },
+
+  async normalizeSalonPage(salons) {
+    return Promise.all(salons.map(async (source) => {
+      const salon = this.normalizeSalon(source);
+      try {
+        return { ...salon, image: await api.displayImageUrl(api.salonImage(source)) };
+      } catch (_) {
+        return salon;
+      }
+    }));
   },
 
   normalizeSalon(salon) {
@@ -319,7 +348,7 @@ Page({
     this.setData({ keyword });
     if (!keyword.trim()) {
       this.setData({ suggestions: [] });
-      this.applyFilter();
+      this.loadSalons();
       return;
     }
     clearTimeout(this.searchTimer);
@@ -341,21 +370,21 @@ Page({
   clearSearch() {
     clearTimeout(this.searchTimer);
     this.searchTimer = null;
-    this.setData({ keyword: '', suggestions: [], visibleCount: 10 });
-    this.applyFilter();
+    this.setData({ keyword: '', suggestions: [] });
+    return this.loadSalons();
   },
 
   chooseSuggestion(e) {
     this.setData({ keyword: e.currentTarget.dataset.name, suggestions: [] });
-    this.submitSearch();
+    return this.submitSearch();
   },
 
   submitSearch() {
-    this.setData({ visibleCount: 10, suggestions: [] });
-    this.applyFilter();
+    this.setData({ suggestions: [] });
+    return this.loadSalons();
   },
 
-  applyFilter() {
+  applyFilter(onRendered) {
     const keyword = this.data.keyword.trim().toLowerCase();
     const favoriteSet = new Set(this.data.favorites);
     const filteredSalons = this.data.salons
@@ -371,22 +400,76 @@ Page({
       salonCards: visibleSalons.map((salon, index) => ({
         ...salon,
         cardKey: `salon-card-${index}`,
-        isPlaceholder: false
+        isPlaceholder: false,
+        lightActive: Boolean(this.data.salonCards[index] && this.data.salonCards[index].lightActive)
       })),
       recommendedPackages: this.data.recommendedPackages.map((item) => ({
         ...item,
         isFavorite: favoriteSet.has(item.salonId)
       }))
+    }, () => {
+      this.observeSalonCards();
+      if (onRendered) onRendered();
     });
   },
 
-  loadMore() {
-    this.setData({ visibleCount: this.data.visibleCount + 10 });
-    this.applyFilter();
+  observeSalonCards() {
+    const cardCount = this.data.salonCards.length;
+    if (!this.createIntersectionObserver || cardCount === this.observedSalonCardCount) return;
+    if (this.salonCardObserver) this.salonCardObserver.disconnect();
+    this.observedSalonCardCount = cardCount;
+    if (!cardCount) {
+      this.salonCardObserver = null;
+      return;
+    }
+    this.salonCardObserver = this.createIntersectionObserver({ observeAll: true, thresholds: [0, 0.01] });
+    this.salonCardObserver
+      .relativeTo('.list')
+      .observe('.salon-card', (entry) => {
+        const index = Number(entry.dataset.cardIndex);
+        const card = this.data.salonCards[index];
+        const lightActive = entry.intersectionRatio > 0;
+        if (!card || card.lightActive === lightActive) return;
+        this.setData({ [`salonCards[${index}].lightActive`]: lightActive });
+      });
+  },
+
+  async loadMore() {
+    if (this.data.loading || this.data.loadingMore || !this.data.hasMoreSalons) return;
+    const version = this.salonListVersion;
+    const page = this.data.salonPage + 1;
+    this.setData({ loadingMore: true });
+    try {
+      const result = await api.requestPage(this.salonListPath(), { page, limit: SALON_PAGE_SIZE });
+      const nextSalons = await this.normalizeSalonPage(result.items);
+      if (version !== this.salonListVersion) return;
+      const knownIds = new Set(this.data.salons.map((salon) => salon.id));
+      const newSalons = nextSalons.filter((salon) => !knownIds.has(salon.id));
+      if (nextSalons.length && !newSalons.length) {
+        throw new Error('未加载到新店铺，请稍后重试');
+      }
+      const salons = this.data.salons.concat(newSalons);
+      this.setData({
+        salons,
+        visibleCount: salons.length,
+        salonPage: page,
+        hasMoreSalons: result.hasMore
+      });
+      await new Promise(resolve => this.applyFilter(resolve));
+    } catch (err) {
+      if (version === this.salonListVersion) {
+        wx.showToast({ title: err.message || '加载失败，请稍后重试', icon: 'none' });
+      }
+    } finally {
+      if (version === this.salonListVersion) this.setData({ loadingMore: false });
+    }
   },
 
   onListScroll(e) {
     const scrollTop = Math.max(0, Number(e.detail.scrollTop) || 0);
+    if (scrollTop === 0 && this.data.scrollIntoView) {
+      this.setData({ scrollIntoView: '' });
+    }
     const distance = scrollTop - this.tabBarScrollAnchor;
     if (scrollTop === 0 || Math.abs(distance) >= TAB_BAR_SCROLL_TRIGGER) {
       this.tabBarScrollAnchor = scrollTop;
@@ -401,6 +484,10 @@ Page({
     this.supportTimer = setTimeout(() => {
       this.setData({ supportHidden: false });
     }, 180);
+  },
+
+  scrollToTop() {
+    this.setData({ scrollIntoView: 'list-top' });
   },
 
   async toggleFavorite(e) {
@@ -429,6 +516,14 @@ Page({
     analytics.track('service_click', { salonId, serviceId });
     wx.navigateTo({
       url: `/pages/booking/booking?id=${encodeURIComponent(salonId)}&serviceId=${encodeURIComponent(serviceId)}`
+    });
+  },
+
+  openSalonCategory(e) {
+    const category = promotionCategory(String(e.currentTarget.dataset.category || ''));
+    if (!category) return;
+    wx.navigateTo({
+      url: `/pages/style-gallery/style-gallery?category=${encodeURIComponent(category.id)}`
     });
   },
 
