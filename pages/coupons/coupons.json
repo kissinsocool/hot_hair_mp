@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "选择优惠券",
+  "usingComponents": {
+    "coupon-ticket": "/components/coupon-ticket/coupon-ticket"
+  }
+}

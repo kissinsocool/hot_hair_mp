@@ -1,16 +1,16 @@
 <view class="messages-page">
-  <view class="messages-appbar">
+  <view class="messages-appbar" style="padding-top: {{statusBarHeight}}px; height: {{appBarHeight}}px;">
     <view class="nav-icon nav-back" bindtap="goBack"><image mode="aspectFit" src="/assets/icons/arrow_back.png" /></view>
     <view class="messages-title">预约消息</view>
-    <view class="nav-actions">
-      <view class="nav-icon nav-home" bindtap="goHome"><image mode="aspectFit" src="/assets/icons/home_outlined.png" /></view>
+    <view class="nav-icon nav-home" style="top: {{statusBarHeight}}px; height: {{navBarHeight}}px;" bindtap="goHome" role="button" aria-label="返回首页">
+      <image mode="aspectFit" src="/assets/icons/home_outlined.png" />
     </view>
   </view>
 
   <view class="messages-list">
-    <view wx:if="{{loading && !orders.length}}" class="empty">正在加载...</view>
-    <view wx:elif="{{!orders.length}}" class="empty">暂无预约消息</view>
-    <view wx:for="{{orders}}" wx:key="id" class="msg-card">
+    <view wx:if="{{loading && !messages.length}}" class="empty">正在加载...</view>
+    <view wx:elif="{{!messages.length}}" class="empty">暂无预约消息</view>
+    <view wx:for="{{messages}}" wx:key="id" class="msg-card">
       <view class="status-dot {{item.status}}"></view>
       <view class="msg-body">
         <view class="status {{item.status}}">{{item.statusLabel}}</view>
@@ -18,7 +18,10 @@
         <view class="msg-meta"><image class="meta-icon" mode="aspectFit" src="/assets/icons/content_cut.png" />{{item.serviceName}} · {{item.staffName}}</view>
         <view class="msg-meta"><image class="meta-icon" mode="aspectFit" src="/assets/icons/storefront_outlined.png" />{{item.salonName}}</view>
         <view class="msg-meta"><image class="meta-icon" mode="aspectFit" src="/assets/icons/schedule.png" />{{item.startTimeText}}</view>
+        <view wx:if="{{item.hasCouponDiscount}}" class="msg-meta coupon-meta">券 · {{item.couponText}}</view>
       </view>
     </view>
+    <view wx:if="{{loadingMoreMessages}}" class="list-footer">正在加载更多...</view>
+    <view wx:elif="{{messages.length >= 20 && !hasMoreMessages}}" class="list-footer">没有更多消息了</view>
   </view>
 </view>

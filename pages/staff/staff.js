@@ -1,4 +1,5 @@
 const api = require('../../utils/api');
+const { ratingDisplay } = require('../../utils/rating');
 
 Page({
   data: {
@@ -18,7 +19,8 @@ Page({
     try {
       const data = await api.request(`/staff/${this.data.id}`);
       data.imageUrl = api.mediaUrl(data.imageUrl);
-      data.ratingText = data.rating || '5.0';
+      Object.assign(data, ratingDisplay(data.rating, data.reviewCount));
+      data.starIcons = data.hasRating ? starIcons(data.rating) : [];
       data.bioText = data.bio || '暂无简介';
       data.roleText = [data.role, data.experience && `${data.experience}经验`].filter(Boolean).join(' · ');
       data.reviews = await Promise.all((data.reviews || []).map(async (review) => {
@@ -42,6 +44,11 @@ Page({
   book() {
     if (!api.requireLogin()) return;
     wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.salonId}&staffId=${this.data.id}` });
+  },
+
+  previewAvatar() {
+    const current = this.data.staff.imageUrl;
+    if (current) wx.previewImage({ urls: [current], current });
   },
 
   previewReviewImage(e) {

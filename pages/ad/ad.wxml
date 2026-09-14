@@ -1,0 +1,65 @@
+<view class="article-page">
+  <view class="brand">SEOUL HAIR SALON TREND</view>
+
+  <view class="article">
+    <view class="post-header">
+      <view class="category">HAIR TRENDS 2026</view>
+      <view class="title">2026 首尔发型风向标：今年一定要尝试的「松弛感」发型</view>
+      <view class="meta">BY TREND EDITOR　·　2026.03.15　·　5 MIN READ</view>
+    </view>
+
+    <view class="intro">如果你正在寻找换季的灵感，想要褪去沉闷，那么今年的韩系发型趋势绝对能让你眼前一亮。2026年首尔清潭洞沙龙里最常听到的三个字就是——<text class="accent">“松弛感”</text>。告别了过去那种刻意、死板的造型，今年的趋势更强调发丝的自然流向、轻盈的空气感以及修饰脸型的巧妙层次。</view>
+    <view class="intro">作为你的线上发型顾问，我为你整理了目前韩国最具话题度、出街率最高的三款发型。无论你是想要清冷酷感，还是温婉优雅，总有一款能直击你的心。</view>
+
+    <view class="divider"></view>
+
+    <view class="section">
+      <view class="section-title"><view class="title-mark"></view><text>1. 酷女孩的清冷滤镜：Hush Cut（轻薄层次剪）</text></view>
+      <view class="image-card">
+        <image class="article-image portrait" mode="aspectFill" src="/pages/ad/images/hush-cut.jpg" lazy-load />
+        <view class="caption">轻盈飘逸、自带清冷高级感的 Hush Cut</view>
+      </view>
+      <view class="features">
+        <view class="features-title">为什么这款发型正风靡首尔？</view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">极具呼吸感：</text>摆脱了厚重发尾的沉闷，走起路来发丝自带灵动的飘逸感。</text></view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">百搭脸型：</text>脸颊两侧的碎发可以根据你的脸型进行定制修剪，是方圆脸和高颧骨女孩的“瘦脸神器”。</text></view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">日常好打理：</text>只需要一点点发油抓出线条感，就能呈现出一种“我刚起床就这么美”的慵懒随性。</text></view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title"><view class="title-mark"></view><text>2. 财阀千金的温婉：Build Perm（韩式气垫烫）</text></view>
+      <view class="image-card">
+        <image class="article-image landscape" mode="aspectFill" src="/pages/ad/images/build-perm.jpg" lazy-load />
+        <view class="caption">充满优雅气质与自然蓬松感的 Build Perm</view>
+      </view>
+      <view class="features">
+        <view class="features-title">这款发型的灵魂所在：</view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">头包脸效果：</text>发根的蓬松处理能有效修饰扁平的后脑勺，从视觉上打造出完美的头身比。</text></view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">优雅不显老：</text>卷度主要集中在耳朵以下，既保留了直发的清纯，又增添了卷发的柔美和女人味。</text></view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">八字刘海绝配：</text>搭配经典的外翻八字刘海，不仅能修饰额头，还能让侧颜的线条更加立体。</text></view>
+      </view>
+    </view>
+
+    <view class="section">
+      <view class="section-title"><view class="title-mark"></view><text>3. 男士的利落与高级：Guile Cut（盖尔剪）</text></view>
+      <view class="image-card">
+        <image class="article-image square" mode="aspectFill" src="/pages/ad/images/guile-cut.jpg" lazy-load />
+        <view class="caption">干练又不失雅痞细节的 Guile Cut</view>
+      </view>
+      <view class="features">
+        <view class="features-title">它的独特魅力：</view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">硬朗与柔情的平衡：</text>露出额头显得非常精神、有男人味，但垂下的几缕碎发又打破了传统西装头的死板，多了一份雅痞感。</text></view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">修饰宽额头：</text>对于发际线较高或额头较宽的男士非常友好，半遮半掩的设计能完美扬长避短。</text></view>
+        <view class="feature"><text class="bullet">✦</text><text><text class="strong">职场休闲两相宜：</text>穿西装时显得专业干练，周末穿T恤又显得时髦有型，实用性满分。</text></view>
+      </view>
+    </view>
+
+    <view class="tips">
+      <view class="tips-title">✂️ 设计师的小贴士（Stylist's Tip）</view>
+      <view>再好看的图片，也需要根据你自身的发质（粗硬/细软）、发量以及骨相来做微调。拿着这篇博客去见你的发型师，和他好好沟通你的日常穿搭和打理习惯，才能剪出最适合你的那一款！</view>
+    </view>
+  </view>
+
+  <view class="footer">© 2026 SEOUL TREND INSIGHTS. ALL RIGHTS RESERVED.</view>
+</view>

@@ -1,62 +1,177 @@
 <view class="home">
   <view class="appbar" style="padding-top: {{statusBarHeight}}px; min-height: {{appBarHeight}}px;">
     <view class="appbar-row" style="height: {{navBarHeight}}px;">
-      <view class="location" bindtap="openLocation">
+      <view class="location" style="max-width: calc(100% - {{menuButtonOffset}}px - 62rpx);" bindtap="openLocation">
         <image class="top-icon" mode="aspectFit" src="/assets/icons/location_on_outlined.png" />
         <text class="location-text">{{locationText}}</text>
         <image class="arrow-icon" mode="aspectFit" src="/assets/icons/keyboard_arrow_down_white.png" />
       </view>
-      <button class="message-btn" hover-class="none" bindtap="openMessages" aria-label="消息">
+      <view class="message-btn" style="margin-right: calc({{menuButtonOffset}}px + 5rpx);" bindtap="openMessages" role="button" aria-label="消息">
         <view class="message-wrap">
           <image class="message-icon" mode="aspectFit" src="/assets/icons/notifications_none.png" />
-          <view wx:if="{{hasUnreadMessages}}" class="message-dot"></view>
+          <view wx:if="{{unreadMessageCount}}" class="message-dot">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</view>
         </view>
-      </button>
+      </view>
     </view>
     <view class="search">
       <input value="{{keyword}}" bindinput="onKeyword" bindconfirm="submitSearch" placeholder="按名称搜索沙龙..." />
+      <view wx:if="{{keyword}}" class="search-clear" catchtap="clearSearch" role="button" aria-label="清除搜索内容">
+        <image mode="aspectFit" src="/assets/icons/close.png" />
+      </view>
       <button hover-class="none" bindtap="submitSearch">搜索</button>
     </view>
   </view>
 
   <view wx:if="{{suggestions.length}}" class="suggestions">
-    <view wx:for="{{suggestions}}" wx:key="id" class="suggestion" bindtap="chooseSuggestion" data-name="{{item.name}}">
+    <view wx:for="{{suggestions}}" wx:key="id" class="suggestion" bindtap="chooseSuggestion" data-id="{{item.id}}" data-name="{{item.name}}">
       <view class="suggestion-name">{{item.name}}</view>
       <view class="suggestion-sub">{{item.addressText}}</view>
     </view>
   </view>
 
-  <scroll-view scroll-y class="list" style="height: calc(100vh - {{appBarHeight}}px - 80px - env(safe-area-inset-bottom));" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
-    <view class="list-title">{{listTitle}}</view>
-
-    <view wx:if="{{loading && !visibleSalons.length}}" class="loading">正在加载...</view>
-    <view wx:elif="{{errorMessage}}" class="empty">
-      <view class="empty-title">加载失败</view>
-      <view class="empty-sub">{{errorMessage}}</view>
-      <button class="retry" bindtap="loadSalons">重新加载</button>
-    </view>
-    <view wx:elif="{{!visibleSalons.length}}" class="empty">
-      <view class="empty-title">没有找到匹配的沙龙</view>
-      <view class="empty-sub">换个名称试试看</view>
-    </view>
-
-    <view wx:for="{{visibleSalons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
-      <image class="salon-image" mode="aspectFill" src="{{item.image}}" />
-      <view class="salon-body">
-        <view class="salon-head">
-          <view class="salon-name">{{item.nameText}}</view>
-          <view class="salon-rating"><image class="star-icon" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
-        </view>
-        <view class="salon-desc">{{item.descriptionText}}</view>
-        <view class="salon-foot">
-          <view class="distance">{{item.distanceText}}</view>
-          <view class="favorite" catchtap="toggleFavorite" data-id="{{item.id}}">
-            <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
-          </view>
-        </view>
+  <scroll-view scroll-y scroll-into-view="{{scrollIntoView}}" scroll-with-animation class="list" style="height: calc(100vh - {{appBarHeight}}px);" bindscroll="onListScroll" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
+    <view id="list-top" aria-hidden="true"></view>
+    <navigator wx:if="{{ad.enabled}}" class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
+      <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
+    </navigator>
+    <view class="notice">
+      <image class="notice-icon" mode="aspectFit" src="/assets/icons/campaign.png" />
+      <view class="notice-window">
+        <text class="notice-text">在服务过程中如果遇到强迫购买产品、升级项目、充值或办理会员卡等问题请第一时间向平台客服举报反馈！</text>
+        <text class="notice-text" aria-hidden="true">在服务过程中如果遇到强迫购买产品、升级项目、充值或办理会员卡等问题请第一时间向平台客服举报反馈！</text>
       </view>
     </view>
 
-    <view wx:if="{{visibleSalons.length < filteredSalons.length}}" class="load-more">继续下拉加载更多</view>
+    <view wx:if="{{showRecommendedPackages && recommendedPackages.length}}" class="package-recommendations">
+      <view class="package-recommendations-title">经典套餐推荐</view>
+      <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="package-scroll">
+        <view class="package-track">
+          <view
+            wx:for="{{recommendedPackages}}"
+            wx:key="id"
+            class="package-card"
+          >
+            <view class="package-salon" bindtap="openDetail" data-id="{{item.salonId}}" role="button" aria-label="查看店铺：{{item.salonName}}">
+              <image class="package-image" mode="aspectFill" src="{{item.image}}" lazy-load />
+              <view class="package-salon-copy">
+                <view class="package-salon-name">{{item.salonName}}</view>
+                <view class="package-salon-description">{{item.salonDescription}}</view>
+                <view wx:if="{{item.distanceText}}" class="package-distance">{{item.distanceText}}</view>
+              </view>
+              <view class="package-favorite" catchtap="toggleFavorite" data-id="{{item.salonId}}" role="button" aria-label="{{item.isFavorite ? '取消收藏' : '收藏'}}{{item.salonName}}">
+                <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
+              </view>
+            </view>
+            <view
+              class="package-service"
+              bindtap="openRecommendedPackage"
+              data-salon-id="{{item.salonId}}"
+              data-service-id="{{item.serviceId}}"
+              role="button"
+              aria-label="预约{{item.salonName}}的{{item.serviceName}}，{{item.priceText}}"
+            >
+              <view class="package-service-copy">
+                <view class="package-service-name">{{item.serviceName}}</view>
+                <view wx:if="{{item.serviceNote}}" class="package-service-note">{{item.serviceNote}}</view>
+              </view>
+              <view class="package-price">{{item.priceText}}</view>
+              <view class="package-arrow">›</view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="category-finder-title">按分类查找</view>
+    <view class="category-finder" aria-label="按分类查找店铺">
+      <view
+        wx:for="{{salonCategories}}"
+        wx:key="id"
+        class="category-finder-item"
+        bindtap="openSalonCategory"
+        data-category="{{item.id}}"
+        role="button"
+        aria-label="查看{{item.label}}推广图片"
+      >
+        <image class="category-finder-image" mode="aspectFill" src="{{item.image}}" />
+        <text class="category-finder-label">{{item.label}}</text>
+        <view class="category-finder-arrow" aria-hidden="true"></view>
+      </view>
+    </view>
+
+    <view class="salon-list-section">
+      <view class="salon-list-title">附近店铺</view>
+      <view wx:if="{{errorMessage}}" class="empty">
+        <view class="empty-title">加载失败</view>
+        <view class="empty-sub">{{errorMessage}}</view>
+        <button class="retry" bindtap="loadSalons">重新加载</button>
+      </view>
+      <view wx:elif="{{keyword && !visibleSalons.length}}" class="empty">
+        <view class="empty-title">没有找到匹配的沙龙</view>
+        <view class="empty-sub">换个名称试试看</view>
+      </view>
+      <view wx:elif="{{!loading && !visibleSalons.length}}" class="empty">
+        <view class="empty-title">附近暂无沙龙请更换定位重新尝试</view>
+      </view>
+
+      <view wx:for="{{salonCards}}" wx:for-index="salonIndex" wx:key="cardKey" class="salon-card" bindtap="openDetail" data-card-index="{{salonIndex}}" data-id="{{item.id}}">
+        <view class="salon-card-border-light {{item.lightActive ? 'salon-card-border-light--active' : ''}}" style="animation-delay: {{salonIndex * 70 + 560}}ms;" aria-hidden="true"></view>
+        <view class="salon-image-wrap">
+          <text class="salon-image-placeholder" aria-hidden="true">靓丝美约</text>
+          <image wx:if="{{!item.isPlaceholder}}" class="salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
+        </view>
+        <view wx:if="{{!item.isPlaceholder && item.tags.length}}" class="salon-tags">
+          <view wx:for="{{item.tags}}" wx:for-item="tag" wx:for-index="tagIndex" wx:key="*this" class="salon-tag {{tagIndex == 1 ? 'salon-tag-lime' : ''}}">
+            <text class="salon-tag-text">{{tag}}</text>
+          </view>
+        </view>
+        <view wx:if="{{!item.isPlaceholder}}" class="salon-body">
+          <view class="salon-head">
+            <view class="salon-name">{{item.nameText}}</view>
+            <view class="salon-rating"><image wx:if="{{item.hasRating}}" class="star-icon" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
+          </view>
+          <view class="salon-desc">{{item.descriptionText}}</view>
+          <view class="salon-foot">
+            <view class="distance">{{item.distanceText}}</view>
+            <view class="favorite" catchtap="toggleFavorite" data-id="{{item.id}}">
+              <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view wx:if="{{hasMoreSalons || loadingMore}}" class="load-more">
+        <view wx:if="{{loadingMore}}" class="load-more-dots" role="status" aria-label="正在加载更多店铺">
+          <view class="load-more-dot"></view>
+          <view class="load-more-dot"></view>
+          <view class="load-more-dot"></view>
+        </view>
+      </view>
+    </view>
+    <view class="tabbar-spacer" aria-hidden="true"></view>
   </scroll-view>
+
+  <view wx:if="{{newUserGiftVisible}}" class="new-user-gift">
+    <image
+      class="new-user-gift-image"
+      mode="aspectFill"
+      src="{{newUserGiftImage}}"
+      catchtap="claimNewUserGift"
+      aria-label="领取新人礼包"
+    />
+    <view
+      class="new-user-gift-close-target"
+      catchtap="dismissNewUserGift"
+      aria-label="关闭新人礼包推广图"
+    >
+      <view class="new-user-gift-close">×</view>
+    </view>
+  </view>
+
+  <view class="support-fab {{supportHidden ? 'support-fab-hidden' : ''}}" hover-class="none" bindtap="openSupport" role="button" aria-label="平台客服">
+    <image mode="aspectFit" src="/assets/icons/support_agent.png" />
+  </view>
+  <view class="back-to-top {{supportHidden ? 'support-fab-hidden' : ''}}" hover-class="none" bindtap="scrollToTop" role="button" aria-label="返回顶部">
+    <image mode="aspectFit" src="/assets/icons/keyboard_arrow_down.png" />
+  </view>
 </view>

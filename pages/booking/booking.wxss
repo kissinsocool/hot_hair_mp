@@ -43,13 +43,8 @@
 }
 
 .staff-placeholder {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  padding: 38rpx;
   background: rgba(232, 162, 176, 0.12);
-  color: #d06884;
-  font-size: 72rpx;
-  font-weight: 800;
 }
 
 .staff-copy {
@@ -76,6 +71,7 @@
 }
 
 .fee {
+  margin-left: 8rpx;
   padding: 1rpx 8rpx;
   border-radius: 6rpx;
   background: #000;
@@ -107,6 +103,61 @@
   display: flex;
   flex-wrap: wrap;
   gap: 20rpx 18rpx;
+}
+
+.slot-state {
+  padding: 28rpx 0;
+  color: #999;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.slot-state.retry {
+  color: #d06884;
+}
+
+.slots-panel {
+  position: relative;
+  min-height: 86rpx;
+  overflow: hidden;
+}
+
+.slots-panel.loading,
+.slots-panel.animating {
+  pointer-events: none;
+}
+
+.slots-layer {
+  width: 100%;
+}
+
+.slots-previous {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  animation: slots-slide-out 360ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.slots-current.entering {
+  animation: slots-slide-in 360ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@keyframes slots-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes slots-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .chip,
@@ -158,13 +209,85 @@
   font-weight: 700;
 }
 
+.service-tabs {
+  position: relative;
+  display: flex;
+  margin: -6rpx 0 12rpx;
+  overflow: hidden;
+  border: 2rpx solid #716161;
+  border-radius: 18rpx;
+  background: #fff;
+}
+
+.service-tab {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  box-sizing: border-box;
+  height: 68rpx;
+  color: #665858;
+  font-size: 29rpx;
+  font-weight: 500;
+  line-height: 68rpx;
+  text-align: center;
+}
+
+.service-tab + .service-tab {
+  border-left: 1rpx solid #716161;
+}
+
+.service-tab.active {
+  border-color: #716161;
+  background: transparent;
+  color: #fff;
+  font-weight: 700;
+}
+
+.service-tab-slider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 33.333%;
+  background: #716161;
+  pointer-events: none;
+  transition: transform 220ms ease;
+}
+
+.service-tab-slider.colorPerm {
+  transform: translateX(100%);
+}
+
+.service-tab-slider.scalpCare {
+  transform: translateX(200%);
+}
+
+.service-count {
+  margin: 0 18rpx 12rpx;
+  color: #aaa;
+  font-size: 24rpx;
+  line-height: 32rpx;
+}
+
+.service-count-number {
+  color: #d06884;
+  font-weight: 700;
+}
+
+.service-empty {
+  padding: 44rpx 0 48rpx;
+  color: #aaa;
+  font-size: 28rpx;
+  text-align: center;
+}
+
 .service-option {
   position: relative;
   display: flex;
   align-items: flex-start;
   min-height: 144rpx;
   margin-bottom: 10rpx;
-  padding: 10rpx 54rpx 10rpx 18rpx;
+  padding: 14rpx 54rpx 14rpx 14rpx;
   border: 1rpx solid #e8dcd0;
   border-radius: 16rpx;
   background: #fff;
@@ -185,6 +308,21 @@
   margin-left: 18rpx;
 }
 
+.service-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 8rpx;
+}
+
+.service-tag {
+  padding: 3rpx 12rpx;
+  background: #fde4eb;
+  color: #d06884;
+  font-size: 25rpx;
+  line-height: 32rpx;
+}
+
 .service-name {
   color: #5a5a5a;
   font-size: 37.33rpx;
@@ -201,7 +339,7 @@
 
 .service-side {
   position: absolute;
-  top: 15rpx;
+  top: 19rpx;
   right: 16rpx;
   height: 42.67rpx;
   display: flex;
@@ -263,10 +401,10 @@
 .date {
   display: inline-block;
   width: 13%;
-  height: 94px;
+  height: 106px;
   min-width: 0;
   margin-right: 1%;
-  padding: 20px 0 0;
+  padding: 14px 0 0;
   border: 1px solid #eadbd2;
   border-radius: 12px;
   color: #969696;
@@ -276,12 +414,17 @@
   vertical-align: top;
 }
 
-.date view:last-child {
+.date-day {
   margin-top: 7px;
   color: #575757;
   font-size: 20px;
   font-weight: 700;
   line-height: 27px;
+}
+
+.date-week.relative {
+  color: #48bf37;
+  font-weight: 600;
 }
 
 .date.active {
@@ -290,8 +433,33 @@
   color: #fff;
 }
 
-.date.active view:last-child {
+.date.active .date-day {
   color: #fff;
+}
+
+.date.active .date-week.relative {
+  color: #fff;
+}
+
+.date.disabled {
+  border-color: #d8d8d8;
+  background: #ededed;
+  color: #aaa;
+}
+
+.date.disabled .date-day {
+  color: #999;
+}
+
+.date.disabled .date-week.relative {
+  color: #999;
+}
+
+.date-rest {
+  margin-top: 4px;
+  color: #999;
+  font-size: 11px;
+  line-height: 14px;
 }
 
 .bottom-bar {

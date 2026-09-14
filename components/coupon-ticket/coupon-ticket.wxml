@@ -1,0 +1,28 @@
+<view class="coupon {{selectable ? 'selectable' : ''}} {{disabled ? 'disabled' : ''}}" bindtap="handleTap">
+  <view wx:if="{{selectable}}" class="selection {{selected ? 'selected' : ''}}">
+    <text wx:if="{{selected}}">✓</text>
+  </view>
+
+  <view class="coupon-main">
+    <image class="coupon-confetti" mode="aspectFill" src="/assets/images/coupon-confetti.jpg" />
+    <view class="coupon-offer">
+      <view class="coupon-amount">{{discountText}}<text>元</text></view>
+      <view class="coupon-offer-copy">
+        <view class="coupon-kind">代金券</view>
+        <view class="coupon-rule">满{{minimumText}}元可用</view>
+      </view>
+    </view>
+    <view class="coupon-meta">
+      <text class="coupon-title">{{title}}</text>
+      <text class="coupon-separator"></text>
+      <text class="coupon-expiry">{{expiryText}}</text>
+    </view>
+  </view>
+
+  <view class="coupon-stub">
+    <view class="notch notch-top"></view>
+    <view class="stub-dots"></view>
+    <view class="stub-label">COUPON</view>
+    <view class="notch notch-bottom"></view>
+  </view>
+</view>
