@@ -3,6 +3,8 @@
     "pages/home/home",
     "pages/login/login",
     "pages/detail/detail",
+    "pages/salon-posts/salon-posts",
+    "pages/salon-reviews/salon-reviews",
     "pages/style-gallery/style-gallery",
     "pages/staff/staff",
     "pages/booking/booking",

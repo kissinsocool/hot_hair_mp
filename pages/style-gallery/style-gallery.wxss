@@ -7,6 +7,38 @@ page {
   background: #fff;
 }
 
+.gallery-sort {
+  display: flex;
+  box-sizing: border-box;
+  width: 33.333%;
+  margin: 16rpx 24rpx 16rpx auto;
+  background: #fff;
+}
+
+.gallery-sort-option {
+  flex: 1;
+  padding: 8rpx 4rpx;
+  border: 2rpx solid #d9d2ce;
+  color: #403937;
+  font-size: 24rpx;
+  line-height: 34rpx;
+  text-align: center;
+}
+
+.gallery-sort-option:first-child {
+  border-radius: 12rpx 0 0 12rpx;
+}
+
+.gallery-sort-option:last-child {
+  border-left: 0;
+  border-radius: 0 12rpx 12rpx 0;
+}
+
+.gallery-sort-option.active {
+  background: #403937;
+  color: #fff;
+}
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

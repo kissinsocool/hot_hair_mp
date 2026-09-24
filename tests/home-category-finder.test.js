@@ -20,6 +20,12 @@ assert.deepEqual(pageDefinition.data.salonCategories.map((category) => category.
 pageDefinition.openSalonCategory({ currentTarget: { dataset: { category: 'curly' } } });
 assert.deepEqual(navigations, ['/pages/style-gallery/style-gallery?category=curly']);
 
+pageDefinition.data.locatedOnce = true;
+pageDefinition.data.latitude = 39.9;
+pageDefinition.data.longitude = 116.4;
+pageDefinition.openSalonCategory({ currentTarget: { dataset: { category: 'color' } } });
+assert.equal(navigations[1], '/pages/style-gallery/style-gallery?category=color&latitude=39.9&longitude=116.4');
+
 const template = fs.readFileSync(path.join(__dirname, '../pages/home/home.wxml'), 'utf8');
 const styles = fs.readFileSync(path.join(__dirname, '../pages/home/home.wxss'), 'utf8');
 assert.match(template, /class="category-finder-title">按分类查找<\/view>/);

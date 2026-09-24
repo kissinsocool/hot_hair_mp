@@ -12,7 +12,7 @@ Page({
     salon: null,
     isFavorite: false,
     currentPromoIndex: 0,
-    reviewCount: 3,
+    reviewCount: 10,
     visibleReviews: [],
     loading: true,
     ad: ad.DEFAULT
@@ -58,6 +58,8 @@ Page({
         experienceText: staff.experience || '',
         bioText: staff.bio || staff.description || '暂无简介'
       })));
+      salon.latestPosts = await Promise.all((salon.latestPosts || []).map((post) => this.normalizePost(post)));
+      salon.hasMorePosts = salon.hasMorePosts === true;
       this.setData({ salon, visibleReviews: salon.reviews.slice(0, this.data.reviewCount) });
       this.loadFavoriteState();
     } catch (err) {
@@ -79,6 +81,15 @@ Page({
       staffText: review.staffName || review.staff || 'Sato',
       dateText: this.formatDate(review.createdAt || review.date),
       imageUrls: await Promise.all(images.map(api.displayImageUrl))
+    };
+  },
+
+  async normalizePost(post) {
+    return {
+      ...post,
+      authorImageUrl: await api.displayImageUrl(post.authorImageUrl),
+      imageUrls: await Promise.all((post.imageUrls || []).map(api.displayImageUrl)),
+      dateText: this.formatDate(post.createdAt)
     };
   },
 
@@ -164,12 +175,17 @@ Page({
     wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
-  showMoreReviews() {
-    const reviewCount = this.data.reviewCount + 3;
-    this.setData({
-      reviewCount,
-      visibleReviews: this.data.salon.reviews.slice(0, reviewCount)
-    });
+  previewPostImage(e) {
+    const post = this.data.salon.latestPosts[Number(e.currentTarget.dataset.postIndex)] || {};
+    wx.previewImage({ urls: post.imageUrls || [], current: e.currentTarget.dataset.url });
+  },
+
+  showAllPosts() {
+    wx.navigateTo({ url: `/pages/salon-posts/salon-posts?salonId=${encodeURIComponent(this.data.id)}` });
+  },
+
+  showAllReviews() {
+    wx.navigateTo({ url: `/pages/salon-reviews/salon-reviews?salonId=${encodeURIComponent(this.data.id)}` });
   },
 
   async openService(e) {
@@ -182,7 +198,9 @@ Page({
   },
 
   openStaff(e) {
-    wx.navigateTo({ url: `/pages/staff/staff?id=${e.currentTarget.dataset.id}&salonId=${this.data.id}` });
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/staff/staff?id=${encodeURIComponent(id)}&salonId=${encodeURIComponent(this.data.id)}` });
   },
 
   book() {

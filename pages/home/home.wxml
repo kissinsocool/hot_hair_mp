@@ -29,8 +29,7 @@
     </view>
   </view>
 
-  <scroll-view scroll-y scroll-into-view="{{scrollIntoView}}" scroll-with-animation class="list" style="height: calc(100vh - {{appBarHeight}}px);" bindscroll="onListScroll" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
-    <view id="list-top" aria-hidden="true"></view>
+  <scroll-view id="home-list" scroll-y enhanced class="list" style="height: calc(100vh - {{appBarHeight}}px);" bindscroll="onListScroll" bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="refresh">
     <navigator wx:if="{{ad.enabled}}" class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
       <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
     </navigator>
@@ -100,7 +99,13 @@
     </view>
 
     <view class="salon-list-section">
-      <view class="salon-list-title">附近店铺</view>
+      <view class="salon-list-heading">
+        <view class="salon-list-title">附近店铺</view>
+        <view class="salon-sort" role="tablist" aria-label="店铺排序">
+          <view class="salon-sort-option {{salonSort === 'distance' ? 'salon-sort-active' : ''}}" catchtap="changeSalonSort" data-sort="distance" role="tab" aria-selected="{{salonSort === 'distance'}}">距离</view>
+          <view class="salon-sort-option {{salonSort === 'rating' ? 'salon-sort-active' : ''}}" catchtap="changeSalonSort" data-sort="rating" role="tab" aria-selected="{{salonSort === 'rating'}}">评分</view>
+        </view>
+      </view>
       <view wx:if="{{errorMessage}}" class="empty">
         <view class="empty-title">加载失败</view>
         <view class="empty-sub">{{errorMessage}}</view>

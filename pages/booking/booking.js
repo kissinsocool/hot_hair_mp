@@ -106,6 +106,7 @@ Page({
     this.slotRequestId = requestId;
     const selectedDate = this.data.selectedDate;
     const staffId = this.data.selectedStaffId;
+    const serviceId = this.data.selectedServiceId;
     this.setData({
       selectedTime: '',
       slotsLoading: Boolean(selectedDate),
@@ -117,9 +118,10 @@ Page({
     if (!selectedDate) return;
 
     try {
+      const serviceQuery = serviceId ? `&serviceId=${encodeURIComponent(serviceId)}` : '';
       const slots = staffId === '__no_preference__'
-        ? await api.request(`/staff/${staffId}/slots?date=${selectedDate}&salonId=${encodeURIComponent(this.salonId)}`)
-        : await api.request(`/staff/${staffId}/slots?date=${selectedDate}`);
+        ? await api.request(`/staff/${staffId}/slots?date=${selectedDate}&salonId=${encodeURIComponent(this.salonId)}${serviceQuery}`)
+        : await api.request(`/staff/${staffId}/slots?date=${selectedDate}${serviceQuery}`);
       if (requestId !== this.slotRequestId) return;
       const previousSlotOptions = this.data.slotOptions;
       this.setData({ slots, slotsLoading: false });
@@ -152,6 +154,7 @@ Page({
     this.setData({ selectedServiceId });
     this.refreshOptions();
     analytics.track('service_click', { salonId: this.salonId, serviceId: selectedServiceId });
+    return this.loadSlots();
   },
 
   selectServiceCategory(e) {

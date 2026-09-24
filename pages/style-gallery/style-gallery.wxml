@@ -1,4 +1,8 @@
 <view class="gallery">
+  <view wx:if="{{category}}" class="gallery-sort" role="tablist" aria-label="分类图片排序">
+    <view class="gallery-sort-option {{sort === 'latest' ? 'active' : ''}}" bindtap="changeSort" data-sort="latest" role="tab" aria-selected="{{sort === 'latest'}}">最新发布</view>
+    <view class="gallery-sort-option {{sort === 'distance' ? 'active' : ''}}" bindtap="changeSort" data-sort="distance" role="tab" aria-selected="{{sort === 'distance'}}">离我最近</view>
+  </view>
   <view wx:if="{{images.length}}" class="gallery-grid">
     <view
       wx:for="{{images}}"

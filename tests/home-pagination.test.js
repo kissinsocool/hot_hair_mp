@@ -57,6 +57,18 @@ const page = {
     assert.equal(page.data.salons.length, 20);
     assert.equal(page.data.loadingMore, false);
 
+    page.changeSalonSort({ currentTarget: { dataset: { sort: 'rating' } } });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(pageRequests[2].path, '/salons?latitude=39.9042&longitude=116.4074&sort=rating');
+    assert.deepEqual(pageRequests[2].options, { page: 1, limit: 10 });
+    assert.equal(page.data.salonSort, 'rating');
+    await page.loadMore();
+    assert.equal(pageRequests[3].path, pageRequests[2].path);
+    assert.deepEqual(pageRequests[3].options, { page: 2, limit: 10 });
+    page.changeSalonSort({ currentTarget: { dataset: { sort: 'distance' } } });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(pageRequests[4].path, '/salons?latitude=39.9042&longitude=116.4074');
+
     const renderCallbacks = [];
     const renderPage = {
       ...global.homePageDefinition,

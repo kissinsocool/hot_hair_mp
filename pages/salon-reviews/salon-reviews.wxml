@@ -1,0 +1,27 @@
+<view class="page">
+  <view wx:if="{{loading}}" class="state">正在加载...</view>
+  <view wx:elif="{{errorMessage}}" class="state">
+    <view>{{errorMessage}}</view>
+    <button class="retry" bindtap="load">重新加载</button>
+  </view>
+  <view wx:elif="{{!reviews.length}}" class="state">暂无评价</view>
+  <view wx:else class="review-list">
+    <view wx:for="{{reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review-card">
+      <view class="review-head">
+        <view class="review-user">
+          <image class="avatar" mode="{{item.avatarUrl ? 'aspectFill' : 'aspectFit'}}" src="{{item.avatarUrl || '/assets/icons/person.png'}}" />
+          <view class="review-user-copy">
+            <view class="review-name">{{item.userText}}</view>
+            <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>
+          </view>
+        </view>
+        <text class="review-date">{{item.dateText}}</text>
+      </view>
+      <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon" mode="aspectFit" src="{{star}}" /></view>
+      <view class="review-comment">{{item.comment}}</view>
+      <view wx:if="{{item.imageUrls.length}}" class="review-images">
+        <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+      </view>
+    </view>
+  </view>
+</view>

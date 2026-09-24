@@ -48,6 +48,7 @@ async function main() {
   assert.match(styles, /@keyframes slots-slide-in\s*\{[\s\S]*?translateX\(100%\)/);
 
   const first = page.loadSlots();
+  assert.match(requests[0].url, /serviceId=service-1$/);
   assert.equal(page.data.selectedTime, '');
   assert.equal(page.data.canSubmit, false);
   assert.equal(page.data.slotsLoading, true);

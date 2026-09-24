@@ -4,7 +4,9 @@
   <view class="block-title">选择理发师</view>
   <view class="staff-list">
     <view wx:for="{{staffOptions}}" wx:key="id" class="staff-option {{item.className}}" bindtap="selectStaff" data-id="{{item.id}}">
-      <image wx:if="{{item.isNoPreference}}" class="staff-placeholder" mode="aspectFit" src="/assets/icons/person_outline.png" />
+      <view wx:if="{{item.isNoPreference}}" class="staff-img no-preference">
+        <image class="no-preference-img" mode="aspectFill" src="/assets/icons/who.png" />
+      </view>
       <image wx:else class="staff-img" mode="aspectFill" src="{{item.imageUrl}}" />
       <view class="staff-copy">
         <view class="staff-head">

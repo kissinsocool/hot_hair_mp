@@ -42,7 +42,7 @@ Page({
     longitude: DEFAULT_SERVICE_LOCATION.longitude,
     locationText: DEFAULT_SERVICE_LOCATION.locationText,
     keyword: '',
-    scrollIntoView: '',
+    salonSort: 'distance',
     visibleCount: SALON_PAGE_SIZE,
     salonPage: 0,
     hasMoreSalons: false,
@@ -175,7 +175,14 @@ Page({
   salonListPath() {
     const { latitude, longitude } = this.data;
     const keyword = this.data.keyword.trim();
-    return `/salons?latitude=${latitude}&longitude=${longitude}${keyword ? `&keyword=${encodeURIComponent(keyword)}` : ''}`;
+    return `/salons?latitude=${latitude}&longitude=${longitude}${keyword ? `&keyword=${encodeURIComponent(keyword)}` : ''}${this.data.salonSort === 'rating' ? '&sort=rating' : ''}`;
+  },
+
+  changeSalonSort(e) {
+    const sort = e.currentTarget.dataset.sort;
+    if (!['distance', 'rating'].includes(sort) || sort === this.data.salonSort) return;
+    this.setData({ salonSort: sort, hasMoreSalons: false });
+    this.loadSalons();
   },
 
   async normalizeSalonPage(salons) {
@@ -467,9 +474,6 @@ Page({
 
   onListScroll(e) {
     const scrollTop = Math.max(0, Number(e.detail.scrollTop) || 0);
-    if (scrollTop === 0 && this.data.scrollIntoView) {
-      this.setData({ scrollIntoView: '' });
-    }
     const distance = scrollTop - this.tabBarScrollAnchor;
     if (scrollTop === 0 || Math.abs(distance) >= TAB_BAR_SCROLL_TRIGGER) {
       this.tabBarScrollAnchor = scrollTop;
@@ -487,7 +491,13 @@ Page({
   },
 
   scrollToTop() {
-    this.setData({ scrollIntoView: 'list-top' });
+    this.createSelectorQuery()
+      .select('#home-list')
+      .node()
+      .exec((result) => {
+        const scrollView = result[0] && result[0].node;
+        if (scrollView) scrollView.scrollTo({ top: 0, animated: true, duration: 500 });
+      });
   },
 
   async toggleFavorite(e) {
@@ -522,8 +532,11 @@ Page({
   openSalonCategory(e) {
     const category = promotionCategory(String(e.currentTarget.dataset.category || ''));
     if (!category) return;
+    const location = this.data.locatedOnce
+      ? `&latitude=${this.data.latitude}&longitude=${this.data.longitude}`
+      : '';
     wx.navigateTo({
-      url: `/pages/style-gallery/style-gallery?category=${encodeURIComponent(category.id)}`
+      url: `/pages/style-gallery/style-gallery?category=${encodeURIComponent(category.id)}${location}`
     });
   },
 

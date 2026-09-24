@@ -79,7 +79,7 @@ const page = {
   assert.match(recommendationTemplate, /\{\{item\.salonDescription\}\}/);
   assert.match(recommendationTemplate, /class="package-salon" bindtap="openDetail"/);
   assert.match(recommendationTemplate, /class="package-service"[\s\S]*?bindtap="openRecommendedPackage"/);
-  assert.match(styles, /\.package-recommendations-title,[\s\S]*?\.salon-list-title\s*\{[^}]*color:\s*#625656;[^}]*font-size:\s*36rpx;[^}]*font-weight:\s*700;/s);
+  assert.match(styles, /\.package-recommendations-title,[\s\S]*?\.salon-list-title\s*\{[^}]*color:\s*#615555;[^}]*font-size:\s*34rpx;[^}]*font-weight:\s*700;/s);
   assert.match(styles, /\.package-track\s*\{[^}]*gap:\s*22rpx;/s);
   assert.match(styles, /\.package-card\s*\{[^}]*width:\s*592rpx;[^}]*height:\s*330rpx;/s);
   assert.match(styles, /\.package-card\s*\{[^}]*padding:\s*30rpx;[^}]*border:\s*1rpx solid rgba\(90, 78, 74, 0\.05\);[^}]*border-radius:\s*18rpx;/s);

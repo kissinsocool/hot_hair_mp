@@ -265,15 +265,10 @@
 .category-finder-title,
 .salon-list-title {
   margin: 0 30rpx 18rpx;
-  color: #625656;
-  font-size: 36rpx;
+  color: #615555;
+  font-size: 34rpx;
   font-weight: 700;
   line-height: 44rpx;
-}
-
-.category-finder-title,
-.salon-list-title {
-  color: #403937;
 }
 
 .package-scroll {
@@ -472,6 +467,40 @@
 .salon-list-section {
   padding-top: 24rpx;
   background: #f7f4f2;
+}
+
+.salon-list-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-right: 30rpx;
+}
+
+.salon-sort {
+  display: flex;
+  margin-bottom: 18rpx;
+  overflow: hidden;
+  border: 2rpx solid #d9d2ce;
+  border-radius: 12rpx;
+  background: #fff;
+}
+
+.salon-sort-option {
+  min-width: 74rpx;
+  padding: 6rpx 14rpx;
+  color: #403937;
+  font-size: 26rpx;
+  line-height: 36rpx;
+  text-align: center;
+}
+
+.salon-sort-option + .salon-sort-option {
+  border-left: 2rpx solid #d9d2ce;
+}
+
+.salon-sort-active {
+  background: #403937;
+  color: #fff;
 }
 
 @keyframes notice-marquee {

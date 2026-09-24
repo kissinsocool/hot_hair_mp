@@ -100,7 +100,22 @@
           <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
         </view>
       </view>
-      <button wx:if="{{visibleReviews.length < salon.reviews.length}}" class="ghost-btn" bindtap="showMoreReviews">查看更多评价</button>
+      <button wx:if="{{salon.reviews.length > reviewCount}}" class="ghost-btn" bindtap="showAllReviews">查看更多</button>
+    </view>
+    <view class="section">
+      <view class="section-title">店铺动态</view>
+      <view wx:if="{{!salon.latestPosts.length}}" class="muted">暂无动态</view>
+      <view wx:for="{{salon.latestPosts}}" wx:for-index="postIndex" wx:key="id" class="salon-post">
+        <view class="salon-post-content">{{item.content}}</view>
+        <view wx:if="{{item.imageUrls.length}}" class="salon-post-images">
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="salon-post-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewPostImage" data-url="{{image}}" data-post-index="{{postIndex}}" />
+        </view>
+        <view class="salon-post-head">
+          <text bindtap="openStaff" data-id="{{item.authorStaffId}}" aria-role="button">{{item.authorName}}</text>
+          <text> · 投稿时间：{{item.dateText}}</text>
+        </view>
+      </view>
+      <button wx:if="{{salon.hasMorePosts}}" class="ghost-btn" bindtap="showAllPosts">展示更多</button>
     </view>
   </view>
   <view class="bar">
