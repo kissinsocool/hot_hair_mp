@@ -1,5 +1,6 @@
 const api = require('../../utils/api');
 const { ratingDisplay } = require('../../utils/rating');
+const { staffRoleLabel } = require('../../utils/staffRoles');
 
 Page({
   data: {
@@ -22,7 +23,7 @@ Page({
       Object.assign(data, ratingDisplay(data.rating, data.reviewCount));
       data.starIcons = data.hasRating ? starIcons(data.rating) : [];
       data.bioText = data.bio || '暂无简介';
-      data.roleText = [data.role, data.experience && `${data.experience}经验`].filter(Boolean).join(' · ');
+      data.roleText = [staffRoleLabel(data.roleId), data.experience && `${data.experience}经验`].filter(Boolean).join(' · ');
       data.reviews = await Promise.all((data.reviews || []).map(async (review) => {
         const images = review.imageUrls || review.images || [review.imageUrl || review.image].filter(Boolean);
         return {

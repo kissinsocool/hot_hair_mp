@@ -4,6 +4,7 @@ const analytics = require('../../utils/analytics');
 const { formatFen } = require('../../utils/money');
 const { ratingDisplay } = require('../../utils/rating');
 const { serviceTagLabels } = require('../../utils/serviceTags');
+const { staffRoleLabel } = require('../../utils/staffRoles');
 
 Page({
   data: {
@@ -53,7 +54,7 @@ Page({
       salon.staff = await Promise.all((salon.staff || []).map(async (staff) => ({
         ...staff,
         imageUrl: await api.displayImageUrl(staff.imageUrl),
-        roleText: staff.role || '',
+        roleText: staffRoleLabel(staff.roleId),
         experienceText: staff.experience || '',
         bioText: staff.bio || staff.description || '暂无简介'
       })));

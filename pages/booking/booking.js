@@ -3,6 +3,7 @@ const { SERVICE_TABS, serviceCategory, serviceMatchesCategory } = require('../..
 const { serviceTagLabels } = require('../../utils/serviceTags.js');
 const analytics = require('../../utils/analytics');
 const { formatFen } = require('../../utils/money');
+const { staffRoleLabel } = require('../../utils/staffRoles');
 
 Page({
   data: {
@@ -192,7 +193,7 @@ Page({
       ...((salon.staff || []).map((staff) => ({
         id: staff.id,
         name: staff.name,
-        role: staff.role || '',
+        role: staffRoleLabel(staff.roleId),
         experience: staff.experience || '',
         bio: staff.bio || staff.description || '',
         imageUrl: api.mediaUrl(staff.imageUrl || ''),
