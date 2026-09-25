@@ -1,0 +1,21 @@
+.account-page { min-height: 100vh; padding: 36rpx 24rpx 60rpx; background: #fffdfb; }
+.avatar-section { display: flex; flex-direction: column; align-items: center; padding: 20rpx 0 34rpx; }
+.avatar-wrap { position: relative; width: 176rpx; height: 176rpx; }
+.avatar { width: 176rpx; height: 176rpx; border: 4rpx solid rgba(208, 104, 132, 0.3); border-radius: 50%; background: rgba(208, 104, 132, 0.12); }
+.avatar.placeholder { padding: 38rpx; }
+.camera { position: absolute; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; width: 54rpx; height: 54rpx; border: 4rpx solid #fff; border-radius: 50%; background: #d06884; }
+.camera image { width: 32rpx; height: 32rpx; }
+.avatar-tip { margin-top: 18rpx; color: #999; font-size: 25rpx; }
+.avatar-status { margin-top: 18rpx; padding: 8rpx 18rpx; border-radius: 999rpx; font-size: 25rpx; text-align: center; }
+.avatar-status.pending { background: #fff4df; color: #b26a00; }
+.avatar-status.rejected { background: #fff0f0; color: #c43d3d; }
+.form-card { padding: 26rpx; border: 1rpx solid #e8dcd0; border-radius: 24rpx; background: #fff; box-shadow: 0 10rpx 30rpx rgba(88, 68, 72, 0.05); }
+.input-wrap,
+.picker { display: flex; align-items: center; height: 92rpx; margin-bottom: 22rpx; padding: 0 24rpx; border: 1rpx solid #e8dcd0; border-radius: 16rpx; background: #fffdfb; color: #555; font-size: 30rpx; }
+.input-wrap input { flex: 1; min-width: 0; height: 92rpx; }
+.icon-img { width: 34rpx; height: 34rpx; margin-right: 16rpx; opacity: 0.62; }
+.picker-value { flex: 1; color: #888; text-align: right; }
+.save-btn,
+.logout-btn { height: 82rpx; margin: 20rpx 0 0; border-radius: 999rpx; font-size: 32rpx; font-weight: 700; }
+.save-btn { background: #d06884; color: #fff; }
+.logout-btn { border: 1rpx solid #ff5252; background: #fff; color: #ff5252; }

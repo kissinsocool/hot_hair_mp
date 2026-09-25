@@ -1,0 +1,52 @@
+<view class="page order-detail-page">
+  <view wx:if="{{loading && !order}}" class="empty">正在加载...</view>
+  <view wx:elif="{{errorMessage && !order}}" class="empty error-state">
+    <view class="empty-title">订单加载失败</view>
+    <view class="empty-sub">{{errorMessage}}</view>
+    <button class="ghost-btn retry-btn" bindtap="load">重新加载</button>
+  </view>
+
+  <block wx:elif="{{order}}">
+    <view class="status-card card">
+      <view class="status-label {{order.statusClass}}">{{order.statusLabel}}</view>
+      <view class="order-number">订单编号：{{order.orderNo}}</view>
+      <view class="order-number">下单时间：{{order.createdTimeText}}</view>
+    </view>
+
+    <view wx:if="{{order.reasonText}}" class="reason-card card">
+      <view class="reason-title">{{order.reasonTitle}}</view>
+      <view class="reason-text">{{order.reasonText}}</view>
+    </view>
+
+    <view class="section-title">预约信息</view>
+    <view class="card panel">
+      <view class="row"><text>服务项目</text><text>{{order.serviceName}}</text></view>
+      <view class="row compact"><text>到店时间</text><text>{{order.startTimeText}}</text></view>
+      <view class="row compact"><text>商家名称</text><view class="salon-link" bindtap="openSalon"><text>{{order.salonName}}</text></view></view>
+      <view class="row compact"><text>理发师</text><text>{{order.staffName}}</text></view>
+      <view wx:if="{{order.note}}" class="row compact"><text>预约备注</text><text>{{order.note}}</text></view>
+    </view>
+
+    <view class="section-title">费用明细</view>
+    <view class="card panel fee-panel">
+      <view class="row compact"><text>服务费用</text><text>{{order.servicePriceText}}</text></view>
+      <view wx:if="{{order.hasStaffExtraServiceFee}}" class="row compact"><text>理发师额外服务费</text><text>{{order.staffExtraServiceFeeText}}</text></view>
+      <view class="row"><text>费用合计</text><text>{{order.originalAmountText}}</text></view>
+      <view wx:if="{{order.hasCouponDiscount}}" class="row compact discount-row"><text>{{order.couponTitle || '优惠券'}}</text><text>{{order.couponDiscountText}}</text></view>
+      <view class="row total"><text>到店需支付</text><text>{{order.payableAmountText}}</text></view>
+    </view>
+
+    <view wx:if="{{order.complaint}}">
+      <view class="section-title">投诉进度</view>
+      <view class="card panel complaint-panel">
+        <view class="row compact"><text>当前状态</text><text class="complaint-status">{{order.complaint.statusText}}</text></view>
+        <view class="row compact"><text>提交时间</text><text>{{order.complaint.createdTimeText}}</text></view>
+        <view class="complaint-description">{{order.complaint.description}}</view>
+      </view>
+    </view>
+
+    <view wx:if="{{order.canRebook}}" class="bottom-actions">
+      <button class="primary-btn action-btn" bindtap="rebook">再次预约</button>
+    </view>
+  </block>
+</view>

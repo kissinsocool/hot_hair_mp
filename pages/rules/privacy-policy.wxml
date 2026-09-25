@@ -1,0 +1,219 @@
+<scroll-view class="rule-scroll" scroll-y enhanced show-scrollbar="{{false}}">
+  <view class="rule-page">
+    <view class="rule-title">靓丝小程序隐私政策</view>
+    <view class="rule-paragraph rule-date">发布日期：2026年8月5日
+生效日期：2026年8月5日</view>
+
+    <view class="rule-paragraph">靓丝（以下简称“我们”）非常重视用户（以下简称“您”）的个人信息和隐私保护。我们深知个人信息对您的重要性，并将按照法律法规要求，采取相应的安全保护措施保护您的个人信息。我们希望通过本《靓丝小程序隐私政策》（以下简称“本政策”）向您清晰说明在您使用靓丝时，我们如何收集、使用、存储、共享、转让、公开披露和保护您的个人信息，以及您如何管理您的个人信息。</view>
+    <view class="rule-paragraph">本政策适用于北京靓丝科技有限公司通过靓丝微信小程序向您提供美发门店及服务信息浏览、搜索、收藏、优惠券、预约、订单管理、评价、投诉和客服反馈等服务时开展的个人信息处理活动。</view>
+    <view class="rule-paragraph"><text class="rule-strong">请您在使用靓丝前仔细阅读并充分理解本政策，特别是以加粗方式提示的敏感个人信息、系统权限、信息共享及您的权利等内容。您点击同意仅代表您已了解基本功能所需的信息处理，不代表您同意我们处理非必要个人信息。附加功能所需的信息和权限，将在您实际使用相关功能时另行征得您的授权。</text></view>
+    <view class="rule-paragraph">如您对本政策有任何疑问，可通过“七、如何联系我们”所列方式联系我们。</view>
+    <view class="rule-paragraph">请注意，本政策不适用于商家或其他第三方独立向您提供的产品或服务。第三方独立处理个人信息的规则，请参照其隐私政策或类似声明；依法应由靓丝承担的平台管理责任不因本条免除。</view>
+    <view class="rule-paragraph"><text class="rule-strong">靓丝目前不提供在线充值、在线支付、代收款、退款、消费信贷或其他资金结算服务，因此不会基于此类服务收集您的银行卡号、支付账号、交易密码、信用信息等金融信息。</text></view>
+
+    <view class="rule-paragraph rule-section">本政策将帮助您了解以下内容</view>
+    <view class="rule-paragraph">一、我们如何收集和使用您的个人信息
+二、我们如何共享、转让和公开披露您的个人信息
+三、我们如何保存和保护您的个人信息
+四、您如何管理您的个人信息
+五、未成年人的个人信息保护
+六、通知和修订
+七、如何联系我们
+附录：相关定义与第三方服务清单</view>
+
+    <view class="rule-paragraph rule-section">一、我们如何收集和使用您的个人信息</view>
+    <view class="rule-paragraph">靓丝的基本功能是“美发门店及服务信息浏览与预约”。我们遵循合法、正当、必要、诚信和最小范围原则，仅为本政策载明的目的处理个人信息。您拒绝提供基本功能所必需的信息时，可能无法使用相应基本功能；您拒绝提供附加功能所需的信息或权限，不会影响其他不依赖该信息或权限的功能。</view>
+
+    <view class="rule-paragraph rule-subsection">（一）我们收集和使用个人信息的场景</view>
+
+    <view class="rule-paragraph rule-subsection">1. 帮助您注册和登录</view>
+    <view class="rule-paragraph">当您使用微信手机号授权注册或登录靓丝时，我们会在您主动点击授权按钮并经微信确认后，处理您的<text class="rule-strong">手机号码、微信登录临时凭证、手机号授权动态凭证、OpenID等账号标识、靓丝用户账号标识和登录凭证</text>，用于创建或匹配账号、完成登录、验证身份和保障账号安全。</view>
+    <view class="rule-paragraph">其中，手机号授权动态凭证及微信登录临时凭证由微信提供，我们的服务器使用该凭证向微信服务端换取您授权提供的手机号码或账号标识。我们不会在您未点击授权按钮时获取手机号码。</view>
+    <view class="rule-paragraph">手机号码属于注册登录所必需的信息。如您拒绝授权，将无法注册或登录，仍可使用无需登录的门店浏览、搜索等功能。</view>
+
+    <view class="rule-paragraph rule-subsection">2. 完善个人资料</view>
+    <view class="rule-paragraph">您可以选择填写或修改<text class="rule-strong">昵称、性别、头像和联系电话</text>，用于展示个人资料，便于商家识别、联系和提供预约服务。评价公开展示时，我们可能展示您的昵称和头像。</view>
+    <view class="rule-paragraph">当您更换头像时，我们仅处理您通过相机拍摄或从相册主动选择并确认上传的图片，不会主动读取或上传相册中的其他内容。昵称、性别和头像属于可选信息，拒绝提供不影响其他基本功能。</view>
+
+    <view class="rule-paragraph rule-subsection">3. 向您提供基于地理位置的信息展示和搜索</view>
+    <view class="rule-paragraph">当您进入附近门店页面时，经您授权，我们会获取您的<text class="rule-strong">模糊地理位置及经纬度</text>，用于确定所在区域、展示附近门店和估算距离。当您主动使用“选择定位”时，我们还会处理您选择的<text class="rule-strong">精准地点经纬度、地点名称和地址信息</text>，用于按所选地点展示门店和计算距离。</view>
+    <view class="rule-paragraph"><text class="rule-strong">精准地理位置和行踪轨迹属于敏感个人信息。靓丝仅获取当次模糊位置或您主动选择的地点，不会持续跟踪或记录您的移动轨迹。您可以拒绝或关闭位置权限；关闭后，附近门店和距离排序可能无法按您所在区域展示，您仍可手动选择位置。</text></view>
+
+    <view class="rule-paragraph rule-subsection">4. 向您提供浏览、搜索、广告展示与收藏服务</view>
+    <view class="rule-paragraph">当您浏览门店、服务项目、发型师或平台广告内容，使用搜索、筛选和收藏功能时，我们可能处理您的<text class="rule-strong">搜索关键词、浏览对象、收藏记录、点击记录、请求时间和使用记录</text>，用于展示搜索结果、保存收藏、恢复页面状态、统计服务使用情况、改进页面及排查故障。</view>
+    <view class="rule-paragraph">靓丝当前未基于您的浏览、搜索、位置或订单信息进行个性化推荐或自动化决策，也不会基于上述信息向您发送个性化营销信息。如未来启用，我们将依法另行告知处理规则，并向您提供便捷的关闭或非个性化选项。</view>
+
+    <view class="rule-paragraph rule-subsection">5. 为您提供优惠券服务</view>
+    <view class="rule-paragraph">当您查看、领取或在预约中使用优惠券时，我们会处理您的<text class="rule-strong">用户账号标识、活动标识、优惠券标识、领取时间、有效期、适用范围、使用状态、关联预约订单及优惠金额</text>，用于判断领取资格、发放优惠券、核销优惠、展示使用记录和防止重复领取或滥用。</view>
+
+    <view class="rule-paragraph rule-subsection">6. 为您提供预约、订单管理和预约消息服务</view>
+    <view class="rule-paragraph">当您提交美发预约时，我们会处理或生成您的<text class="rule-strong">用户账号标识、昵称或称呼、联系电话、所选门店、发型师、服务项目、预约日期和时间、预约留言、订单编号、订单状态、商家回复、优惠券使用信息、取消或拒绝原因、创建和更新时间</text>，用于提交预约、由商家确认或拒绝、展示和管理订单、发送预约消息、处理取消及解决履约争议。</view>
+    <view class="rule-paragraph"><text class="rule-strong">为使您选择的商家确认预约、联系您并提供服务，我们会向该商家提供履约所必需的信息，包括昵称或称呼、联系电话、预约项目、发型师、到店时间和留言。商家仅应将上述信息用于本次预约履约、客户联系和依法处理售后争议。</text></view>
+    <view class="rule-paragraph">商家接单、拒绝、取消或完成预约后，我们会从商家端或平台服务系统获取订单状态及回复，并通过网络连接或实时消息通道向您展示预约消息。如您在提交预约时主动同意微信订阅消息，我们还会使用您的OpenID、门店、服务项目和预约时间，在商家接单成功后向您发送一次预约成功通知。拒绝或关闭订阅消息不影响您提交和查看预约。</view>
+
+    <view class="rule-paragraph rule-subsection">7. 为您提供评价与投诉服务</view>
+    <view class="rule-paragraph">当您评价已完成的服务时，我们会处理您的<text class="rule-strong">关联订单、评分、评价标签、评价文字、主动上传的图片、评价时间、昵称、头像，以及评价审核、编辑或删除记录</text>，用于发布和管理评价、帮助其他用户了解服务情况、维护评价秩序和处理争议。</view>
+    <view class="rule-paragraph">当您投诉服务时，我们会处理您的<text class="rule-strong">关联订单、投诉说明、主动提交的证明图片、联系方式和投诉处理记录</text>，用于核实事实、联系相关方、处理投诉及依法保存证据。投诉材料原则上不会向无关用户公开，但可能在处理争议所必要的范围内提供给被投诉商家、监管机关或司法机关。</view>
+    <view class="rule-paragraph">您可以拒绝相机或相册权限并仅提交文字；如您拒绝提供核实投诉所必需的信息，我们可能无法完整处理相关事项。</view>
+
+    <view class="rule-paragraph rule-subsection">8. 为您提供客服、反馈与争议处理</view>
+    <view class="rule-paragraph">当您使用平台客服，或联系我们咨询、投诉、举报、反馈问题及行使个人信息权利时，我们会处理您的<text class="rule-strong">账号信息、您填写的联系方式、问题描述、沟通内容、关联订单、证明材料及处理记录</text>，用于核验身份、处理请求、回访和解决争议。为保障账号和信息安全，我们可能要求您提供与账号相关的必要信息进行身份核验。</view>
+
+    <view class="rule-paragraph rule-subsection">9. 保障账号、服务及系统运行安全</view>
+    <view class="rule-paragraph">为保障账号安全、网络安全和系统稳定运行，满足法律法规及平台规则要求，我们可能处理您的<text class="rule-strong">设备型号、操作系统及版本、微信版本、小程序版本、IP地址、网络类型、电信运营商、设备语言、屏幕尺寸、请求时间、访问页面、操作记录、接口响应、错误及崩溃信息、性能数据和异常日志</text>，用于身份验证、故障排查、防范欺诈、恶意注册、刷单刷评、网络攻击及其他安全风险。</view>
+    <view class="rule-paragraph">除非未来为特定安全目的确有必要并依法另行告知、取得授权，我们不会读取您的已安装应用列表、正在运行的进程列表或与靓丝无关的设备内容。</view>
+
+    <view class="rule-paragraph rule-subsection">（二）权限调用说明</view>
+    <view class="rule-paragraph"><text class="rule-strong">为确保相关功能正常实现，我们会根据具体使用场景调用必要的系统权限。您同意本政策后，相应权限不会默认开启；涉及重要或敏感权限时，微信或设备系统会在您使用相关功能前弹窗询问，只有在您主动同意后才会开启。您可通过微信的小程序权限管理页或设备系统设置关闭权限。关闭部分或全部权限，可能导致对应功能无法实现或无法达到预期效果，但不会影响其他不依赖该权限的功能。</text></view>
+    <view class="rule-paragraph">1. <text class="rule-strong">位置权限</text>
+调用场景：您进入附近门店页面，或主动选择地点时。
+使用目的：获取所在的模糊区域或您选择的精准地点，展示附近门店及计算或估算距离。
+处理信息：模糊位置经纬度，或您选择的地点经纬度、名称和地址信息。
+拒绝或关闭的影响：无法按您所在区域自动展示附近门店，您仍可手动选择位置。</view>
+    <view class="rule-paragraph">2. <text class="rule-strong">相机权限</text>
+调用场景：您在更换头像、提交评价图片或投诉证明图片时，主动选择“拍摄”。
+使用目的：拍摄并上传您确认提交的头像、评价或投诉图片。
+处理信息：您当次主动拍摄并确认选择的图片。
+拒绝或关闭的影响：无法通过相机拍摄图片，您仍可提交文字或在授权后从相册选择图片。</view>
+    <view class="rule-paragraph">3. <text class="rule-strong">相册或照片权限</text>
+调用场景：您在更换头像、提交评价图片或投诉证明图片时，主动选择相册中的图片。
+使用目的：选择、压缩、预览并上传您确认提交的图片。
+处理信息：您主动选择的图片及文件名称、格式、大小等必要文件信息。
+拒绝或关闭的影响：无法从相册选择图片，您仍可提交文字或使用相机拍摄。</view>
+    <view class="rule-paragraph">4. <text class="rule-strong">本地存储能力</text>
+调用场景：登录、浏览和接收预约消息时。
+使用目的：在微信小程序本地保存登录凭证、匿名使用标识、必要的用户资料缓存和消息已读状态，以恢复登录及使用状态并统计服务使用情况。
+处理信息：登录会话、匿名使用标识、用户资料缓存和消息已读标识。
+管理方式：该能力通常不单独弹出系统授权。您可通过退出登录、清理微信缓存或删除小程序数据清除相关本地信息；清除后需要重新登录，部分使用状态将无法恢复。</view>
+    <view class="rule-paragraph">5. <text class="rule-strong">网络访问及网络状态</text>
+调用场景：您使用任何需要加载或提交数据的联网功能时。
+使用目的：连接靓丝服务器，加载门店和图片内容，完成登录、搜索、收藏、预约、评价、投诉和消息更新。
+处理信息：IP地址、网络类型、请求时间及必要网络日志。
+拒绝或关闭的影响：小程序无法加载在线内容或提交操作。</view>
+    <view class="rule-paragraph">6. <text class="rule-strong">拨号功能</text>
+调用场景：您主动点击门店联系电话时。
+使用目的：调起设备系统拨号界面并填入商家号码，是否拨出由您再次确认。
+处理信息：您点击的门店电话号码。
+拒绝或关闭的影响：无法通过小程序快速拨打商家电话。靓丝不会读取您的通讯录、通话内容或通话记录。</view>
+    <view class="rule-paragraph"><text class="rule-strong">靓丝当前不申请或调用麦克风、蓝牙、通讯录、日历、短信读取、通话记录、健康、运动、生物识别等权限，也不收集指纹或面容信息。如未来新增功能确有必要使用新的权限，我们将先更新相关说明，并在调用前另行征得您的授权。</text></view>
+
+    <view class="rule-paragraph rule-subsection">（三）我们从第三方获得及您提供他人信息的情形</view>
+    <view class="rule-paragraph">1. 经您主动授权后，我们会从微信获取注册登录所需的手机号码、登录临时凭证或账号标识。我们将依据与第三方的约定，确认信息来源合法，并仅在授权范围内使用。</view>
+    <view class="rule-paragraph">2. 为处理预约和争议，我们可能从您选择的商家获取订单确认、拒绝、取消、完成状态、商家回复及投诉处理所需的信息。</view>
+    <view class="rule-paragraph">3. 如您在预约留言、评价、投诉或客服反馈中提供他人的个人信息，请确保已取得相关个人的合法授权，并仅提供实现相应目的所必需的信息。</view>
+
+    <view class="rule-paragraph rule-subsection">（四）征得授权同意的例外</view>
+    <view class="rule-paragraph">根据法律法规，在以下情形中处理个人信息可能无需取得您的同意：</view>
+    <view class="rule-paragraph">1. 为订立、履行您作为一方当事人的合同所必需；
+2. 为履行法定职责或者法定义务所必需；
+3. 为应对突发公共卫生事件，或者紧急情况下为保护自然人的生命健康和财产安全所必需；
+4. 为公共利益实施新闻报道、舆论监督等行为，在合理范围内处理个人信息；
+5. 在合理范围内处理您自行公开或者其他已经合法公开的个人信息；
+6. 法律法规规定的其他情形。</view>
+    <view class="rule-paragraph">如我们拟将个人信息用于本政策未载明的其他目的，或改变原处理目的、处理方式和个人信息种类，我们将依法另行向您告知，并在需要时重新取得您的同意。</view>
+
+    <view class="rule-paragraph rule-subsection">（五）个人信息的使用规则</view>
+    <view class="rule-paragraph">1. 我们仅会将个人信息用于本政策载明的目的。超出与原处理目的直接或合理关联的范围使用时，我们将依法另行告知并取得同意。</view>
+    <view class="rule-paragraph">2. 我们可能使用去标识化后的使用数据进行统计分析、故障排查、服务质量评估和产品改进。经匿名化处理后无法识别特定个人且不能复原的信息不属于个人信息。</view>
+    <view class="rule-paragraph">3. 靓丝当前不通过短信、电话或小程序消息向您发送商业营销信息。如未来开展营销，我们将在发送前依法取得必要同意，并提供便捷的拒绝或退订方式。</view>
+
+    <view class="rule-paragraph rule-section">二、我们如何共享、转让和公开披露您的个人信息</view>
+    <view class="rule-paragraph rule-subsection">（一）共享及委托处理</view>
+    <view class="rule-paragraph">我们不会出售您的个人信息。原则上，我们不会与北京靓丝科技有限公司以外的公司、组织或个人共享您的个人信息。但为实现本政策载明的功能，我们可能在合法、正当、必要和最小范围内，向您选择的商家或技术服务合作方提供必要信息，或委托其处理必要信息。</view>
+    <view class="rule-paragraph">我们会对合作方的数据安全能力进行审慎评估，并通过协议约定处理目的、期限、方式、信息种类、保护措施和双方权利义务，要求其仅按照我们的指示和法律法规处理信息，不得用于与委托或共享目的无关的用途。</view>
+    <view class="rule-paragraph">具体场景包括：</view>
+    <view class="rule-paragraph">1. <text class="rule-strong">向您选择的商家提供预约信息</text>：为确认预约、联系到店、提供美发服务和处理售后争议，我们会向相关商家提供昵称或称呼、联系电话、预约项目、发型师、到店时间、留言及必要订单状态。</view>
+    <view class="rule-paragraph">2. <text class="rule-strong">使用微信小程序基础服务</text>：为运行小程序、完成微信手机号授权登录、选择位置、选择或拍摄图片及调用系统能力，微信及设备系统服务提供者可能按照其规则处理登录凭证、手机号授权凭证、位置、图片及必要设备和网络信息。</view>
+    <view class="rule-paragraph">3. <text class="rule-strong">使用云存储服务</text>：当您上传头像、评价图片或投诉证明图片时，我们会使用云对象存储服务保存您主动提交的图片及必要文件信息、上传日志。</view>
+    <view class="rule-paragraph">4. <text class="rule-strong">安全保障与技术运维</text>：为保障系统运行、安全防护、故障排查和数据备份，我们可能委托云服务、网络安全或技术运维服务商处理必要的账号、设备、网络及服务日志信息。</view>
+    <view class="rule-paragraph">5. <text class="rule-strong">基于法定情形提供</text>：根据法律法规、诉讼争议解决需要、您与我们签署的协议，或行政、司法等有权机关依法提出的要求提供必要信息。</view>
+    <view class="rule-paragraph">如向其他个人信息处理者提供您的个人信息或共享敏感个人信息，我们将依法向您告知接收方名称或姓名、联系方式、处理目的、处理方式和信息种类，并在需要时取得您的单独同意。</view>
+
+    <view class="rule-paragraph rule-subsection">（二）转让</view>
+    <view class="rule-paragraph">我们原则上不会转让您的个人信息。如发生合并、分立、解散、收购、资产转让或其他导致个人信息转移的情形，我们将向您告知接收方的名称或姓名和联系方式，并要求接收方继续履行本政策；接收方变更原处理目的或处理方式的，将依法重新取得您的同意。</view>
+
+    <view class="rule-paragraph rule-subsection">（三）公开披露</view>
+    <view class="rule-paragraph">除您主动发布的评价内容，或经您单独同意、法律法规另有规定外，我们不会公开披露您的个人信息。公开评价前，请勿在文字或图片中提交身份证件、家庭住址、私人联系方式等不宜公开的信息。</view>
+
+    <view class="rule-paragraph rule-subsection">（四）共享、转让和公开披露时征得同意的例外</view>
+    <view class="rule-paragraph">在为履行法定职责或法定义务、应对公共卫生事件、紧急保护生命健康和财产安全、合理处理您自行公开或其他已经合法公开的信息，以及法律法规规定的其他情形下，我们可能依法无需另行取得您的同意。</view>
+
+    <view class="rule-paragraph rule-section">三、我们如何保存和保护您的个人信息</view>
+    <view class="rule-paragraph rule-subsection">（一）个人信息的保存</view>
+    <view class="rule-paragraph">1. <text class="rule-strong">保存期限</text>：我们仅在实现本政策所述目的所需的最短期限内保存个人信息，法律法规另有强制要求的除外。根据《中华人民共和国电子商务法》，商品和服务信息、交易信息的保存时间自交易完成之日起不少于三年。我们判断期限时主要考虑完成预约和履约、维护业务记录、响应查询投诉、保障服务安全、双方约定及法律要求。超出期限后，我们将删除或匿名化处理。</view>
+    <view class="rule-paragraph">2. <text class="rule-strong">保存地域</text>：我们在中华人民共和国境内运营中收集和产生的个人信息将存储在中国境内。靓丝当前不会向境外提供您的个人信息。如未来确有必要，我们将依法履行适用的合规程序，向您告知境外接收方、处理目的、方式、信息种类及权利行使方式，并取得您的单独同意。</view>
+    <view class="rule-paragraph">3. 您注销账号后，我们将停止提供账号服务，并依法删除或匿名化处理相关个人信息；法律法规规定需要保留或为处理争议确有必要的除外，在此期间我们仅进行存储和必要的安全保护。</view>
+
+    <view class="rule-paragraph rule-subsection">（二）个人信息的保护措施</view>
+    <view class="rule-paragraph">1. 我们将采取与业务规模和风险相适应的安全措施，包括身份鉴别、访问控制、最小权限、传输保护、数据备份、安全审计、日志监测和人员管理，防止个人信息遭到未经授权的访问、泄露、篡改、损坏、丢失或滥用。</view>
+    <view class="rule-paragraph">2. 我们仅允许有必要知悉个人信息的人员访问相关信息，并要求接触个人信息的人员履行保密义务；我们也会对合作方采取必要的安全评估和监督措施。</view>
+    <view class="rule-paragraph">3. 互联网并非绝对安全的环境。请您妥善保管手机、微信账号和登录凭证，不要向他人泄露验证码或将账号交由他人使用。如发现账号或个人信息存在安全风险，请及时联系我们。</view>
+    <view class="rule-paragraph">4. 如发生或可能发生个人信息泄露、篡改、丢失等安全事件，我们将立即启动应急预案，采取补救措施防止危害扩大，并依法向履行个人信息保护职责的部门报告。依法需要通知您的，我们将通过小程序提示、电话、短信、公告或其他合理方式告知事件情况、可能影响、已采取或拟采取的措施以及您可采取的防范建议。</view>
+
+    <view class="rule-paragraph rule-section">四、您如何管理您的个人信息</view>
+    <view class="rule-paragraph">在符合法律法规的情况下，您对自己的个人信息享有知情、决定、限制或拒绝处理、查阅、复制、更正、补充、删除、撤回同意、注销账号和要求解释处理规则等权利。除您另有安排外，您的近亲属为自身合法、正当利益，可以依法对您去世后的相关个人信息行使权利。</view>
+
+    <view class="rule-paragraph rule-subsection">（一）查阅、更正和补充</view>
+    <view class="rule-paragraph">您可在“我—账号资料”页面查看或修改昵称、性别、头像和联系电话；在收藏、订单、预约消息和个人评价等页面查看相应信息。如页面暂未提供自助入口，您可通过本政策所列方式联系我们。</view>
+
+    <view class="rule-paragraph rule-subsection">（二）删除个人信息</view>
+    <view class="rule-paragraph">您可通过页面提供的功能删除评价等信息，或联系我们申请删除个人信息。在以下情形中，您也有权请求删除：处理目的已实现、无法实现或不再必要；我们停止提供服务或保存期限届满；您撤回同意；我们违反法律法规或约定处理个人信息；以及法律法规规定的其他情形。</view>
+    <view class="rule-paragraph">法律规定的保存期限尚未届满，或删除在技术上难以实现的，我们将停止除存储和采取必要安全保护措施之外的处理。</view>
+
+    <view class="rule-paragraph rule-subsection">（三）改变或撤回授权同意</view>
+    <view class="rule-paragraph">您可在微信的小程序权限管理页或设备系统设置中关闭位置、相机、相册等权限，也可通过删除已提供的信息或联系我们撤回基于同意进行的处理。撤回同意后，我们将不再处理相应个人信息，但不会影响撤回前基于您同意已经开展的处理活动。</view>
+
+    <view class="rule-paragraph rule-subsection">（四）注销账号</view>
+    <view class="rule-paragraph">您可通过平台客服申请注销靓丝账号。为保障账号安全，我们会对申请人进行必要的身份核验。注销完成后，我们将停止提供账号服务，并依法删除或匿名化处理相关个人信息，法律法规另有规定的除外。<text class="rule-strong">退出登录仅会清除当前设备上的登录状态，不等同于注销账号。</text></view>
+
+    <view class="rule-paragraph rule-subsection">（五）复制、转移、限制或拒绝处理</view>
+    <view class="rule-paragraph">您可依法请求复制个人信息；符合法定条件时，您可请求将个人信息转移至指定的个人信息处理者。您也可依法要求限制或拒绝处理个人信息，或要求我们解释个人信息处理规则。</view>
+
+    <view class="rule-paragraph rule-subsection">（六）响应您的请求</view>
+    <view class="rule-paragraph">为保障安全，我们可能要求您验证账号身份或请求的正当性。我们将在收到请求并验证身份后十五个工作日内或法律规定的期限内答复。对于无端重复、超出合理限度、需要过多技术手段、给他人合法权益带来风险或明显不切实际的请求，我们可能依法拒绝并向您说明理由。</view>
+
+    <view class="rule-paragraph rule-section">五、未成年人的个人信息保护</view>
+    <view class="rule-paragraph">靓丝主要面向成年人。未满十八周岁的未成年人应在父母或其他监护人的指导下阅读本政策并使用服务。</view>
+    <view class="rule-paragraph"><text class="rule-strong">对于不满十四周岁的未成年人，我们会将其个人信息作为敏感个人信息严格保护，并依法取得父母或其他监护人的同意。若我们发现未取得可验证的监护人同意而收集了不满十四周岁未成年人的个人信息，将设法尽快删除或采取其他合法处理措施。</text></view>
+    <view class="rule-paragraph">如监护人发现未成年人未经同意向我们提供个人信息，或需要查阅、更正、删除相关信息，可通过本政策所列方式联系我们。</view>
+
+    <view class="rule-paragraph rule-section">六、通知和修订</view>
+    <view class="rule-paragraph">为适应服务变化和法律法规要求，我们可能适时更新本政策。未经您明确同意，我们不会削减您按照本政策应享有的权利。</view>
+    <view class="rule-paragraph">对于处理目的、方式或信息种类发生实质变化，个人信息接收方发生实质变化，您行使权利的方式发生重大变化，或个人信息安全风险发生重大变化等重要更新，我们将通过小程序内弹窗、显著页面提示、公告或其他合理方式通知您，并在依法需要时重新取得您的同意。</view>
+    <view class="rule-paragraph">更新后的政策将在本页面公布并标明更新和生效日期。请您及时了解最新内容。</view>
+
+    <view class="rule-paragraph rule-section">七、如何联系我们</view>
+    <view class="rule-paragraph">个人信息处理者：北京靓丝科技有限公司
+统一社会信用代码：91110101MAKJDR5X7J
+注册地址：北京市东城区南芦草园胡同15号6幢1-469
+客服电话：010-89281898
+小程序内：平台客服入口</view>
+    <view class="rule-paragraph">如您对本政策、个人信息处理活动，或需要行使个人信息权利有任何疑问、意见、建议或投诉，可通过上述方式联系我们。我们将在验证您的身份后十五个工作日内或法律规定的期限内答复。</view>
+    <view class="rule-paragraph">如果您对我们的处理不满意，可向履行个人信息保护职责的部门投诉、举报，也可依法向有管辖权的人民法院提起诉讼。</view>
+
+    <view class="rule-paragraph rule-section">附录：相关定义与第三方服务清单</view>
+    <view class="rule-paragraph rule-subsection">（一）相关定义</view>
+    <view class="rule-paragraph">1. <text class="rule-strong">个人信息</text>：以电子或者其他方式记录的、与已识别或者可识别的自然人有关的各种信息，不包括匿名化处理后的信息。</view>
+    <view class="rule-paragraph">2. <text class="rule-strong">敏感个人信息</text>：一旦泄露或者非法使用，容易导致自然人的人格尊严受到侵害或者人身、财产安全受到危害的个人信息，包括生物识别、宗教信仰、特定身份、医疗健康、金融账户、行踪轨迹等信息，以及不满十四周岁未成年人的个人信息。</view>
+    <view class="rule-paragraph">3. <text class="rule-strong">去标识化</text>：个人信息经过处理，使其在不借助额外信息的情况下无法识别特定自然人的过程。</view>
+    <view class="rule-paragraph">4. <text class="rule-strong">匿名化</text>：个人信息经过处理无法识别特定自然人且不能复原的过程。</view>
+    <view class="rule-paragraph">5. <text class="rule-strong">靓丝</text>：指由北京靓丝科技有限公司运营的美发门店及服务信息浏览与预约微信小程序。</view>
+
+    <view class="rule-paragraph rule-subsection">（二）第三方服务清单</view>
+    <view class="rule-paragraph"><text class="rule-strong">1. 微信小程序基础服务</text>
+提供者：深圳市腾讯计算机系统有限公司
+使用目的：运行小程序、完成微信手机号授权登录，并提供位置、相机、相册、拨号等基础能力
+处理方式：在您使用相应功能时，通过微信接口处理或传输必要信息
+可能处理的信息：微信登录临时凭证、手机号授权动态凭证、OpenID等账号标识、您授权的手机号码、位置、您主动选择或拍摄的图片、设备及网络信息
+可能调用的权限：位置、相机、相册；具体以您使用的微信版本和设备系统提示为准
+隐私政策：<text class="rule-link" user-select="true">https://weixin.qq.com/cgi-bin/readtemplate?lang=zh_CN&amp;t=weixin_agreement&amp;s=privacy</text></view>
+    <view class="rule-paragraph"><text class="rule-strong">2. 阿里云对象存储OSS</text>
+提供者：阿里云计算有限公司
+使用目的：存储和加载头像、门店公共图片，以及您主动上传的评价或投诉图片
+处理方式：获取临时上传凭证后，将您主动选择的图片直接上传至云存储
+可能处理的信息：您主动上传的图片、文件名称、文件格式、文件大小、IP地址、上传时间及必要日志
+可能调用的权限：网络访问；选择图片时可能调用相机或相册权限
+隐私说明：<text class="rule-link" user-select="true">https://security.aliyun.com/trust-center/privacy</text></view>
+    <view class="rule-paragraph">第三方服务清单以靓丝实际接入的生产版本为准。新增、替换第三方服务，或其处理个人信息的目的、方式和种类发生重大变化时，我们将及时更新本清单，并依法履行告知和同意义务。</view>
+  </view>
+</scroll-view>

@@ -1,4 +1,10 @@
 const api = require('../../utils/api');
+const ad = require('../../utils/ad');
+const analytics = require('../../utils/analytics');
+const { formatFen } = require('../../utils/money');
+const { ratingDisplay } = require('../../utils/rating');
+const { serviceTagLabels } = require('../../utils/serviceTags');
+const { staffRoleLabel } = require('../../utils/staffRoles');
 
 Page({
   data: {
@@ -6,13 +12,15 @@ Page({
     salon: null,
     isFavorite: false,
     currentPromoIndex: 0,
-    reviewCount: 3,
+    reviewCount: 10,
     visibleReviews: [],
-    loading: true
+    loading: true,
+    ad: ad.DEFAULT
   },
 
   onLoad(query) {
     this.setData({ id: query.id || '' });
+    ad.load().then((config) => this.setData({ ad: config }));
     this.load();
   },
 
@@ -22,28 +30,36 @@ Page({
       salon.image = await api.displayImageUrl(api.salonImage(salon));
       salon.promoImages = await Promise.all((salon.promoImages || salon.images || []).map(api.displayImageUrl));
       if (!salon.promoImages.length && salon.image) salon.promoImages = [salon.image];
-      salon.ratingText = salon.rating || '4.8';
-      salon.starIcons = starIcons(salon.ratingText);
       salon.openingHoursText = salon.openingHours || '暂无营业时间';
       salon.phoneText = salon.phone || '暂无电话';
-      salon.addressText = salon.address || '地址未知';
+      salon.addressText = this.formatAddress(salon.address);
       salon.descriptionText = salon.fullDescription || salon.description || '暂无详细描述';
       salon.reviews = await Promise.all((salon.reviews || []).map((review) => this.normalizeReview(review)));
-      salon.reviewTotalText = salon.reviewCount || salon.reviews.length || 0;
-      salon.services = await Promise.all((salon.services || []).map(async (service) => ({
-        ...service,
-        imageUrl: await api.displayImageUrl(service.imageUrl),
-        noteText: service.note || service.description || '',
-        durationText: this.formatDuration(service.duration || service.durationMinutes),
-        priceText: this.formatPrice(service.price || service.priceLabel)
-      })));
+      salon.reviewTags = (salon.reviewTags || []).filter((tag) => tag.name && Number(tag.count) > 0);
+      salon.reviewTotalText = salon.reviewCount;
+      Object.assign(salon, ratingDisplay(salon.rating, salon.reviewTotalText));
+      salon.starIcons = salon.hasRating ? starIcons(salon.ratingText) : [];
+      salon.services = await Promise.all((salon.services || []).map(async (service) => {
+        const imageUrls = Array.isArray(service.imageUrls) ? service.imageUrls : [service.imageUrl].filter(Boolean);
+        return {
+          ...service,
+          imageUrls,
+          imageUrl: await api.displayImageUrl(imageUrls[0] || ''),
+          tags: serviceTagLabels(service.tagIds),
+          noteText: service.note || service.description || '',
+          durationText: this.formatDuration(service.durationMinutes),
+          priceText: formatFen(service.priceFen)
+        };
+      }));
       salon.staff = await Promise.all((salon.staff || []).map(async (staff) => ({
         ...staff,
         imageUrl: await api.displayImageUrl(staff.imageUrl),
-        roleText: staff.role || '',
+        roleText: staffRoleLabel(staff.roleId),
         experienceText: staff.experience || '',
         bioText: staff.bio || staff.description || '暂无简介'
       })));
+      salon.latestPosts = await Promise.all((salon.latestPosts || []).map((post) => this.normalizePost(post)));
+      salon.hasMorePosts = salon.hasMorePosts === true;
       this.setData({ salon, visibleReviews: salon.reviews.slice(0, this.data.reviewCount) });
       this.loadFavoriteState();
     } catch (err) {
@@ -58,6 +74,7 @@ Page({
     return {
       ...review,
       userText: review.user || review.userName || review.phone || '用户',
+      avatarUrl: api.mediaUrl(review.avatarUrl),
       ratingText: review.rating || 5,
       starIcons: starIcons(review.rating || 5),
       serviceText: review.serviceName || review.service || '染发+修复',
@@ -67,16 +84,25 @@ Page({
     };
   },
 
+  async normalizePost(post) {
+    return {
+      ...post,
+      authorImageUrl: await api.displayImageUrl(post.authorImageUrl),
+      imageUrls: await Promise.all((post.imageUrls || []).map(api.displayImageUrl)),
+      dateText: this.formatDate(post.createdAt)
+    };
+  },
+
   formatDuration(value) {
     if (!value) return '';
     return /^\d+$/.test(String(value)) ? `${value}分钟` : String(value).replace(/\s*min$/i, '分钟');
   },
 
-  formatPrice(value) {
-    if (!value) return '';
-    const text = String(value);
-    if (text.startsWith('¥') || !/^\d+(\.\d+)?$/.test(text)) return text;
-    return `¥${text}`;
+  formatAddress(value) {
+    if (!value) return '地址未知';
+    const address = String(value).trim();
+    const match = address.match(/^(?:(?:北京|天津|上海|重庆)市|.+?(?:省|自治区|特别行政区))?(?:.+?(?:市|自治州|地区|盟))?.+?(?:区|县|旗|市)(.+)$/);
+    return match && match[1].trim() || address;
   },
 
   formatDate(value) {
@@ -100,7 +126,9 @@ Page({
   async toggleFavorite() {
     if (!api.requireLogin()) return;
     try {
-      await api.request('/favorites/toggle', { method: 'POST', data: this.data.salon });
+      await api.request(`/favorites/${encodeURIComponent(this.data.id)}`, {
+        method: this.data.isFavorite ? 'DELETE' : 'PUT'
+      });
       const isFavorite = !this.data.isFavorite;
       this.setData({ isFavorite });
     } catch (err) {
@@ -113,13 +141,29 @@ Page({
     wx.makePhoneCall({ phoneNumber: this.data.salon.phone });
   },
 
-  copyAddress() {
-    if (!this.data.salon.address) return;
-    wx.setClipboardData({ data: this.data.salon.address });
+  openMap() {
+    const salon = this.data.salon || {};
+    const coordinates = salonCoordinates(salon);
+    if (!coordinates) {
+      wx.showToast({ title: '商家暂未配置导航位置', icon: 'none' });
+      return;
+    }
+    wx.openLocation({
+      ...coordinates,
+      name: salon.name || '预约门店',
+      address: salon.address || salon.addressText || '',
+      scale: 16,
+      fail: () => wx.showToast({ title: '地图打开失败', icon: 'none' })
+    });
   },
 
   previewImage(e) {
     wx.previewImage({ urls: this.data.salon.promoImages, current: e.currentTarget.dataset.url });
+  },
+
+  previewHeroImage() {
+    const current = this.data.salon.image;
+    if (current) wx.previewImage({ urls: [current], current });
   },
 
   onPromoChange(e) {
@@ -131,27 +175,32 @@ Page({
     wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
-  goBack() {
-    wx.switchTab({
-      url: '/pages/home/home',
-      fail: () => wx.reLaunch({ url: '/pages/home/home' })
-    });
+  previewPostImage(e) {
+    const post = this.data.salon.latestPosts[Number(e.currentTarget.dataset.postIndex)] || {};
+    wx.previewImage({ urls: post.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
-  showMoreReviews() {
-    const reviewCount = this.data.reviewCount + 3;
-    this.setData({
-      reviewCount,
-      visibleReviews: this.data.salon.reviews.slice(0, reviewCount)
-    });
+  showAllPosts() {
+    wx.navigateTo({ url: `/pages/salon-posts/salon-posts?salonId=${encodeURIComponent(this.data.id)}` });
   },
 
-  openService(e) {
-    wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.id}&serviceId=${e.currentTarget.dataset.id}` });
+  showAllReviews() {
+    wx.navigateTo({ url: `/pages/salon-reviews/salon-reviews?salonId=${encodeURIComponent(this.data.id)}` });
+  },
+
+  async openService(e) {
+    const serviceId = e.currentTarget.dataset.id;
+    analytics.track('service_click', { salonId: this.data.id, serviceId });
+    const service = this.data.salon.services.find((item) => item.id === serviceId);
+    if (!service || !service.imageUrl) return;
+    const remainingImages = await Promise.all(service.imageUrls.slice(1).map(api.displayImageUrl));
+    wx.previewImage({ urls: [service.imageUrl, ...remainingImages], current: service.imageUrl });
   },
 
   openStaff(e) {
-    wx.navigateTo({ url: `/pages/staff/staff?id=${e.currentTarget.dataset.id}&salonId=${this.data.id}` });
+    const id = e.currentTarget.dataset.id;
+    if (!id) return;
+    wx.navigateTo({ url: `/pages/staff/staff?id=${encodeURIComponent(id)}&salonId=${encodeURIComponent(this.data.id)}` });
   },
 
   book() {
@@ -169,4 +218,17 @@ function starIcons(value) {
     if (index === full && hasHalf) return '/assets/icons/star_half_gold.png';
     return '/assets/icons/star_border_gold.png';
   });
+}
+
+function salonCoordinates(salon = {}) {
+  const location = salon.location || {};
+  const geoCoordinates = salon.geoLocation && salon.geoLocation.coordinates;
+  const latitudeValue = location.latitude ?? location.lat ?? (geoCoordinates && geoCoordinates[1]);
+  const longitudeValue = location.longitude ?? location.lng ?? location.lon ?? (geoCoordinates && geoCoordinates[0]);
+  if (latitudeValue === '' || longitudeValue === '') return null;
+  const latitude = Number(latitudeValue);
+  const longitude = Number(longitudeValue);
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+  return { latitude, longitude };
 }

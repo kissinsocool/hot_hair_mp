@@ -1,0 +1,26 @@
+<view class="gallery">
+  <view wx:if="{{category}}" class="gallery-sort" role="tablist" aria-label="分类图片排序">
+    <view class="gallery-sort-option {{sort === 'latest' ? 'active' : ''}}" bindtap="changeSort" data-sort="latest" role="tab" aria-selected="{{sort === 'latest'}}">最新发布</view>
+    <view class="gallery-sort-option {{sort === 'distance' ? 'active' : ''}}" bindtap="changeSort" data-sort="distance" role="tab" aria-selected="{{sort === 'distance'}}">离我最近</view>
+  </view>
+  <view wx:if="{{images.length}}" class="gallery-grid">
+    <view
+      wx:for="{{images}}"
+      wx:key="id"
+      class="gallery-item"
+      bindtap="openSalon"
+      data-salon-id="{{item.salonId}}"
+      role="button"
+      aria-label="查看对应店铺"
+    >
+      <image class="gallery-image" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
+    </view>
+  </view>
+  <view wx:elif="{{loading}}" class="gallery-state">正在加载...</view>
+  <view wx:elif="{{errorMessage}}" class="gallery-state">
+    <view>{{errorMessage}}</view>
+    <button class="retry" bindtap="load">重新加载</button>
+  </view>
+  <view wx:else class="gallery-state">该分类暂无推广图片</view>
+  <view wx:if="{{loadingMore}}" class="loading-more">正在加载...</view>
+</view>
