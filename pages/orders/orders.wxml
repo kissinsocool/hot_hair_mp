@@ -21,7 +21,7 @@
     <view wx:if="{{!loggedIn}}"></view>
     <view wx:elif="{{loading && !orders.length}}" class="empty">正在加载...</view>
     <view wx:elif="{{!orders.length}}" class="empty">
-      <image class="empty-icon" mode="aspectFit" src="/assets/icons/receipt_long_outlined.png" />
+      <image class="empty-icon" mode="aspectFit" src="/assets/icons/receipt_long_outline.png" />
       <view class="empty-title">暂无订单</view>
       <view class="empty-sub">完成预约后，订单会显示在这里</view>
     </view>
@@ -53,7 +53,7 @@
       <view class="sheet-head">
         <view class="sheet-title">{{sheetType == 'review' ? '评价晒单' : '投诉'}}</view>
       </view>
-      <view class="sheet-info"><image class="icon-img" mode="aspectFit" src="/assets/icons/storefront_outlined.png" />{{sheetOrder.salonName}}</view>
+      <view class="sheet-info"><image class="icon-img" mode="aspectFit" src="/assets/icons/storefront.png" />{{sheetOrder.salonName}}</view>
       <view class="sheet-info"><image class="icon-img" mode="aspectFit" src="/assets/icons/content_cut.png" />{{sheetOrder.serviceName}}</view>
 
       <view wx:if="{{sheetType == 'review'}}" class="rating-block">

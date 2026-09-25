@@ -18,7 +18,7 @@
       </view>
       <view class="check">
         <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
-        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_light_pink.png" />
+        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />
       </view>
     </view>
   </view>
@@ -44,7 +44,7 @@
       <view class="price">{{item.priceText}}</view>
       <view class="check">
         <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
-        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_light_pink.png" />
+        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />
       </view>
     </view>
   </view>

@@ -7,7 +7,7 @@ Component({
       {
         pagePath: 'pages/home/home',
         text: '探店',
-        iconPath: '/assets/icons/storefront_outlined.png',
+        iconPath: '/assets/icons/storefront.png',
         selectedIconPath: '/assets/icons/storefront.png'
       },
       {

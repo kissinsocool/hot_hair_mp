@@ -18,6 +18,7 @@ apiBaseUrl: 'https://api.hothaircc.cn/api'
 - socket 合法域名：`wss://api.hothaircc.cn`
 - uploadFile 合法域名：`https://hothairmedia.oss-cn-beijing.aliyuncs.com`、`https://hothairapp.oss-cn-beijing.aliyuncs.com`（迁移兼容）、`https://hothairprivate.oss-cn-beijing.aliyuncs.com`
 - downloadFile 合法域名：`https://media.hothaircc.cn`、`https://oss.hothaircc.cn`（迁移兼容）、`https://oss.hothair.top`、`https://hothairprivate.oss-cn-beijing.aliyuncs.com`
+- 业务域名：广告 H5 实际使用的 HTTPS 域名；小程序通过 `web-view` 打开后台广告配置中的 H5 地址
 
 开发者工具中的 `urlCheck: false` 只对本地调试生效，真机预览和正式版本仍需配置上述域名。
 

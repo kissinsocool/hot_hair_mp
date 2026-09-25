@@ -101,7 +101,7 @@ Page({
     }
   },
 
-  async loadSlots() {
+  async loadSlots({ animate = false } = {}) {
     const requestId = (this.slotRequestId || 0) + 1;
     this.slotRequestId = requestId;
     const selectedDate = this.data.selectedDate;
@@ -126,8 +126,8 @@ Page({
       const previousSlotOptions = this.data.slotOptions;
       this.setData({ slots, slotsLoading: false });
       this.refreshOptions({
-        previousSlotOptions,
-        slotsAnimating: previousSlotOptions.length > 0
+        previousSlotOptions: animate ? previousSlotOptions : [],
+        slotsAnimating: animate && previousSlotOptions.length > 0
       });
     } catch (err) {
       if (requestId !== this.slotRequestId) return;
@@ -146,7 +146,7 @@ Page({
 
   selectStaff(e) {
     this.setData({ selectedStaffId: e.currentTarget.dataset.id });
-    return this.loadSlots();
+    return this.loadSlots({ animate: true });
   },
 
   selectService(e) {
@@ -168,7 +168,7 @@ Page({
     const isDisabled = e.currentTarget.dataset.disabled;
     if (isDisabled === true || isDisabled === 'true') return;
     this.setData({ selectedDate: e.currentTarget.dataset.value });
-    return this.loadSlots();
+    return this.loadSlots({ animate: true });
   },
 
   selectTime(e) {

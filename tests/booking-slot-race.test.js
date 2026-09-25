@@ -54,8 +54,7 @@ async function main() {
   assert.equal(page.data.slotsLoading, true);
   assert.deepEqual(page.data.slots.map((slot) => slot.time), ['10:00']);
 
-  page.setData({ selectedStaffId: 'staff-b' });
-  const second = page.loadSlots();
+  const second = page.selectStaff({ currentTarget: { dataset: { id: 'staff-b' } } });
   requests[1].success({
     statusCode: 200,
     data: [{ time: '11:00', startTime: '2030-01-02T11:00:00+08:00', isAvailable: true }]

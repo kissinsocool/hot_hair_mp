@@ -70,7 +70,7 @@
     <view class="sheet-close" catchtap="closeSheet"><image mode="aspectFit" src="/assets/icons/close.png" /></view>
     <scroll-view scroll-y class="sheet-body">
       <view class="sheet-title">编辑评价</view>
-      <view class="sheet-info"><image class="inline-icon" mode="aspectFit" src="/assets/icons/storefront_outlined.png" />{{sheetReview.salonName}}</view>
+      <view class="sheet-info"><image class="inline-icon" mode="aspectFit" src="/assets/icons/storefront.png" />{{sheetReview.salonName}}</view>
       <view class="sheet-info"><image class="inline-icon" mode="aspectFit" src="/assets/icons/content_cut.png" />{{sheetReview.serviceName}}</view>
       <view class="field-title">选择星级</view>
       <view class="stars-row"><view wx:for="{{sheetStars}}" wx:key="value" class="star-btn {{item.selected ? 'active' : ''}}" data-value="{{item.value}}" catchtap="chooseRating"><image mode="aspectFit" src="{{item.icon}}" /></view></view>

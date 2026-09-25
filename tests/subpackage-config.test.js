@@ -13,12 +13,10 @@ assert(!app.pages.includes('pages/ad/ad'));
 assert(!app.pages.includes('pages/rules/user-agreement'));
 assert(!app.pages.includes('pages/rules/privacy-policy'));
 assert.deepEqual(app.subPackages, [
-  { root: 'pages/ad', pages: ['ad'] },
+  { root: 'pages/web', pages: ['web'] },
   { root: 'pages/rules', pages: ['user-agreement', 'privacy-policy'] }
 ]);
 
-for (const image of ['hush-cut.jpg', 'build-perm.jpg', 'guile-cut.jpg']) {
-  const imagePath = path.join(root, 'pages/ad/images', image);
-  assert(fs.existsSync(imagePath));
-  assert(fs.statSync(imagePath).size <= 200_000, `${image} must not exceed 200 KB`);
+for (const extension of ['js', 'json', 'wxml']) {
+  assert(fs.existsSync(path.join(root, 'pages/web', `web.${extension}`)));
 }
