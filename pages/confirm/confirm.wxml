@@ -6,7 +6,7 @@
     <view class="row compact"><text>到店时间</text><text>{{booking.arrivalTimeText}}</text></view>
     <view class="row"><text>理发师</text><text>{{booking.staffName}}</text></view>
     <view class="row compact"><text>服务费用</text><text>{{booking.servicePriceText}}</text></view>
-    <view class="row"><text>理发师额外服务费</text><text>{{booking.extraFeeText}}</text></view>
+    <view wx:if="{{booking.extraServiceFeeFen > 0}}" class="row"><text>理发师额外服务费</text><text>{{booking.extraFeeText}}</text></view>
     <view class="row coupon-row" bindtap="chooseCoupon">
       <text>优惠券</text>
       <view class="coupon-choice">

@@ -160,7 +160,14 @@ Page({
   selectServiceCategory(e) {
     const category = String(e.currentTarget.dataset.category || '');
     if (!SERVICE_TABS.some((tab) => tab.id === category)) return;
-    this.setData({ activeServiceCategory: category });
+    const selectedService = ((this.data.salon || {}).services || [])
+      .find((service) => String(service.id) === this.data.selectedServiceId);
+    const clearSelection = selectedService && !serviceMatchesCategory(selectedService, category);
+    this.setData({
+      activeServiceCategory: category,
+      ...(clearSelection ? { selectedServiceId: '' } : {})
+    });
+    if (clearSelection) return this.loadSlots();
     this.refreshOptions();
   },
 
@@ -191,6 +198,11 @@ Page({
 
   refreshOptions(extraData = {}) {
     const salon = this.data.salon || {};
+    const selectedService = (salon.services || [])
+      .find((service) => String(service.id) === this.data.selectedServiceId);
+    const showStaffExtraFee = selectedService
+      ? serviceCategory(selectedService) === 'cut'
+      : this.data.activeServiceCategory === 'cut';
     const staffOptions = [
       { id: '__no_preference__', name: '无需指定', isNoPreference: true },
       ...((salon.staff || []).map((staff) => ({
@@ -200,7 +212,7 @@ Page({
         experience: staff.experience || '',
         bio: staff.bio || staff.description || '',
         imageUrl: api.mediaUrl(staff.imageUrl || ''),
-        extraServiceFeeText: staff.extraServiceFeeFen > 0 ? formatFen(staff.extraServiceFeeFen) : ''
+        extraServiceFeeText: showStaffExtraFee && staff.extraServiceFeeFen > 0 ? formatFen(staff.extraServiceFeeFen) : ''
       })))
     ].map((staff) => ({
       ...staff,
@@ -280,7 +292,8 @@ Page({
       serviceId: selectedServiceId,
       serviceName: service.name,
       servicePriceFen: Number.isSafeInteger(service.priceFen) ? service.priceFen : 0,
-      extraServiceFeeFen: Number.isSafeInteger(staff.extraServiceFeeFen) ? staff.extraServiceFeeFen : 0,
+      extraServiceFeeFen: serviceCategory(service) === 'cut' && Number.isSafeInteger(staff.extraServiceFeeFen)
+        ? staff.extraServiceFeeFen : 0,
       selectedStaffId,
       startTime: `${selectedDate}T${selectedTime}:00`
     };
