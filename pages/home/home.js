@@ -15,11 +15,20 @@ const DEFAULT_SERVICE_LOCATION = {
 const CAMPAIGN_CACHE_MS = 5 * 60 * 1000;
 const INITIAL_SALON_CARD_COUNT = 10;
 const SALON_PAGE_SIZE = 10;
+const SALON_TAG_CLASSES = ['salon-tag-royal', 'salon-tag-nature', 'salon-tag-neon'];
 const loadingSalonCards = () => Array.from({ length: INITIAL_SALON_CARD_COUNT }, (_, index) => ({
   cardKey: `salon-card-${index}`,
   isPlaceholder: true,
   lightActive: false
 }));
+const shuffledSalonTagClasses = () => {
+  const classes = [...SALON_TAG_CLASSES];
+  for (let index = classes.length - 1; index > 0; index -= 1) {
+    const target = Math.floor(Math.random() * (index + 1));
+    [classes[index], classes[target]] = [classes[target], classes[index]];
+  }
+  return classes;
+};
 let campaignCache;
 
 Page({
@@ -197,13 +206,17 @@ Page({
   },
 
   normalizeSalon(salon) {
+    const tagClasses = shuffledSalonTagClasses();
     return {
       ...salon,
       image: '',
       nameText: salon.name || '未知沙龙',
       addressText: salon.address || '',
       descriptionText: salon.description || '暂无描述',
-      tags: Array.isArray(salon.tags) ? salon.tags.filter(Boolean) : [],
+      tags: (Array.isArray(salon.tags) ? salon.tags.filter(Boolean) : []).map((text, index) => ({
+        text,
+        colorClass: tagClasses[index % tagClasses.length]
+      })),
       ...ratingDisplay(salon.rating, salon.reviewCount),
       distanceText: this.formatDistance(salon.distanceKm)
     };

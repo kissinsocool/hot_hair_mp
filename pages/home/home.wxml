@@ -126,8 +126,8 @@
           <image wx:if="{{!item.isPlaceholder}}" class="salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
         </view>
         <view wx:if="{{!item.isPlaceholder && item.tags.length}}" class="salon-tags">
-          <view wx:for="{{item.tags}}" wx:for-item="tag" wx:for-index="tagIndex" wx:key="*this" class="salon-tag {{tagIndex == 1 ? 'salon-tag-lime' : ''}}">
-            <text class="salon-tag-text">{{tag}}</text>
+          <view wx:for="{{item.tags}}" wx:for-item="tag" wx:key="text" class="salon-tag {{tag.colorClass}}">
+            <text class="salon-tag-text">{{tag.text}}</text>
           </view>
         </view>
         <view wx:if="{{!item.isPlaceholder}}" class="salon-body">

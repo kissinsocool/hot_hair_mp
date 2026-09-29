@@ -657,13 +657,16 @@
   padding: 2rpx 18rpx;
   overflow: hidden;
   border-radius: 999rpx;
-  background: linear-gradient(105deg, #7c4dff 0%, #ff4f91 58%, #ffad63 100%);
-  box-shadow: 0 4rpx 10rpx rgba(185, 64, 155, 0.28);
   font-size: 22rpx;
   font-weight: 600;
   line-height: 34rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.salon-tag-royal {
+  background: linear-gradient(105deg, #6a11cb 0%, #fe758c 100%);
+  box-shadow: 0 4rpx 10rpx rgba(185, 64, 155, 0.28);
 }
 
 .salon-tag::after {
@@ -690,16 +693,21 @@
   -webkit-text-fill-color: transparent;
 }
 
-.salon-tag-lime {
-  background: linear-gradient(105deg, #e9ff73 0%, #b7ed48 55%, #74cc35 100%);
+.salon-tag-nature {
+  background: linear-gradient(105deg, #56ab2f 0%, #a8e063 100%);
   box-shadow: 0 4rpx 10rpx rgba(87, 154, 42, 0.3);
 }
 
-.salon-tag-lime .salon-tag-text {
+.salon-tag-nature .salon-tag-text {
   color: #245524;
   background: none;
   text-shadow: 0 1rpx 2rpx rgba(255, 255, 255, 0.32);
   -webkit-text-fill-color: #245524;
+}
+
+.salon-tag-neon {
+  background: linear-gradient(105deg, #ff00cc 0%, #3333ff 100%);
+  box-shadow: 0 4rpx 10rpx rgba(105, 33, 224, 0.3);
 }
 
 @keyframes salon-tag-shine {
