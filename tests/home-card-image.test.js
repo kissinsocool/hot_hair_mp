@@ -1,0 +1,31 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+
+const styles = fs.readFileSync(path.join(__dirname, '../pages/home/home.wxss'), 'utf8');
+const template = fs.readFileSync(path.join(__dirname, '../pages/home/home.wxml'), 'utf8');
+const cardRule = styles.match(/\.salon-card\s*\{([^}]*)\}/s);
+const imageWrapRule = styles.match(/\.salon-image-wrap\s*\{([^}]*)\}/s);
+const imageRule = styles.match(/\.salon-image\s*\{([^}]*)\}/s);
+
+assert.ok(cardRule);
+assert.match(cardRule[1], /margin:\s*0 22rpx 20rpx;/);
+assert.match(cardRule[1], /border-radius:\s*20rpx;/);
+assert.doesNotMatch(cardRule[1], /animation:/);
+assert.ok(imageWrapRule);
+assert.match(imageWrapRule[1], /width:\s*calc\(291\.2rpx \+ 12\.6px\);/);
+assert.match(imageWrapRule[1], /height:\s*calc\(220rpx \+ 10px\);/);
+assert.match(imageWrapRule[1], /flex:\s*0 0 calc\(291\.2rpx \+ 12\.6px\);/);
+assert.ok(imageRule);
+assert.match(template, /<image[^>]*class="salon-image"[^>]*mode="aspectFill"/);
+assert.match(template, /class="salon-image-placeholder" aria-hidden="true">靓丝美约<\/text>/);
+assert.match(template, /wx:for="\{\{salonCards\}\}"[^>]*wx:key="cardKey"[^>]*class="salon-card"[^>]*data-card-index="\{\{salonIndex\}\}"/);
+assert.match(template, /salon-card-border-light \{\{item\.lightActive \? 'salon-card-border-light--active' : ''\}\}/);
+assert.match(template, /<image wx:if="\{\{!item\.isPlaceholder\}\}" class="salon-image"/);
+assert.doesNotMatch(template, /salon-card-flipper|salon-card-face|salon-card-back/);
+assert.doesNotMatch(styles, /salon-card-slide-in/);
+assert.match(styles, /\.salon-card-border-light\s*\{[^}]*pointer-events:\s*none;[^}]*animation:\s*salon-border-fade 11800ms linear infinite;/s);
+assert.match(styles, /\.salon-card-border-light::before\s*\{[^}]*animation:\s*salon-border-travel 11800ms linear infinite;/s);
+assert.match(styles, /@keyframes salon-border-travel\s*\{[\s\S]*?0%[\s\S]*?15\.25%, 100%/);
+assert.match(styles, /@keyframes salon-border-fade\s*\{[\s\S]*?0%, 15\.25%, 100%[\s\S]*?1\.22%, 13\.73%/);
+assert.match(styles, /\.salon-card-border-light--active,[\s\S]*?animation-play-state:\s*running;/);

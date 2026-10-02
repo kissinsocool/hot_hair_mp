@@ -37,9 +37,48 @@
   font-weight: 800;
 }
 
+.coupon-row {
+  align-items: center;
+}
+
+.coupon-choice {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: flex-end;
+  min-width: 0;
+  color: #999;
+  text-align: right;
+}
+
+.coupon-choice text {
+  flex: initial !important;
+  font-weight: 500 !important;
+}
+
+.coupon-choice .selected-coupon {
+  max-width: 360rpx;
+  overflow: hidden;
+  color: #d06884;
+  font-weight: 700 !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coupon-choice .arrow {
+  margin-left: 14rpx;
+  color: #d06884;
+  font-size: 42rpx;
+}
+
+.discount-row text:last-child {
+  color: #d06884;
+}
+
 .total {
   align-items: center;
   margin-bottom: 0;
+  border-bottom: 0;
 }
 
 .total text:last-child {

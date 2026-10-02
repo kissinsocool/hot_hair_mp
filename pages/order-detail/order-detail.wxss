@@ -1,0 +1,145 @@
+.order-detail-page {
+  padding-bottom: calc(48rpx + env(safe-area-inset-bottom));
+}
+
+.status-card,
+.reason-card {
+  margin-bottom: 24rpx;
+  padding: 30rpx 24rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.status-label {
+  font-size: 40rpx;
+  font-weight: 800;
+}
+
+.status-green {
+  color: #4caf50;
+}
+
+.status-red {
+  color: #ff5252;
+}
+
+.status-orange {
+  color: #ff9800;
+}
+
+.order-number {
+  margin-top: 12rpx;
+  color: #8a8a8a;
+  font-size: 26rpx;
+  font-weight: 400;
+}
+
+.reason-card {
+  border-color: #f1c6cf;
+  background: #fff7f9;
+}
+
+.reason-title {
+  color: #d06884;
+  font-weight: 800;
+}
+
+.reason-text {
+  margin-top: 12rpx;
+  line-height: 1.6;
+}
+
+.section-title {
+  margin: 34rpx 4rpx 18rpx;
+  font-size: 34rpx;
+}
+
+.panel {
+  margin-bottom: 0;
+  padding: 20rpx;
+  border-radius: 40rpx;
+  box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 24rpx;
+  padding: 0 0 30rpx;
+  margin-bottom: 30rpx;
+  border-bottom: 1rpx solid #f4e7df;
+}
+
+.compact {
+  padding-bottom: 18rpx;
+  margin-bottom: 18rpx;
+  border-bottom: 0;
+}
+
+.row > text:first-child {
+  flex: 0 0 220rpx;
+  color: #8a8a8a;
+}
+
+.fee-panel .row > text:first-child {
+  flex-basis: 320rpx;
+  white-space: nowrap;
+}
+
+.row > text:last-child {
+  flex: 1;
+  text-align: right;
+  font-weight: 800;
+  word-break: break-all;
+}
+
+.salon-link {
+  flex: 1;
+  color: #d06884;
+  font-weight: 800;
+  text-align: right;
+}
+
+.salon-link text {
+  padding-bottom: 2rpx;
+  border-bottom: 1rpx dashed currentColor;
+}
+
+.discount-row text:last-child,
+.complaint-status {
+  color: #d06884;
+}
+
+.total {
+  align-items: center;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.total text:last-child {
+  color: #d06884;
+  font-size: 36rpx;
+}
+
+.complaint-description {
+  padding: 22rpx;
+  border-radius: 20rpx;
+  background: #fdf8f5;
+  line-height: 1.6;
+}
+
+.bottom-actions {
+  display: flex;
+  gap: 20rpx;
+  margin-top: 40rpx;
+}
+
+.action-btn {
+  flex: 1;
+}
+
+.retry-btn {
+  width: 260rpx !important;
+  margin: 32rpx auto 0;
+}
