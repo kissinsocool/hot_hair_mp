@@ -664,11 +664,6 @@
   white-space: nowrap;
 }
 
-.salon-tag-royal {
-  background: linear-gradient(105deg, #6a11cb 0%, #fe758c 100%);
-  box-shadow: 0 4rpx 10rpx rgba(185, 64, 155, 0.28);
-}
-
 .salon-tag::after {
   position: absolute;
   top: -50%;

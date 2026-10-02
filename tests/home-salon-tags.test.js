@@ -8,8 +8,8 @@ const template = fs.readFileSync(path.join(pageDir, 'home.wxml'), 'utf8');
 const styles = fs.readFileSync(path.join(pageDir, 'home.wxss'), 'utf8');
 
 assert.match(script, /tags: \(Array\.isArray\(salon\.tags\)/);
-assert.match(script, /const SALON_TAG_CLASSES = \['salon-tag-royal', 'salon-tag-nature', 'salon-tag-neon'\]/);
-assert.match(script, /Math\.floor\(Math\.random\(\) \* \(index \+ 1\)\)/);
+assert.match(script, /const SALON_TAG_CLASSES = \['salon-tag-neon', 'salon-tag-nature'\]/);
+assert.doesNotMatch(script, /shuffledSalonTagClasses/);
 assert.match(template, /class="salon-tags"/);
 assert.match(template, /wx:for="\{\{item\.tags\}\}"/);
 assert.match(template, /class="salon-tag \{\{tag\.colorClass\}\}"/);
@@ -17,7 +17,7 @@ assert.match(template, /\{\{tag\.text\}\}/);
 assert.match(template, /class="salon-tag-text"/);
 assert.match(styles, /\.salon-tags\s*\{[^}]*position:\s*absolute;[^}]*width:\s*250rpx;/s);
 assert.match(styles, /\.salon-tag\s*\{[^}]*max-width:\s*100%;[^}]*font-weight:\s*600;[^}]*text-overflow:\s*ellipsis;/s);
-assert.match(styles, /\.salon-tag-royal\s*\{[^}]*linear-gradient\(105deg, #6a11cb 0%, #fe758c 100%\)/s);
+assert.doesNotMatch(styles, /\.salon-tag-royal\s*\{/);
 assert.match(styles, /\.salon-tag-text\s*\{[^}]*linear-gradient\(110deg, #f3c94d 0%, #fff1a6 20%, #ffffea 40%, #f6d55c 57%, #fff9cf 76%, #e8b72f 100%\)/s);
 assert.match(styles, /-webkit-background-clip: text;/);
 assert.match(styles, /\.salon-tag::after\s*\{[^}]*animation:\s*salon-tag-shine 2\.8s ease-in-out infinite;/s);
@@ -34,8 +34,7 @@ require('../pages/home/home');
 
 const tags = pageDefinition.normalizeSalon({ tags: ['标签一', '标签二', '标签三'] }).tags;
 assert.deepEqual(tags.map((tag) => tag.text), ['标签一', '标签二', '标签三']);
-assert.equal(new Set(tags.map((tag) => tag.colorClass)).size, 3);
 assert.deepEqual(
-  new Set(tags.map((tag) => tag.colorClass)),
-  new Set(['salon-tag-royal', 'salon-tag-nature', 'salon-tag-neon'])
+  tags.map((tag) => tag.colorClass),
+  ['salon-tag-neon', 'salon-tag-nature', 'salon-tag-neon']
 );
