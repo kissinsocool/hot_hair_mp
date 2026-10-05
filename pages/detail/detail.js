@@ -5,6 +5,7 @@ const { formatFen } = require('../../utils/money');
 const { ratingDisplay } = require('../../utils/rating');
 const { serviceTagLabels } = require('../../utils/serviceTags');
 const { staffRoleLabel } = require('../../utils/staffRoles');
+const { afterSalesPolicyLabels } = require('../../utils/afterSalesPolicies');
 
 Page({
   data: {
@@ -31,6 +32,8 @@ Page({
       salon.promoImages = await Promise.all((salon.promoImages || salon.images || []).map(api.displayImageUrl));
       if (!salon.promoImages.length && salon.image) salon.promoImages = [salon.image];
       salon.openingHoursText = salon.openingHours || '暂无营业时间';
+      salon.weeklyClosedDaysText = this.formatWeeklyClosedDays(salon.weeklyClosedDays);
+      salon.afterSalesPolicies = afterSalesPolicyLabels(salon.afterSalesPolicyIds);
       salon.phoneText = salon.phone || '暂无电话';
       salon.addressText = this.formatAddress(salon.address);
       salon.descriptionText = salon.fullDescription || salon.description || '暂无详细描述';
@@ -103,6 +106,14 @@ Page({
     const address = String(value).trim();
     const match = address.match(/^(?:(?:北京|天津|上海|重庆)市|.+?(?:省|自治区|特别行政区))?(?:.+?(?:市|自治州|地区|盟))?.+?(?:区|县|旗|市)(.+)$/);
     return match && match[1].trim() || address;
+  },
+
+  formatWeeklyClosedDays(days) {
+    const names = ['', '一', '二', '三', '四', '五', '六', '日'];
+    const normalized = [...new Set(Array.isArray(days) ? days : [])]
+      .filter((day) => Number.isInteger(day) && day >= 1 && day <= 7)
+      .sort();
+    return normalized.length ? `每周${normalized.map((day) => names[day]).join('、')}休息` : '';
   },
 
   formatDate(value) {

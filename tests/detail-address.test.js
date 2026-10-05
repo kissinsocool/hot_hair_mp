@@ -19,6 +19,10 @@ assert.equal(pageDefinition.formatAddress('广西壮族自治区南宁市青秀�
 assert.equal(pageDefinition.formatAddress('西湖区文三路90号'), '文三路90号');
 assert.equal(pageDefinition.formatAddress('文三路90号'), '文三路90号');
 assert.equal(pageDefinition.formatAddress(''), '地址未知');
+assert.equal(pageDefinition.formatWeeklyClosedDays([1]), '每周一休息');
+assert.equal(pageDefinition.formatWeeklyClosedDays([7, 3, 3]), '每周三、日休息');
+assert.equal(pageDefinition.formatWeeklyClosedDays([]), '');
+assert.equal(pageDefinition.formatWeeklyClosedDays(undefined), '');
 
 pageDefinition.openMap.call({
   data: {

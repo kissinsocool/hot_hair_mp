@@ -35,34 +35,18 @@
   background-size: cover;
 }
 
-.hero-mask {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background: linear-gradient(180deg, rgba(0, 0, 0, 0.03), rgba(0, 0, 0, 0.5));
+.head-main {
+  flex: 1;
+  min-width: 0;
 }
 
-.hero-title {
-  position: absolute;
-  display: -webkit-box;
-  right: 34rpx;
-  bottom: 34rpx;
-  left: 84rpx;
-  max-height: 104rpx;
-  overflow: hidden;
-  color: #fff;
+.detail-heading {
+  margin-bottom: 16rpx;
+  color: #333;
   font-size: 40rpx;
-  font-weight: 800;
+  font-weight: 700;
   line-height: 52rpx;
-  letter-spacing: 2rpx;
-  text-overflow: ellipsis;
-  text-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.45);
-  white-space: normal;
   word-break: break-all;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
 
 .body {
@@ -72,7 +56,6 @@
 .head-row {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
   min-height: 138rpx;
   margin: 0 -20rpx;
   padding: 30rpx 20rpx 20rpx;
@@ -96,6 +79,10 @@
   height: 36.67rpx;
 }
 
+.stars .star-icon {
+  filter: hue-rotate(296deg) saturate(0.55) brightness(0.78);
+}
+
 .rating-text {
   margin-left: 8rpx;
   color: #777;
@@ -104,20 +91,33 @@
 }
 
 .hours {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 24rpx;
   margin-top: 14rpx;
   margin-left: 0;
   color: #c8c8c8;
   font-size: 28rpx;
+  font-weight: 600;
 }
 
 .heart {
-  width: 58rpx;
-  height: 58rpx;
+  position: absolute;
+  top: 20rpx;
+  right: 20rpx;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.3);
 }
 
 .heart image {
-  width: 58rpx;
-  height: 58rpx;
+  width: 44rpx;
+  height: 44rpx;
 }
 
 .promo {
@@ -140,7 +140,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 34rpx;
+  padding: 28rpx 0;
   background: #fff;
 }
 
@@ -157,8 +157,7 @@
   background: #555;
 }
 
-.section,
-.plain-section {
+.section {
   margin-top: 46rpx;
 }
 
@@ -172,13 +171,17 @@
   padding-left: 18rpx;
   border-left: 7rpx solid #6f5f58;
   color: #5a5a5a;
-  font-size: 31rpx;
+  font-size: 29rpx;
   font-weight: 600;
   line-height: 42rpx;
 }
 
-.promo + .section-title {
-  margin-top: 28rpx;
+.salon-intro {
+  margin: 0 0 36rpx;
+  color: #666;
+  font-size: 31rpx;
+  line-height: 46rpx;
+  white-space: pre-wrap;
 }
 
 .info-card {
@@ -216,14 +219,30 @@
   white-space: nowrap;
 }
 
+.after-sales {
+  margin-top: 16rpx;
+}
+
+.after-sales-row {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  min-height: 48rpx;
+  color: #665f5c;
+  font-size: 28rpx;
+  line-height: 40rpx;
+}
+
+.after-sales-icon {
+  flex: 0 0 30rpx;
+  width: 30rpx;
+  height: 30rpx;
+}
+
 .desc {
   color: #666;
   font-size: 31rpx;
   line-height: 40rpx;
-}
-
-.plain-section .desc {
-  line-height: 46rpx;
 }
 
 .service-card {

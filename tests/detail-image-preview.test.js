@@ -29,6 +29,8 @@ const staffTemplate = fs.readFileSync(path.join(root, 'pages/staff/staff.wxml'),
 const detailTemplate = fs.readFileSync(path.join(root, 'pages/detail/detail.wxml'), 'utf8');
 assert.match(staffTemplate, /class="avatar"[^>]*bindtap="previewAvatar"/);
 assert.match(detailTemplate, /class="hero"[^>]*bindtap="previewHeroImage"/);
+assert.match(detailTemplate, /wx:for="\{\{salon\.afterSalesPolicies\}\}"/);
+assert.match(detailTemplate, /wx:if="\{\{salon\.acceptsSameDayBooking === true\}\}" class="after-sales-row"[^>]*>[^]*<text>当日可约<\/text>/);
 
 delete global.Page;
 delete global.wx;

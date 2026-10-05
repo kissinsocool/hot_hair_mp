@@ -7,20 +7,26 @@
   </view>
   <view class="hero" bindtap="previewHeroImage" aria-role="button" aria-label="查看店铺大图">
     <view class="hero-img" style="background-image: url('{{salon.image}}');"></view>
-    <view class="hero-mask"></view>
-    <view class="hero-title">{{salon.name}}</view>
+    <view class="heart" catchtap="toggleFavorite" aria-role="button" aria-label="{{isFavorite ? '取消收藏' : '收藏店铺'}}">
+      <image mode="aspectFit" src="{{isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
+    </view>
   </view>
   <view class="body">
     <view class="head-row">
-      <view>
+      <view class="head-main">
+        <view class="detail-heading">{{salon.name}}{{salon.description ? ' ' + salon.description : ''}}</view>
         <view class="stars">
           <image wx:for="{{salon.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon" mode="aspectFit" src="{{star}}" />
           <text class="rating-text">{{salon.ratingText}} ({{salon.reviewTotalText}}人评分)</text>
         </view>
-        <view class="hours">营业时间： {{salon.openingHoursText}}</view>
-      </view>
-      <view class="heart" bindtap="toggleFavorite">
-        <image mode="aspectFit" src="{{isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
+        <view class="hours">
+          <text>营业时间： {{salon.openingHoursText}}</text>
+          <text wx:if="{{salon.weeklyClosedDaysText}}">{{salon.weeklyClosedDaysText}}</text>
+        </view>
+        <view wx:if="{{salon.afterSalesPolicies.length || salon.acceptsSameDayBooking === true}}" class="after-sales">
+          <view wx:for="{{salon.afterSalesPolicies}}" wx:key="*this" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right.png" /><text>{{item}}</text></view>
+          <view wx:if="{{salon.acceptsSameDayBooking === true}}" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right.png" /><text>当日可约</text></view>
+        </view>
       </view>
     </view>
     <view wx:if="{{salon.promoImages.length}}" class="promo">
@@ -33,14 +39,11 @@
         <view wx:for="{{salon.promoImages}}" wx:for-index="index" wx:key="*this" class="promo-dot {{index == currentPromoIndex ? 'active' : ''}}"></view>
       </view>
     </view>
+    <view class="salon-intro">{{salon.descriptionText}}</view>
     <view class="section-title">店铺信息</view>
     <view class="card info-card">
       <view class="info-row" bindtap="callPhone"><image class="icon-img" mode="aspectFit" src="/assets/icons/phone.png" /><text class="info-label">电话</text><text class="info-value">{{salon.phoneText}}</text></view>
       <view class="info-row" bindtap="openMap"><image class="icon-img" mode="aspectFit" src="/assets/icons/location_on.png" /><text class="info-label">地址</text><text class="info-value">{{salon.addressText}}</text></view>
-    </view>
-    <view class="section plain-section">
-      <view class="section-title">关于我们</view>
-      <view class="desc">{{salon.descriptionText}}</view>
     </view>
     <view class="card section">
       <view class="section-title">热门套餐</view>
