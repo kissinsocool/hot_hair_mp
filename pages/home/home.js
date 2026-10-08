@@ -111,10 +111,6 @@ Page({
     this.unsubscribeBookingSocket = null;
   },
 
-  onPullDownRefresh() {
-    this.loadSalons().finally(() => wx.stopPullDownRefresh());
-  },
-
   refresh() {
     this.setData({ refreshing: true });
     this.loadSalons().finally(() => this.setData({ refreshing: false }));

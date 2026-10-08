@@ -8,16 +8,17 @@ const styles = fs.readFileSync(path.join(root, 'pages/detail/detail.wxss'), 'utf
 
 const promoIndex = template.indexOf('class="promo"');
 const introIndex = template.indexOf('class="salon-intro"');
-const infoIndex = template.indexOf('>店铺信息</view>');
+const infoIndex = template.indexOf('class="card info-card"');
 const heroIndex = template.indexOf('class="hero"');
 const heartIndex = template.indexOf('class="heart"');
 const headingIndex = template.indexOf('class="detail-heading"');
 const ratingIndex = template.indexOf('class="stars"');
 
 assert.ok(promoIndex >= 0 && promoIndex < introIndex && introIndex < infoIndex);
+assert.doesNotMatch(template, />店铺信息<\/view>/);
 assert.ok(heroIndex >= 0 && heroIndex < heartIndex && heartIndex < headingIndex && headingIndex < ratingIndex);
 assert.match(template, /class="heart" catchtap="toggleFavorite"/);
-assert.match(template, /class="detail-heading">\{\{salon\.name\}\}\{\{salon\.description \? ' ' \+ salon\.description : ''\}\}<\/view>/);
+assert.match(template, /class="detail-heading">\{\{salon\.name\}\}\{\{salon\.description \? ' 「' \+ salon\.description \+ '」' : ''\}\}<\/view>/);
 assert.doesNotMatch(template, />关于我们</);
 assert.doesNotMatch(template, /class="hero-(?:mask|title)"/);
 assert.match(styles, /\.hours\s*\{[^}]*color:\s*#c8c8c8;/s);

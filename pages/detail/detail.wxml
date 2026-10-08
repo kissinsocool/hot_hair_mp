@@ -14,7 +14,7 @@
   <view class="body">
     <view class="head-row">
       <view class="head-main">
-        <view class="detail-heading">{{salon.name}}{{salon.description ? ' ' + salon.description : ''}}</view>
+        <view class="detail-heading">{{salon.name}}{{salon.description ? ' 「' + salon.description + '」' : ''}}</view>
         <view class="stars">
           <image wx:for="{{salon.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon" mode="aspectFit" src="{{star}}" />
           <text class="rating-text">{{salon.ratingText}} ({{salon.reviewTotalText}}人评分)</text>
@@ -40,7 +40,6 @@
       </view>
     </view>
     <view class="salon-intro">{{salon.descriptionText}}</view>
-    <view class="section-title">店铺信息</view>
     <view class="card info-card">
       <view class="info-row" bindtap="callPhone"><image class="icon-img" mode="aspectFit" src="/assets/icons/phone.png" /><text class="info-label">电话</text><text class="info-value">{{salon.phoneText}}</text></view>
       <view class="info-row" bindtap="openMap"><image class="icon-img" mode="aspectFit" src="/assets/icons/location_on.png" /><text class="info-label">地址</text><text class="info-value">{{salon.addressText}}</text></view>
