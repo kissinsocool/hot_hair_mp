@@ -1,13 +1,13 @@
 <view wx:if="{{loading}}" class="empty">正在加载...</view>
 <view wx:else class="staff-page">
   <view class="profile">
-    <image class="avatar" mode="aspectFill" src="{{staff.imageUrl}}" />
+    <image class="avatar" mode="aspectFill" src="{{staff.imageUrl}}" bindtap="previewAvatar" aria-role="button" aria-label="查看理发师头像大图" />
     <view class="name">{{staff.name}}</view>
     <view class="role">{{staff.roleText}}</view>
     <view class="rating">
       <text>{{staff.ratingText}}</text>
       <view>
-        <view class="stars"><image wx:for="{{[1,2,3,4,5]}}" wx:key="*this" mode="aspectFit" src="/assets/icons/star_gold.png" /></view>
+        <view wx:if="{{staff.hasRating}}" class="stars"><image wx:for="{{staff.starIcons}}" wx:key="*this" mode="aspectFit" src="{{item}}" /></view>
       </view>
     </view>
   </view>
@@ -16,7 +16,7 @@
       <view class="desc">{{staff.bioText}}</view>
     </view>
     <view class="card section">
-      <view class="section-title">客户评价（{{staff.reviews.length}}）</view>
+      <view class="section-title">客户评价（{{staff.reviewCount}}）</view>
       <view wx:if="{{!staff.reviews.length}}" class="muted">暂无评价</view>
       <view wx:for="{{staff.reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
@@ -25,7 +25,7 @@
         </view>
         <view class="desc">{{item.comment}}</view>
         <view wx:if="{{item.imageUrls.length}}" class="review-images">
-          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
         </view>
       </view>
     </view>

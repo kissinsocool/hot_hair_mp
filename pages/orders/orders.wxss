@@ -1,22 +1,31 @@
 .orders-page {
-  min-height: 100vh;
-  padding-bottom: calc(88px + env(safe-area-inset-bottom));
+  height: 100vh;
+  overflow: hidden;
   background: #fffdfb;
 }
 
 .orders-appbar {
+  position: fixed;
+  z-index: 10;
+  top: 0;
+  right: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 28rpx;
-  background: #e8a2b0;
+  background: #2B2726;
   box-sizing: border-box;
+}
+
+.orders-appbar-spacer {
+  flex: 0 0 auto;
 }
 
 .orders-title {
   color: #fff;
-  font-size: 42rpx;
-  font-weight: 800;
+  font-size: 34rpx;
+  font-weight: 600;
   line-height: 58rpx;
 }
 
@@ -34,17 +43,33 @@
 
 .orders-bell-dot {
   position: absolute;
-  top: -4rpx;
-  right: -6rpx;
-  width: 18rpx;
-  height: 18rpx;
-  border: 3rpx solid #e8a2b0;
-  border-radius: 50%;
+  top: -17rpx;
+  left: 30rpx;
+  box-sizing: border-box;
+  min-width: 30rpx;
+  height: 30rpx;
+  padding: 0 7rpx;
+  border: 3rpx solid #2B2726;
+  border-radius: 999rpx;
   background: #ff3b30;
+  color: #fff;
+  font-size: 18rpx;
+  font-weight: 700;
+  line-height: 24rpx;
+  text-align: center;
+  white-space: nowrap;
 }
 
 .orders-list {
-  padding: 18rpx 16rpx 0;
+  padding: 18rpx 16rpx 20rpx;
+  box-sizing: border-box;
+}
+
+.list-footer {
+  padding: 24rpx 0 36rpx;
+  color: #aaa;
+  font-size: 24rpx;
+  text-align: center;
 }
 
 .order {
@@ -53,7 +78,7 @@
   padding: 18rpx 14rpx 16rpx;
   border-radius: 12rpx;
   border-color: #e8dcd0;
-  box-shadow: none;
+  box-shadow: 0 8rpx 24rpx rgba(88, 68, 72, 0.08);
 }
 
 .top {
@@ -114,9 +139,24 @@
 }
 
 .order-label {
-  flex: 0 0 128rpx;
+  flex: 0 0 8em;
   color: #777;
   font-weight: 500;
+  text-align: left;
+}
+
+.order-value {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+}
+
+.coupon-discount {
+  color: #d06884;
+}
+
+.coupon-discount .order-label {
+  color: #d06884;
 }
 
 .icon-img {
@@ -129,28 +169,31 @@
 .actions {
   display: flex;
   flex-direction: row;
+  flex-wrap: nowrap;
   justify-content: flex-end;
+  gap: 20rpx;
   margin-top: 24rpx;
 }
 
 .cancel {
-  flex: 1;
+  flex: 1 1 0;
+  min-width: 0;
   width: auto !important;
-  height: 70rpx;
-  max-width: 342rpx;
-  margin: 0 0 0 16rpx;
+  height: 64rpx;
+  max-width: 270rpx;
+  margin: 0;
   border: 1rpx solid #d06884;
   border-radius: 999rpx;
   background: #fff;
   color: #d06884;
-  font-size: 30rpx;
+  font-size: 28rpx;
   font-weight: 700;
-  line-height: 70rpx;
+  line-height: 64rpx;
 }
 
 .actions.single .cancel {
   flex: none;
-  width: 252rpx !important;
+  width: 230rpx !important;
   margin-right: 0 !important;
   margin-left: auto !important;
 }
@@ -302,6 +345,26 @@
 
 .star-btn.active image {
   opacity: 1;
+}
+
+.review-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+  margin-bottom: 38rpx;
+}
+
+.review-tag {
+  padding: 12rpx 24rpx;
+  border-radius: 999rpx;
+  background: #f1f1f1;
+  color: #888;
+  font-size: 27rpx;
+}
+
+.review-tag.active {
+  background: #f8dce5;
+  color: #d06884;
 }
 
 .textarea-wrap {

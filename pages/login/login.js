@@ -1,4 +1,10 @@
 const api = require('../../utils/api');
+const app = getApp();
+const LOGIN_RETURN_HOME_ROUTES = [
+  'pages/favorites/favorites',
+  'pages/orders/orders',
+  'pages/profile/profile'
+];
 
 Page({
   data: {
@@ -6,8 +12,21 @@ Page({
     loading: false
   },
 
+  onLoad() {
+    const pages = getCurrentPages();
+    const previousPage = pages[pages.length - 2];
+    app.globalData.pendingLoginReturnRoute = previousPage
+      && LOGIN_RETURN_HOME_ROUTES.includes(previousPage.route)
+      ? previousPage.route
+      : '';
+  },
+
   toggleAgreement() {
     this.setData({ agreed: !this.data.agreed });
+  },
+
+  openRule(e) {
+    wx.navigateTo({ url: `/pages/rules/${e.currentTarget.dataset.page}` });
   },
 
   async loginByPhone(e) {
@@ -41,6 +60,7 @@ Page({
         data
       });
       api.saveSession(session);
+      app.globalData.pendingLoginReturnRoute = '';
       wx.navigateBack({ fail: () => wx.switchTab({ url: '/pages/home/home' }) });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });

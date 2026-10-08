@@ -1,18 +1,28 @@
 const api = require('../../utils/api');
+const app = getApp();
+const { ratingDisplay } = require('../../utils/rating');
+const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 Page({
   data: {
-    loggedIn: false,
-    loading: false,
+    loggedIn: initiallyLoggedIn,
+    loading: initiallyLoggedIn,
     salons: []
   },
 
   onShow() {
+    const tabBar = this.getTabBar && this.getTabBar();
+    if (tabBar) tabBar.show();
     const session = api.session();
     const loggedIn = Boolean(session && session.token);
     this.setData({ loggedIn });
     if (!loggedIn) {
-      wx.navigateTo({ url: '/pages/login/login' });
+      if (app.globalData.pendingLoginReturnRoute === 'pages/favorites/favorites') {
+        app.globalData.pendingLoginReturnRoute = '';
+        wx.switchTab({ url: '/pages/home/home' });
+      } else {
+        wx.navigateTo({ url: '/pages/login/login' });
+      }
       return;
     }
     this.load();
@@ -31,7 +41,7 @@ Page({
         image: await api.displayImageUrl(api.salonImage(salon)),
         nameText: salon.name || '未知沙龙',
         descriptionText: salon.description || '暂无描述',
-        ratingText: salon.rating || '4.8',
+        ...ratingDisplay(salon.rating, salon.reviewCount),
         distanceText: salon.distanceKm ? `距离你 ${Number(salon.distanceKm).toFixed(1)} km` : ''
       }))) });
     } catch (err) {
@@ -49,7 +59,7 @@ Page({
     try {
       const salon = this.data.salons.find((item) => item.id === e.currentTarget.dataset.id);
       if (!salon) return;
-      await api.request('/favorites/toggle', { method: 'POST', data: salon });
+      await api.request(`/favorites/${encodeURIComponent(salon.id)}`, { method: 'DELETE' });
       this.load();
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });

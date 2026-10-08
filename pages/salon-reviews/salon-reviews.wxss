@@ -1,0 +1,118 @@
+page,
+.page {
+  min-height: 100%;
+  background: #fdfbf9;
+}
+
+.page {
+  padding: 24rpx;
+}
+
+.review-card {
+  margin-bottom: 20rpx;
+  padding: 24rpx;
+  border: 1rpx solid #eadbd2;
+  border-radius: 16rpx;
+  background: #fff;
+  box-shadow: 0 8rpx 24rpx rgba(91, 67, 56, 0.12);
+}
+
+.review-head,
+.review-user,
+.review-stars {
+  display: flex;
+  align-items: flex-start;
+}
+
+.review-head {
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.review-user {
+  min-width: 0;
+  gap: 14rpx;
+}
+
+.review-user-copy {
+  min-width: 0;
+}
+
+.avatar {
+  flex: 0 0 84rpx;
+  width: 84rpx;
+  height: 84rpx;
+  border-radius: 50%;
+  background: #fdebf0;
+}
+
+.review-name {
+  overflow: hidden;
+  color: #666;
+  font-size: 27rpx;
+  font-weight: 800;
+  line-height: 32rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.review-sub,
+.review-date {
+  color: #999;
+  font-size: 26rpx;
+  line-height: 32rpx;
+}
+
+.review-sub {
+  margin-top: 4rpx;
+  line-height: 36rpx;
+}
+
+.review-date {
+  flex: 0 0 auto;
+}
+
+.review-stars {
+  gap: 3rpx;
+  margin: 14rpx 0 10rpx;
+}
+
+.star-icon {
+  width: 27.5rpx;
+  height: 27.5rpx;
+}
+
+.review-comment {
+  color: #666;
+  font-size: 31rpx;
+  line-height: 40rpx;
+}
+
+.review-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 10rpx;
+}
+
+.review-image {
+  width: 128rpx;
+  height: 152rpx;
+  border-radius: 4rpx;
+  background: #eee;
+}
+
+.state {
+  padding: 96rpx 24rpx;
+  color: #8d817b;
+  font-size: 28rpx;
+  text-align: center;
+}
+
+.retry {
+  width: 240rpx;
+  margin-top: 28rpx;
+  background: #d06884;
+  color: #fff;
+  font-size: 28rpx;
+}
