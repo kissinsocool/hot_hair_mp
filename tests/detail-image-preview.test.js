@@ -30,6 +30,8 @@ const detailTemplate = fs.readFileSync(path.join(root, 'pages/detail/detail.wxml
 assert.match(staffTemplate, /class="avatar"[^>]*bindtap="previewAvatar"/);
 assert.match(detailTemplate, /class="hero"[^>]*bindtap="previewHeroImage"/);
 assert.match(detailTemplate, /wx:for="\{\{salon\.afterSalesPolicies\}\}"/);
+assert.match(detailTemplate, /wx:if="\{\{salon\.afterSalesPolicies\.length \|\| salon\.acceptsSameDayBooking === true\}\}" class="after-sales"/);
+assert.match(detailTemplate, /class="after-sales-icon"[^>]*src="\/assets\/icons\/right_gray\.png"/);
 assert.match(detailTemplate, /wx:if="\{\{salon\.acceptsSameDayBooking === true\}\}" class="after-sales-row"[^>]*>[^]*<text>当日可约<\/text>/);
 
 delete global.Page;

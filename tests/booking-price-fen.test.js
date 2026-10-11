@@ -145,7 +145,8 @@ async function checkServicePricing() {
   assert.equal(noPreference.extraServiceFeeFen, 0);
 
   const template = fs.readFileSync(path.join(__dirname, '../pages/confirm/confirm.wxml'), 'utf8');
-  assert.match(template, /wx:if="\{\{booking\.extraServiceFeeFen > 0\}\}"[^>]*><text>理发师额外服务费/);
+  assert.match(template, /<text>基础服务费用<\/text><text>\{\{booking\.servicePriceText\}\}/);
+  assert.match(template, /wx:if="\{\{booking\.extraServiceFeeFen > 0\}\}"[^>]*><text>指定理发师附加费用/);
 }
 
 checkServicePricing().catch(error => { console.error(error); process.exitCode = 1; });

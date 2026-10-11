@@ -81,6 +81,7 @@ Page({
     if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
     this.unsubscribeBookingSocket = null;
     this.tabBarScrollAnchor = 0;
+    this.listScrollHeight = undefined;
     const tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.show();
     this.setData({ supportHidden: false });
@@ -474,12 +475,17 @@ Page({
 
   onListScroll(e) {
     const scrollTop = Math.max(0, Number(e.detail.scrollTop) || 0);
+    const scrollHeight = Number(e.detail.scrollHeight);
+    const contentHeightChanged = Number.isFinite(scrollHeight)
+      && Number.isFinite(this.listScrollHeight)
+      && scrollHeight !== this.listScrollHeight;
+    if (Number.isFinite(scrollHeight)) this.listScrollHeight = scrollHeight;
     const distance = scrollTop - this.tabBarScrollAnchor;
     if (scrollTop === 0 || Math.abs(distance) >= TAB_BAR_SCROLL_TRIGGER) {
       this.tabBarScrollAnchor = scrollTop;
       const tabBar = this.getTabBar && this.getTabBar();
       if (tabBar) {
-        if (scrollTop === 0 || distance < 0) tabBar.show();
+        if (scrollTop === 0 || (distance < 0 && !this.data.loadingMore && !contentHeightChanged)) tabBar.show();
         else if (distance > 0) tabBar.hide();
       }
     }

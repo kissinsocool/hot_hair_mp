@@ -142,6 +142,18 @@
               <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
             </view>
           </view>
+          <view wx:if="{{salonIndex === 2}}" class="salon-sale" role="img" aria-label="店铺大促，60%OFF">
+            <view class="salon-sale-track" aria-hidden="true">
+              <view class="salon-sale-copy"><text>店铺大促 60%OFF</text><text>店铺大促 60%OFF</text><text>店铺大促 60%OFF</text></view>
+              <view class="salon-sale-copy"><text>店铺大促 60%OFF</text><text>店铺大促 60%OFF</text><text>店铺大促 60%OFF</text></view>
+            </view>
+          </view>
+          <view wx:if="{{salonIndex === 2}}" class="salon-sale-cross" role="img" aria-label="60%OFF">
+            <view class="salon-sale-cross-track" aria-hidden="true">
+              <view class="salon-sale-cross-copy"><text>60%OFF</text><text>60%OFF</text><text>60%OFF</text></view>
+              <view class="salon-sale-cross-copy"><text>60%OFF</text><text>60%OFF</text><text>60%OFF</text></view>
+            </view>
+          </view>
         </view>
       </view>
 

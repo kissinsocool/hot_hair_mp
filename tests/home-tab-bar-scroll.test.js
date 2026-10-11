@@ -46,6 +46,19 @@ page.onListScroll({ detail: { scrollTop: 0 } });
 
 assert.deepEqual(actions, ['hide', 'show', 'show']);
 
+// Loading at the bottom can shift scrollTop backwards even while the user's
+// gesture is still directed down the list.
+actions.length = 0;
+page.onListScroll({ detail: { scrollTop: 200, scrollHeight: 1000 } });
+page.data.loadingMore = true;
+page.onListScroll({ detail: { scrollTop: 160, scrollHeight: 1000 } });
+assert.deepEqual(actions, ['hide'], 'loading-induced scroll rollback must not reveal the tab bar');
+page.data.loadingMore = false;
+page.onListScroll({ detail: { scrollTop: 120, scrollHeight: 900 } });
+assert.deepEqual(actions, ['hide'], 'content height changes must not reveal the tab bar');
+page.onListScroll({ detail: { scrollTop: 100, scrollHeight: 900 } });
+assert.deepEqual(actions, ['hide', 'show'], 'an actual upward scroll should reveal the tab bar');
+
 page.onListScroll({ detail: { scrollTop: 120 } });
 dataUpdates.length = 0;
 page.scrollToTop();

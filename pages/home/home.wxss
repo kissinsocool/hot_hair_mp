@@ -603,6 +603,8 @@
 @media (prefers-reduced-motion: reduce) {
   .salon-card-border-light { display: none; animation: none; }
   .salon-card-border-light::before { animation: none; }
+  .salon-sale-track,
+  .salon-sale-cross-track { animation: none; }
   .load-more-dot { animation: none; }
 }
 
@@ -732,6 +734,63 @@
   flex: 1;
   min-width: 0;
   padding: 14rpx 8rpx 8rpx 12rpx;
+}
+
+.salon-sale,
+.salon-sale-cross {
+  display: none;
+  position: absolute;
+  top: 100%;
+  box-sizing: border-box;
+  height: 38rpx;
+  overflow: hidden;
+  border: 2rpx solid #bf2026;
+  background: #f7e1e1;
+  color: #bf2026;
+  pointer-events: none;
+}
+
+.salon-sale {
+  z-index: 4;
+  left: 70%;
+  width: 170%;
+  transform: translate(-50%, -50%) rotate(-64deg);
+}
+
+.salon-sale-cross {
+  z-index: 3;
+  left: 45%;
+  width: 130%;
+  transform: translate(-50%, -50%) rotate(-12deg);
+}
+
+.salon-sale-track,
+.salon-sale-cross-track {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  animation: salon-sale-cross-scroll 6s linear infinite;
+}
+
+.salon-sale-copy,
+.salon-sale-cross-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex: 0 0 50%;
+  height: 100%;
+  white-space: nowrap;
+}
+
+.salon-sale-copy text,
+.salon-sale-cross-copy text {
+  font-size: 24rpx;
+  font-weight: 700;
+  letter-spacing: 1rpx;
+}
+
+@keyframes salon-sale-cross-scroll {
+  to { transform: translateX(-50%); }
 }
 
 .salon-head {

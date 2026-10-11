@@ -49,7 +49,7 @@ test('service cards load only the cover, then preview the ordered gallery withou
     assert.equal(page.data.salon.services[0].imageUrl, 'https://example.com/first.jpg');
     assert.equal(page.data.salon.weeklyClosedDaysText, '每周一、三休息');
     assert.deepEqual(page.data.salon.afterSalesPolicies, [
-      '剪发七日内不满意免费重新调整',
+      '剪发七日内不满意可重新调整',
       '染烫十五日内不满意免费重做'
     ]);
     assert.equal(previews.length, 0);

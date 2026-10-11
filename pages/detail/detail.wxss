@@ -220,23 +220,30 @@
 }
 
 .after-sales {
-  margin-top: 16rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+  margin-top: 24rpx;
 }
 
 .after-sales-row {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 16rpx;
-  min-height: 48rpx;
-  color: #665f5c;
-  font-size: 28rpx;
-  line-height: 40rpx;
+  gap: 10rpx;
+  min-height: 40rpx;
+  padding: 6rpx 20rpx;
+  border-radius: 999rpx;
+  background: #eee;
+  color: #635555;
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 32rpx;
 }
 
 .after-sales-icon {
-  flex: 0 0 30rpx;
-  width: 30rpx;
-  height: 30rpx;
+  flex: 0 0 28rpx;
+  width: 28rpx;
+  height: 28rpx;
 }
 
 .desc {

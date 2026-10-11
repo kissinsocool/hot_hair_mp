@@ -24,8 +24,8 @@
           <text wx:if="{{salon.weeklyClosedDaysText}}">{{salon.weeklyClosedDaysText}}</text>
         </view>
         <view wx:if="{{salon.afterSalesPolicies.length || salon.acceptsSameDayBooking === true}}" class="after-sales">
-          <view wx:for="{{salon.afterSalesPolicies}}" wx:key="*this" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right.png" /><text>{{item}}</text></view>
-          <view wx:if="{{salon.acceptsSameDayBooking === true}}" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right.png" /><text>当日可约</text></view>
+          <view wx:for="{{salon.afterSalesPolicies}}" wx:key="*this" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right_gray.png" /><text>{{item}}</text></view>
+          <view wx:if="{{salon.acceptsSameDayBooking === true}}" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right_gray.png" /><text>当日可约</text></view>
         </view>
       </view>
     </view>
