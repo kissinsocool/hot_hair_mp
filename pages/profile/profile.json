@@ -1,3 +1,9 @@
 {
-  "navigationBarTitleText": "我的"
+  "navigationBarTitleText": "我的",
+  "navigationBarBackgroundColor": "#2B2726",
+  "navigationBarTextStyle": "white",
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "coupon-ticket": "/components/coupon-ticket/coupon-ticket"
+  }
 }

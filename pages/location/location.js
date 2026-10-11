@@ -2,7 +2,7 @@ Page({
   data: {
     locating: false,
     address: '',
-    addressText: '可使用微信定位更新位置',
+    addressText: '可使用微信地图选择位置',
     latitude: 0,
     longitude: 0,
     manual: ''
@@ -28,7 +28,9 @@ Page({
           prev.setData({
             latitude: res.latitude,
             longitude: res.longitude,
-            locationText: res.name || res.address || '当前位置'
+            locationText: res.name || res.address || '已选位置',
+            locatedOnce: true,
+            locationIsFuzzy: false
           });
           if (prev.loadSalons) prev.loadSalons();
         }

@@ -1,5 +1,6 @@
 .page {
   padding-top: 20rpx;
+  padding-bottom: calc(54px + env(safe-area-inset-bottom) + 20rpx);
 }
 
 .salon-card {

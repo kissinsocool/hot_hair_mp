@@ -1,0 +1,17 @@
+<view class="coupon-page">
+  <view wx:if="{{!coupons.length}}" class="empty">
+    <view class="empty-title">暂无可用优惠券</view>
+    <view class="empty-sub">当前订单没有满足使用条件的优惠券</view>
+  </view>
+
+  <view class="coupon-list">
+    <view wx:for="{{coupons}}" wx:key="id" class="coupon-item">
+      <coupon-ticket
+        coupon="{{item}}"
+        selectable="{{true}}"
+        selected="{{item.selected}}"
+        bind:select="selectCoupon"
+      />
+    </view>
+  </view>
+</view>

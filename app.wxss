@@ -10,7 +10,8 @@ view,
 text,
 image,
 button,
-input {
+input,
+textarea {
   box-sizing: border-box;
 }
 
