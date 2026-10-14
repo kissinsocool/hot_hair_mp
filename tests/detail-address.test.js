@@ -18,6 +18,12 @@ assert.equal(pageDefinition.formatAddress('河南省周口市项城市建设路1
 assert.equal(pageDefinition.formatAddress('广西壮族自治区南宁市青秀区民族大道'), '民族大道');
 assert.equal(pageDefinition.formatAddress('西湖区文三路90号'), '文三路90号');
 assert.equal(pageDefinition.formatAddress('文三路90号'), '文三路90号');
+assert.equal(pageDefinition.formatAddress('上海市张江路88号（B区）'), '张江路88号（B区）');
+assert.equal(pageDefinition.formatAddress('杭州市文三路90号B区2楼'), '文三路90号B区2楼');
+assert.equal(pageDefinition.formatAddress('上海市张江路88号（东区）'), '张江路88号（东区）');
+assert.equal(pageDefinition.formatAddress('上海市浦东新区张江路88号（B区）'), '张江路88号（B区）');
+assert.equal(pageDefinition.formatAddress('四川省攀枝花市东区炳草岗'), '炳草岗');
+assert.equal(pageDefinition.formatAddress('B区2楼'), 'B区2楼');
 assert.equal(pageDefinition.formatAddress(''), '地址未知');
 assert.equal(pageDefinition.formatWeeklyClosedDays([1]), '每周一休息');
 assert.equal(pageDefinition.formatWeeklyClosedDays([7, 3, 3]), '每周三、日休息');

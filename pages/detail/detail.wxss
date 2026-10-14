@@ -167,11 +167,11 @@
 }
 
 .section-title {
-  margin: 0 0 16rpx;
+  margin: 0 0 24rpx;
   padding-left: 18rpx;
-  border-left: 7rpx solid #6f5f58;
-  color: #5a5a5a;
-  font-size: 29rpx;
+  border-left: 9rpx solid #635555;
+  color: #635555;
+  font-size: 27rpx;
   font-weight: 600;
   line-height: 42rpx;
 }
@@ -441,8 +441,9 @@
 }
 
 .salon-post-content {
-  color: #555;
+  color: #000;
   font-size: 29rpx;
+  font-weight: 600;
   line-height: 44rpx;
   white-space: pre-wrap;
 }
@@ -487,18 +488,17 @@
 
 .salon-post-service-name {
   color: #363636;
-  font-size: 29rpx;
-  font-weight: 700;
-  line-height: 39rpx;
+  font-size: 27rpx;
+  font-weight: 400;
+  line-height: 37rpx;
   word-break: break-all;
 }
 
 .salon-post-service-note {
   margin-top: 8rpx;
-  color: #666;
-  font-size: 25rpx;
+  color: #363636;
+  font-size: 27rpx;
   line-height: 35rpx;
-  white-space: pre-wrap;
 }
 
 .salon-post-service-bottom {

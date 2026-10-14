@@ -88,11 +88,10 @@ Page({
   },
 
   async normalizePost(post, services) {
+    const service = post.serviceId ? (services || []).find((item) => item.id === post.serviceId) : null;
     return {
       ...post,
-      relatedService: post.serviceId
-        ? (services || []).find((service) => service.id === post.serviceId) || null
-        : null,
+      relatedService: service ? { ...service, noteText: service.noteText.trim().replace(/\s*[\r\n]+\s*/g, '，') } : null,
       authorImageUrl: await api.displayImageUrl(post.authorImageUrl, 160),
       imageUrls: await Promise.all((post.imageUrls || []).map((image) => api.displayImageUrl(image, 480))),
       dateText: this.formatDate(post.createdAt)
@@ -107,7 +106,7 @@ Page({
   formatAddress(value) {
     if (!value) return '地址未知';
     const address = String(value).trim();
-    const match = address.match(/^(?:(?:北京|天津|上海|重庆)市|.+?(?:省|自治区|特别行政区))?(?:.+?(?:市|自治州|地区|盟))?.+?(?:区|县|旗|市)(.+)$/);
+    const match = address.match(/^(?:(?:北京|天津|上海|重庆)市|.+?(?:省|自治区|特别行政区))?(?:.+?(?:市|自治州|地区|盟))?.*?[\u3400-\u9fff](?:区(?![)）])|县|旗|市)(.+)$/);
     return match && match[1].trim() || address;
   },
 

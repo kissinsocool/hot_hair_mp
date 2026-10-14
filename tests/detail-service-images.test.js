@@ -24,7 +24,7 @@ test('service cards load only the cover, then preview the ordered gallery withou
       afterSalesPolicyIds: ['haircut_7_day_adjustment', 'color_perm_15_day_redo'],
       weeklyClosedDays: [1, 3],
       services: [
-        { id: 'multi', name: '剪发套餐', note: '洗护与造型', durationMinutes: 60, tagIds: ['wash_cut_blow'], priceFen: 798000, imageUrl: '/old.jpg', imageUrls: ['/first.jpg', '/second.jpg', '/third.jpg'] },
+        { id: 'multi', name: '剪发套餐', note: '洗护\r\n造型\n护理', durationMinutes: 60, tagIds: ['wash_cut_blow'], priceFen: 798000, imageUrl: '/old.jpg', imageUrls: ['/first.jpg', '/second.jpg', '/third.jpg'] },
         { id: 'legacy', imageUrl: '/legacy.jpg' },
         { id: 'empty', imageUrl: '/old.jpg', imageUrls: [] },
         { id: 'missing' }
@@ -62,7 +62,8 @@ test('service cards load only the cover, then preview the ordered gallery withou
     assert.equal(page.data.salon.latestPosts[0].relatedService.name, '剪发套餐');
     assert.deepEqual(page.data.salon.latestPosts[0].relatedService.tags, ['洗剪吹']);
     assert.equal(page.data.salon.latestPosts[0].relatedService.priceText, '¥7,980');
-    assert.equal(page.data.salon.latestPosts[0].relatedService.noteText, '洗护与造型');
+    assert.equal(page.data.salon.latestPosts[0].relatedService.noteText, '洗护，造型，护理');
+    assert.equal(page.data.salon.services[0].noteText, '洗护\r\n造型\n护理');
     assert.equal(page.data.salon.latestPosts[0].relatedService.durationText, '60分钟');
     assert.equal(page.data.salon.latestPosts[1].relatedService, null);
 
