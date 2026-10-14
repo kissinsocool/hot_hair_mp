@@ -178,8 +178,8 @@
 
 .salon-intro {
   margin: 0 0 36rpx;
-  color: #666;
-  font-size: 31rpx;
+  color: #343434;
+  font-size: 29rpx;
   line-height: 46rpx;
   white-space: pre-wrap;
 }
@@ -445,6 +445,92 @@
   font-size: 29rpx;
   line-height: 44rpx;
   white-space: pre-wrap;
+}
+
+.salon-post-service {
+  display: flex;
+  align-items: stretch;
+  gap: 20rpx;
+  min-height: 174rpx;
+  margin-top: 18rpx;
+  padding: 20rpx;
+  border: 2rpx solid #e1e1e1;
+  border-radius: 20rpx;
+  background: #fff;
+}
+
+.salon-post-service-label {
+  display: flex;
+  flex: 0 0 58rpx;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8rpx;
+  background: #d67590;
+  color: #fff;
+  font-size: 23rpx;
+  line-height: 27rpx;
+  text-align: center;
+}
+
+.salon-post-service-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.salon-post-service-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8rpx;
+  margin-bottom: 10rpx;
+}
+
+.salon-post-service-name {
+  color: #363636;
+  font-size: 29rpx;
+  font-weight: 700;
+  line-height: 39rpx;
+  word-break: break-all;
+}
+
+.salon-post-service-note {
+  margin-top: 8rpx;
+  color: #666;
+  font-size: 25rpx;
+  line-height: 35rpx;
+  white-space: pre-wrap;
+}
+
+.salon-post-service-bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 14rpx;
+  margin-top: 12rpx;
+}
+
+.salon-post-service-price {
+  color: #ce365c;
+  font-size: 34rpx;
+  font-weight: 700;
+}
+
+.salon-post-service-arrow {
+  align-self: center;
+  box-sizing: border-box;
+  flex: 0 0 24rpx;
+  width: 24rpx;
+  height: 24rpx;
+  margin-right: 8rpx;
+  border-top: 5rpx solid #b8b8b8;
+  border-right: 5rpx solid #b8b8b8;
+  transform: rotate(45deg);
+}
+
+.salon-post-service-unavailable {
+  margin-top: 12rpx;
+  color: #999;
+  font-size: 25rpx;
 }
 
 .salon-post-images {

@@ -79,6 +79,36 @@
         </view>
       </scroll-view>
     </view>
+    <view class="section">
+      <view class="section-title">店铺动态</view>
+      <view wx:if="{{!salon.latestPosts.length}}" class="muted">暂无动态</view>
+      <view wx:for="{{salon.latestPosts}}" wx:for-index="postIndex" wx:key="id" class="salon-post">
+        <view class="salon-post-content">{{item.content}}</view>
+        <view wx:if="{{item.imageUrls.length}}" class="salon-post-images">
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="salon-post-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewPostImage" data-url="{{image}}" data-post-index="{{postIndex}}" />
+        </view>
+        <view wx:if="{{item.relatedService}}" class="salon-post-service" bindtap="bookPostService" data-id="{{item.relatedService.id}}" aria-role="button" aria-label="预约关联套餐：{{item.relatedService.name}}">
+          <view class="salon-post-service-label"><text>关</text><text>联</text><text>套</text><text>餐</text></view>
+          <view class="salon-post-service-main">
+            <view class="salon-post-service-tags">
+              <text wx:for="{{item.relatedService.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
+            </view>
+            <view class="salon-post-service-name">{{item.relatedService.name}}</view>
+            <view wx:if="{{item.relatedService.noteText}}" class="salon-post-service-note">{{item.relatedService.noteText}}</view>
+            <view class="salon-post-service-bottom">
+              <text class="salon-post-service-price">{{item.relatedService.priceText}}</text>
+            </view>
+          </view>
+          <view class="salon-post-service-arrow" aria-hidden="true"></view>
+        </view>
+        <view wx:elif="{{item.serviceName}}" class="salon-post-service-unavailable">关联套餐：{{item.serviceName}}（暂不可预约）</view>
+        <view class="salon-post-head">
+          <text bindtap="openStaff" data-id="{{item.authorStaffId}}" aria-role="button">{{item.authorName}}</text>
+          <text> · 投稿时间：{{item.dateText}}</text>
+        </view>
+      </view>
+      <button wx:if="{{salon.hasMorePosts}}" class="ghost-btn" bindtap="showAllPosts">展示更多</button>
+    </view>
     <view class="card section">
       <view class="section-title">客户评价</view>
       <view wx:if="{{salon.reviewTags.length}}" class="review-tag-summary">
@@ -103,21 +133,6 @@
         </view>
       </view>
       <button wx:if="{{salon.reviews.length > reviewCount}}" class="ghost-btn" bindtap="showAllReviews">查看更多</button>
-    </view>
-    <view class="section">
-      <view class="section-title">店铺动态</view>
-      <view wx:if="{{!salon.latestPosts.length}}" class="muted">暂无动态</view>
-      <view wx:for="{{salon.latestPosts}}" wx:for-index="postIndex" wx:key="id" class="salon-post">
-        <view class="salon-post-content">{{item.content}}</view>
-        <view wx:if="{{item.imageUrls.length}}" class="salon-post-images">
-          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="salon-post-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewPostImage" data-url="{{image}}" data-post-index="{{postIndex}}" />
-        </view>
-        <view class="salon-post-head">
-          <text bindtap="openStaff" data-id="{{item.authorStaffId}}" aria-role="button">{{item.authorName}}</text>
-          <text> · 投稿时间：{{item.dateText}}</text>
-        </view>
-      </view>
-      <button wx:if="{{salon.hasMorePosts}}" class="ghost-btn" bindtap="showAllPosts">展示更多</button>
     </view>
   </view>
   <view class="bar">

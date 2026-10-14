@@ -72,8 +72,8 @@ Page({
   async normalizePost(post) {
     return {
       ...post,
-      authorImageUrl: await api.displayImageUrl(post.authorImageUrl),
-      imageUrls: await Promise.all((post.imageUrls || []).map(api.displayImageUrl)),
+      authorImageUrl: await api.displayImageUrl(post.authorImageUrl, 160),
+      imageUrls: await Promise.all((post.imageUrls || []).map((image) => api.displayImageUrl(image, 480))),
       dateText: this.formatDate(post.createdAt)
     };
   },
@@ -87,7 +87,7 @@ Page({
 
   previewImage(e) {
     const post = this.data.posts[Number(e.currentTarget.dataset.postIndex)] || {};
-    wx.previewImage({ urls: post.imageUrls || [], current: e.currentTarget.dataset.url });
+    api.previewImage({ urls: post.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
   openStaff(e) {

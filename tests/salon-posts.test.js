@@ -64,16 +64,22 @@ test('all salon posts use paginated API data and preview their own image gallery
   }
 });
 
-test('salon detail renders posts below reviews with an all-posts entry', () => {
+test('salon detail renders posts above reviews with an all-posts entry', () => {
   const template = fs.readFileSync(path.join(__dirname, '../pages/detail/detail.wxml'), 'utf8');
   const styles = fs.readFileSync(path.join(__dirname, '../pages/detail/detail.wxss'), 'utf8');
-  assert.ok(template.indexOf('客户评价') < template.indexOf('店铺动态'));
+  assert.ok(template.indexOf('店铺动态') < template.indexOf('客户评价'));
   assert.doesNotMatch(template, /class="card section salon-posts-section"/);
   assert.match(template, /wx:for="\{\{salon\.latestPosts\}\}"/);
   assert.match(styles, /\.salon-post\s*\{[^}]*border:\s*1rpx solid #eadbd2;[^}]*background:\s*#fff;[^}]*box-shadow:/s);
   assert.ok(template.indexOf('salon-post-images') < template.indexOf('salon-post-head'));
   assert.match(template, /bindtap="openStaff" data-id="\{\{item\.authorStaffId\}\}"[^>]*>\{\{item\.authorName\}\}<\/text>/);
   assert.match(template, / · 投稿时间：\{\{item\.dateText\}\}/);
+  assert.ok(template.indexOf('salon-post-images') < template.indexOf('class="salon-post-service"'));
+  assert.match(template, /class="salon-post-service" bindtap="bookPostService"/);
+  assert.match(template, /\{\{item\.relatedService\.priceText\}\}/);
+  assert.match(template, /\{\{item\.relatedService\.noteText\}\}/);
+  assert.doesNotMatch(template, /item\.relatedService\.durationText/);
+  assert.match(template, /class="salon-post-service-arrow"[^>]*><\/view>/);
   assert.match(template, /wx:if="\{\{salon\.hasMorePosts\}\}"[^>]*>展示更多<\/button>/);
 });
 
@@ -82,4 +88,5 @@ test('all-posts page renders author details below post images', () => {
   assert.ok(template.indexOf('post-images') < template.indexOf('post-head'));
   assert.match(template, /bindtap="openStaff" data-id="\{\{item\.authorStaffId\}\}"[^>]*>\{\{item\.authorName\}\}<\/text>/);
   assert.match(template, / · 投稿时间：\{\{item\.dateText\}\}/);
+  assert.match(template, /关联套餐：\{\{item\.serviceName\}\}/);
 });

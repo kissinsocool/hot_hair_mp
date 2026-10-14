@@ -211,7 +211,7 @@ Page({
         role: staffRoleLabel(staff.roleId),
         experience: staff.experience || '',
         bio: staff.bio || staff.description || '',
-        imageUrl: api.mediaUrl(staff.imageUrl || ''),
+        imageUrl: api.thumbnailUrl(staff.imageUrl || '', 240),
         extraServiceFeeText: showStaffExtraFee && staff.extraServiceFeeFen > 0 ? formatFen(staff.extraServiceFeeFen) : ''
       })))
     ].map((staff) => ({
@@ -224,7 +224,7 @@ Page({
     }));
     const serviceOptions = (salon.services || []).map((service) => ({
       ...service,
-      imageUrl: api.mediaUrl(service.imageUrl || ''),
+      imageUrl: api.thumbnailUrl(service.imageUrl || '', 360),
       tags: serviceTagLabels(service.tagIds),
       noteText: service.note || service.description || '',
       durationText: service.durationMinutes ? `${service.durationMinutes} min` : '',

@@ -163,7 +163,7 @@ Page({
 
   previewReviewImage(e) {
     const review = this.data.reviews[Number(e.currentTarget.dataset.reviewIndex)] || {};
-    wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
+    api.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
   editReview(e) {
@@ -288,7 +288,7 @@ function normalizeReview(review) {
   return {
     ...review,
     rating,
-    imageUrls: (review.imageUrls || []).map(api.mediaUrl),
+    imageUrls: (review.imageUrls || []).map((image) => api.thumbnailUrl(image, 360)),
     imageKeys: review.imageKeys || [],
     starIcons: buildStars(rating).map((star) => star.icon),
     metaText: [review.serviceName, review.staffName].filter(Boolean).join(' · '),

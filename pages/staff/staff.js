@@ -19,7 +19,7 @@ Page({
   async load() {
     try {
       const data = await api.request(`/staff/${this.data.id}`);
-      data.imageUrl = api.mediaUrl(data.imageUrl);
+      data.imageUrl = api.thumbnailUrl(data.imageUrl, 720);
       Object.assign(data, ratingDisplay(data.rating, data.reviewCount));
       data.starIcons = data.hasRating ? starIcons(data.rating) : [];
       data.bioText = data.bio || '暂无简介';
@@ -31,7 +31,7 @@ Page({
           userText: review.user || review.userName || '用户',
           ratingText: review.rating || 5,
           starIcons: starIcons(review.rating || 5),
-          imageUrls: await Promise.all(images.map(api.displayImageUrl))
+          imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
         };
       }));
       this.setData({ staff: data, services: data.salonServices || [] });
@@ -49,12 +49,12 @@ Page({
 
   previewAvatar() {
     const current = this.data.staff.imageUrl;
-    if (current) wx.previewImage({ urls: [current], current });
+    if (current) api.previewImage({ urls: [current], current });
   },
 
   previewReviewImage(e) {
     const review = this.data.staff.reviews[Number(e.currentTarget.dataset.reviewIndex)] || {};
-    wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
+    api.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   }
 });
 

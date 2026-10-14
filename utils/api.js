@@ -12,7 +12,7 @@ function mediaUrl(value) {
   const text = String(value || '').trim();
   const origin = app.globalData.apiBaseUrl.replace(/\/api\/?$/, '');
   const mediaOrigin = app.globalData.mediaBaseUrl;
-  if (!text || text.startsWith('data:')) return text;
+  if (!text || text.startsWith('data:') || text.startsWith('wxfile://')) return text;
   if (mediaOrigin) {
     const publicOssUrl = text.replace(
       /^https?:\/\/hothair(?:app|media)\.oss-cn-beijing\.aliyuncs\.com(?=\/)/,
@@ -27,12 +27,24 @@ function mediaUrl(value) {
   return encodeURI(`${origin}${text.startsWith('/') ? text : `/${text}`}`);
 }
 
-function displayImageUrl(value) {
-  return Promise.resolve(mediaUrl(value));
+function thumbnailUrl(value, width = 720) {
+  const url = mediaUrl(value);
+  const mediaOrigin = app.globalData.mediaBaseUrl;
+  if (!mediaOrigin || !url.startsWith(`${mediaOrigin}/`) || /[?#]/.test(url) || !/\.(jpe?g|png|webp)$/i.test(url)) return url;
+  return `${url}?x-oss-process=image/resize,w_${width}/quality,q_75`;
+}
+
+function displayImageUrl(value, width) {
+  return Promise.resolve(thumbnailUrl(value, width));
+}
+
+function previewImage({ urls, current }) {
+  const original = (url) => url.replace(/\?x-oss-process=image\/resize,w_\d+\/quality,q_75$/, '');
+  wx.previewImage({ urls: urls.map(original), current: original(current) });
 }
 
 function userAvatarUrl(user = {}) {
-  return pendingAvatarPreview(user) || mediaUrl(user.avatarUrl || '');
+  return pendingAvatarPreview(user) || thumbnailUrl(user.avatarUrl || '', 240);
 }
 
 function userKey(user = {}) {
@@ -281,6 +293,7 @@ module.exports = {
   formatTime,
   hasMorePages,
   mediaUrl,
+  previewImage,
   request,
   requestAllPages,
   requestPage,
@@ -290,6 +303,7 @@ module.exports = {
   salonImage,
   session,
   statusText,
+  thumbnailUrl,
   uploadFile,
   userAvatarUrl
 };

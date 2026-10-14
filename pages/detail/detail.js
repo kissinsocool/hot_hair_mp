@@ -28,8 +28,8 @@ Page({
   async load() {
     try {
       const salon = await api.request(`/salons/${this.data.id}`);
-      salon.image = await api.displayImageUrl(api.salonImage(salon));
-      salon.promoImages = await Promise.all((salon.promoImages || salon.images || []).map(api.displayImageUrl));
+      salon.image = await api.displayImageUrl(api.salonImage(salon), 960);
+      salon.promoImages = await Promise.all((salon.promoImages || salon.images || []).map((image) => api.displayImageUrl(image, 960)));
       if (!salon.promoImages.length && salon.image) salon.promoImages = [salon.image];
       salon.openingHoursText = salon.openingHours || '暂无营业时间';
       salon.weeklyClosedDaysText = this.formatWeeklyClosedDays(salon.weeklyClosedDays);
@@ -47,7 +47,7 @@ Page({
         return {
           ...service,
           imageUrls,
-          imageUrl: await api.displayImageUrl(imageUrls[0] || ''),
+          imageUrl: await api.displayImageUrl(imageUrls[0] || '', 480),
           tags: serviceTagLabels(service.tagIds),
           noteText: service.note || service.description || '',
           durationText: this.formatDuration(service.durationMinutes),
@@ -56,12 +56,12 @@ Page({
       }));
       salon.staff = await Promise.all((salon.staff || []).map(async (staff) => ({
         ...staff,
-        imageUrl: await api.displayImageUrl(staff.imageUrl),
+        imageUrl: await api.displayImageUrl(staff.imageUrl, 240),
         roleText: staffRoleLabel(staff.roleId),
         experienceText: staff.experience || '',
         bioText: staff.bio || staff.description || '暂无简介'
       })));
-      salon.latestPosts = await Promise.all((salon.latestPosts || []).map((post) => this.normalizePost(post)));
+      salon.latestPosts = await Promise.all((salon.latestPosts || []).map((post) => this.normalizePost(post, salon.services)));
       salon.hasMorePosts = salon.hasMorePosts === true;
       this.setData({ salon, visibleReviews: salon.reviews.slice(0, this.data.reviewCount) });
       this.loadFavoriteState();
@@ -77,21 +77,24 @@ Page({
     return {
       ...review,
       userText: review.user || review.userName || review.phone || '用户',
-      avatarUrl: api.mediaUrl(review.avatarUrl),
+      avatarUrl: api.thumbnailUrl(review.avatarUrl, 160),
       ratingText: review.rating || 5,
       starIcons: starIcons(review.rating || 5),
       serviceText: review.serviceName || review.service || '染发+修复',
       staffText: review.staffName || review.staff || 'Sato',
       dateText: this.formatDate(review.createdAt || review.date),
-      imageUrls: await Promise.all(images.map(api.displayImageUrl))
+      imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
     };
   },
 
-  async normalizePost(post) {
+  async normalizePost(post, services) {
     return {
       ...post,
-      authorImageUrl: await api.displayImageUrl(post.authorImageUrl),
-      imageUrls: await Promise.all((post.imageUrls || []).map(api.displayImageUrl)),
+      relatedService: post.serviceId
+        ? (services || []).find((service) => service.id === post.serviceId) || null
+        : null,
+      authorImageUrl: await api.displayImageUrl(post.authorImageUrl, 160),
+      imageUrls: await Promise.all((post.imageUrls || []).map((image) => api.displayImageUrl(image, 480))),
       dateText: this.formatDate(post.createdAt)
     };
   },
@@ -169,12 +172,12 @@ Page({
   },
 
   previewImage(e) {
-    wx.previewImage({ urls: this.data.salon.promoImages, current: e.currentTarget.dataset.url });
+    api.previewImage({ urls: this.data.salon.promoImages, current: e.currentTarget.dataset.url });
   },
 
   previewHeroImage() {
     const current = this.data.salon.image;
-    if (current) wx.previewImage({ urls: [current], current });
+    if (current) api.previewImage({ urls: [current], current });
   },
 
   onPromoChange(e) {
@@ -183,12 +186,18 @@ Page({
 
   previewReviewImage(e) {
     const review = this.data.visibleReviews[Number(e.currentTarget.dataset.reviewIndex)] || {};
-    wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
+    api.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
   previewPostImage(e) {
     const post = this.data.salon.latestPosts[Number(e.currentTarget.dataset.postIndex)] || {};
-    wx.previewImage({ urls: post.imageUrls || [], current: e.currentTarget.dataset.url });
+    api.previewImage({ urls: post.imageUrls || [], current: e.currentTarget.dataset.url });
+  },
+
+  bookPostService(e) {
+    const serviceId = e.currentTarget.dataset.id;
+    if (!serviceId || !api.requireLogin()) return;
+    wx.navigateTo({ url: `/pages/booking/booking?id=${encodeURIComponent(this.data.id)}&serviceId=${encodeURIComponent(serviceId)}` });
   },
 
   showAllPosts() {
@@ -204,8 +213,8 @@ Page({
     analytics.track('service_click', { salonId: this.data.id, serviceId });
     const service = this.data.salon.services.find((item) => item.id === serviceId);
     if (!service || !service.imageUrl) return;
-    const remainingImages = await Promise.all(service.imageUrls.slice(1).map(api.displayImageUrl));
-    wx.previewImage({ urls: [service.imageUrl, ...remainingImages], current: service.imageUrl });
+    const remainingImages = await Promise.all(service.imageUrls.slice(1).map((image) => api.displayImageUrl(image)));
+    api.previewImage({ urls: [service.imageUrl, ...remainingImages], current: service.imageUrl });
   },
 
   openStaff(e) {

@@ -121,7 +121,7 @@ Page({
   },
 
   async normalizeImage(item) {
-    return { ...item, imageUrl: await api.displayImageUrl(item.imageUrl) };
+    return { ...item, imageUrl: await api.displayImageUrl(item.imageUrl, 480) };
   },
 
   openSalon(e) {

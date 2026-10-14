@@ -38,18 +38,18 @@ Page({
     return {
       ...review,
       userText: review.user || review.userName || review.phone || '用户',
-      avatarUrl: api.mediaUrl(review.avatarUrl),
+      avatarUrl: api.thumbnailUrl(review.avatarUrl, 160),
       starIcons: starIcons(review.rating || 5),
       serviceText: review.serviceName || review.service || '染发+修复',
       staffText: review.staffName || review.staff || 'Sato',
       dateText: formatDate(review.createdAt || review.date),
-      imageUrls: await Promise.all(images.map(api.displayImageUrl))
+      imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
     };
   },
 
   previewImage(e) {
     const review = this.data.reviews[Number(e.currentTarget.dataset.reviewIndex)] || {};
-    wx.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
+    api.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   }
 });
 

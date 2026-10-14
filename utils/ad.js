@@ -24,7 +24,7 @@ async function load() {
     const link = navigationLink(config.link);
     const value = {
       enabled: config.enabled !== false && Boolean(link),
-      image: config.imageUrl ? await api.displayImageUrl(config.imageUrl) : DEFAULT.image,
+      image: config.imageUrl ? await api.displayImageUrl(config.imageUrl, 960) : DEFAULT.image,
       link
     };
     cached = { value, expiresAt: Date.now() + CACHE_MS };

@@ -38,7 +38,7 @@ Page({
       const salons = await api.request('/favorites');
       this.setData({ salons: await Promise.all(salons.map(async (salon) => ({
         ...salon,
-        image: await api.displayImageUrl(api.salonImage(salon)),
+        image: await api.displayImageUrl(api.salonImage(salon), 480),
         nameText: salon.name || '未知沙龙',
         descriptionText: salon.description || '暂无描述',
         ...ratingDisplay(salon.rating, salon.reviewCount),

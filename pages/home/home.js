@@ -187,7 +187,7 @@ Page({
     return Promise.all(salons.map(async (source) => {
       const salon = this.normalizeSalon(source);
       try {
-        return { ...salon, image: await api.displayImageUrl(api.salonImage(source)) };
+        return { ...salon, image: await api.displayImageUrl(api.salonImage(source), 480) };
       } catch (_) {
         return salon;
       }
@@ -231,7 +231,7 @@ Page({
           serviceName: service.name || '套餐',
           serviceNote: service.note || '',
           priceText: formatFen(service.priceFen),
-          image: api.displayImageUrl(api.salonImage(salon)),
+          image: api.displayImageUrl(api.salonImage(salon), 480),
           isFavorite: this.data.favorites.includes(salon.id)
         }];
       });
@@ -302,7 +302,7 @@ Page({
           ? '/auth/coupon-campaign'
           : '/coupon-campaign');
         image = gift.enabled && gift.promotionImageUrl
-          ? await api.displayImageUrl(gift.promotionImageUrl)
+          ? await api.displayImageUrl(gift.promotionImageUrl, 960)
           : '';
         campaignCache = {
           key: cacheKey,

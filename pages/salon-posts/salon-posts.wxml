@@ -8,6 +8,7 @@
   <view wx:else class="post-list">
     <view wx:for="{{posts}}" wx:for-index="postIndex" wx:key="id" class="post-card">
       <view class="post-content">{{item.content}}</view>
+      <view wx:if="{{item.serviceName}}" class="post-service">关联套餐：{{item.serviceName}}</view>
       <view wx:if="{{item.imageUrls.length}}" class="post-images">
         <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="post-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewImage" data-url="{{image}}" data-post-index="{{postIndex}}" />
       </view>

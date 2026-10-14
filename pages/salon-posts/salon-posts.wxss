@@ -31,6 +31,12 @@ page,
   white-space: pre-wrap;
 }
 
+.post-service {
+  margin-top: 12rpx;
+  color: #a64e68;
+  font-size: 26rpx;
+}
+
 .post-images {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
