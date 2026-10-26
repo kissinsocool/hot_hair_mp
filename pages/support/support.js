@@ -1,6 +1,9 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 
 Page({
+  onShareAppMessage,
+
   data: {
     problem: '',
     contact: '',

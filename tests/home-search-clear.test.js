@@ -28,10 +28,8 @@ const page = {
   ...pageDefinition,
   data: {
     ...pageDefinition.data,
-    salons: [{ id: 'salon-1', name: 'Alpha' }, { id: 'salon-2', name: 'Beta' }],
     keyword: 'Alpha',
-    suggestions: [{ id: 'pending' }],
-    visibleCount: 20
+    suggestions: [{ id: 'pending' }]
   },
   setData(values) { Object.assign(this.data, values); }
 };
@@ -42,8 +40,8 @@ const page = {
 
   assert.equal(page.data.keyword, '');
   assert.deepEqual(page.data.suggestions, []);
-  assert.equal(page.data.visibleCount, 2);
-  assert.deepEqual(page.data.visibleSalons.map((salon) => salon.id), ['salon-1', 'salon-2']);
+  assert.equal(page.data.salonCount, 2);
+  assert.deepEqual(page.data.salonCards.map((salon) => salon.id), ['salon-1', 'salon-2']);
 
   suggestionRequest.success({ statusCode: 200, data: [{ id: 'stale', name: 'Alpha stale' }] });
   await pendingSuggestions;

@@ -1,0 +1,12 @@
+<view class="review-content">
+  <view class="review-content-preview">
+    <view class="review-content-text {{expanded ? '' : 'collapsed'}}">{{content}}</view>
+    <view wx:if="{{canExpand && !expanded}}" class="review-content-fade" aria-hidden="true"></view>
+  </view>
+  <view wx:if="{{canExpand}}" class="review-content-expand" bindtap="toggleExpanded" aria-role="button" aria-expanded="{{expanded}}">
+    <image class="review-content-arrow {{expanded ? 'up' : ''}}" mode="aspectFit" src="/assets/icons/keyboard_arrow_down.png" aria-hidden="true" />
+    <text class="review-content-toggle-text">{{expanded ? '显示更少' : '显示更多'}}</text>
+  </view>
+  <view class="review-content-text review-content-measure" aria-hidden="true">{{content}}</view>
+  <view class="review-content-text review-content-line" aria-hidden="true">字</view>
+</view>

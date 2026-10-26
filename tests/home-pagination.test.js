@@ -19,6 +19,13 @@ const original = {
   displayImageUrl: api.displayImageUrl
 };
 const pageRequests = [];
+function applyUpdates(data, values) {
+  for (const [key, value] of Object.entries(values)) {
+    const match = key.match(/^salonCards\[(\d+)\]$/);
+    if (match) data.salonCards[Number(match[1])] = value;
+    else data[key] = value;
+  }
+}
 const salonsForPage = (page) => Array.from({ length: 10 }, (_, index) => ({
   id: `salon-${page}-${index}`,
   name: `店铺 ${page}-${index}`,
@@ -36,7 +43,7 @@ const page = {
   ...global.homePageDefinition,
   data: { ...global.homePageDefinition.data },
   setData(values, callback) {
-    Object.assign(this.data, values);
+    applyUpdates(this.data, values);
     if (callback) callback();
   }
 };
@@ -54,7 +61,8 @@ const page = {
       path: '/salons?latitude=39.9042&longitude=116.4074',
       options: { page: 2, limit: 10 }
     });
-    assert.equal(page.data.salons.length, 20);
+    assert.equal(page.salons.length, 20);
+    assert.equal(page.data.salonCards.length, 20);
     assert.equal(page.data.loadingMore, false);
 
     page.changeSalonSort({ currentTarget: { dataset: { sort: 'rating' } } });
@@ -73,17 +81,17 @@ const page = {
     const renderPage = {
       ...global.homePageDefinition,
       salonListVersion: 1,
+      salons: salonsForPage(1),
       data: {
         ...global.homePageDefinition.data,
-        salons: salonsForPage(1),
-        visibleSalons: salonsForPage(1),
-        visibleCount: 10,
+        salonCards: salonsForPage(1),
+        salonCount: 10,
         salonPage: 1,
         hasMoreSalons: true,
         loading: false
       },
       setData(values, callback) {
-        Object.assign(this.data, values);
+        applyUpdates(this.data, values);
         if (callback) renderCallbacks.push(callback);
       }
     };
@@ -104,7 +112,7 @@ const page = {
       ...global.homePageDefinition,
       data: { ...global.homePageDefinition.data },
       setData(values, callback) {
-        Object.assign(this.data, values);
+        applyUpdates(this.data, values);
         if (callback) callback();
       }
     };
@@ -115,7 +123,8 @@ const page = {
     });
     await duplicatePage.loadSalons();
     await duplicatePage.loadMore();
-    assert.equal(duplicatePage.data.salons.length, 10);
+    assert.equal(duplicatePage.salons.length, 10);
+    assert.equal(duplicatePage.data.salonCards.length, 10);
     assert.equal(toasts.at(-1).title, '未加载到新店铺，请稍后重试');
   } finally {
     api.request = original.request;

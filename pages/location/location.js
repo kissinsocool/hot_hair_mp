@@ -1,4 +1,7 @@
+const { onShareAppMessage } = require('../../utils/share');
 Page({
+  onShareAppMessage,
+
   data: {
     locating: false,
     address: '',
@@ -32,7 +35,7 @@ Page({
             locatedOnce: true,
             locationIsFuzzy: false
           });
-          if (prev.loadSalons) prev.loadSalons();
+          prev.locationChanged = true;
         }
         wx.navigateBack();
       },

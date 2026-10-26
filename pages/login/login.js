@@ -1,3 +1,4 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const app = getApp();
 const LOGIN_RETURN_HOME_ROUTES = [
@@ -7,6 +8,8 @@ const LOGIN_RETURN_HOME_ROUTES = [
 ];
 
 Page({
+  onShareAppMessage,
+
   data: {
     agreed: false,
     loading: false

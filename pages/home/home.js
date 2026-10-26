@@ -1,3 +1,4 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
@@ -24,10 +25,10 @@ const loadingSalonCards = () => Array.from({ length: INITIAL_SALON_CARD_COUNT },
 let campaignCache;
 
 Page({
+  onShareAppMessage,
+
   data: {
-    salons: [],
-    filteredSalons: [],
-    visibleSalons: [],
+    salonCount: 0,
     salonCards: loadingSalonCards(),
     showRecommendedPackages: false,
     recommendedPackages: [],
@@ -44,7 +45,6 @@ Page({
     locationText: DEFAULT_SERVICE_LOCATION.locationText,
     keyword: '',
     salonSort: 'distance',
-    visibleCount: SALON_PAGE_SIZE,
     salonPage: 0,
     hasMoreSalons: false,
     statusBarHeight: 0,
@@ -85,6 +85,11 @@ Page({
     const tabBar = this.getTabBar && this.getTabBar();
     if (tabBar) tabBar.show();
     this.setData({ supportHidden: false });
+    if (this.locationChanged) {
+      this.locationChanged = false;
+      // 新定位使用新列表，返回可见后先清除旧列表的滚动位置。
+      this.scrollToTop(false, () => this.loadSalons());
+    }
     ad.load().then((config) => this.setData({ ad: config }));
     this.loadNewUserGift();
     this.loadFavorites(false);
@@ -92,7 +97,7 @@ Page({
     const session = api.session();
     if (session && session.token) {
       this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
-        if (event.event === 'booking.created' || event.event === 'booking.updated') {
+        if (event.event === 'authenticated' || event.event === 'booking.created' || event.event === 'booking.updated') {
           this.loadUnreadMessages();
         }
       });
@@ -145,25 +150,23 @@ Page({
   async loadSalons() {
     const version = (this.salonListVersion || 0) + 1;
     this.salonListVersion = version;
-    this.setData({ loading: !this.data.visibleSalons.length, loadingMore: false, errorMessage: '' });
+    this.setData({ loading: !this.data.salonCount, loadingMore: false, errorMessage: '' });
     try {
       const result = await api.requestPage(this.salonListPath(), { page: 1, limit: SALON_PAGE_SIZE });
       const normalizedSalons = await this.normalizeSalonPage(result.items);
       if (version !== this.salonListVersion) return;
+      this.salons = normalizedSalons;
       this.setData({
-        salons: normalizedSalons,
-        visibleCount: normalizedSalons.length,
         salonPage: 1,
         hasMoreSalons: result.hasMore
       });
-      this.applyFilter();
+      this.renderSalons(normalizedSalons);
       if (this.data.showRecommendedPackages) this.loadRecommendedPackages(normalizedSalons);
     } catch (err) {
       if (version !== this.salonListVersion) return;
-      this.setData({
-        errorMessage: err.message || '网络请求失败',
-        salonCards: this.data.salons.length ? this.data.salonCards : []
-      }, () => this.observeSalonCards());
+      const updates = { errorMessage: err.message || '网络请求失败' };
+      if (!(this.salons || []).length) updates.salonCards = [];
+      this.setData(updates, () => this.observeSalonCards());
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
       if (version === this.salonListVersion) this.setData({ loading: false });
@@ -200,6 +203,7 @@ Page({
       image: '',
       nameText: salon.name || '未知沙龙',
       addressText: salon.address || '',
+      businessDistrict: typeof salon.businessDistrict === 'string' ? salon.businessDistrict.trim() : '',
       descriptionText: salon.description || '暂无描述',
       tags: (Array.isArray(salon.tags) ? salon.tags.filter(Boolean) : []).map((text, index) => ({
         text,
@@ -231,6 +235,9 @@ Page({
           serviceName: service.name || '套餐',
           serviceNote: service.note || '',
           priceText: formatFen(service.priceFen),
+          priceFen: service.priceFen,
+          discountTenths: service.discountTenths,
+          originalPriceFen: service.originalPriceFen,
           image: api.displayImageUrl(api.salonImage(salon), 480),
           isFavorite: this.data.favorites.includes(salon.id)
         }];
@@ -260,8 +267,7 @@ Page({
   formatDistance(distanceKm) {
     const distance = Number(distanceKm);
     if (!this.data.locatedOnce || !distance) return '';
-    const prefix = this.data.locationIsFuzzy ? '附近约 ' : '距离你 ';
-    return distance < 1 ? `${prefix}${Math.round(distance * 1000)} m` : `${prefix}${distance.toFixed(1)} km`;
+    return distance < 1 ? `${Math.round(distance * 1000)} m` : `${distance.toFixed(1)} km`;
   },
 
   async loadFavorites(showError = true) {
@@ -270,7 +276,7 @@ Page({
     try {
       const result = await api.request('/favorites/ids');
       this.setData({ favorites: Array.isArray(result.salonIds) ? result.salonIds : [] });
-      this.applyFilter();
+      this.updateFavoriteCards();
     } catch (err) {
       if (showError) wx.showToast({ title: err.message, icon: 'none' });
     }
@@ -392,33 +398,55 @@ Page({
     return this.loadSalons();
   },
 
-  applyFilter(onRendered) {
+  renderSalons(salons, append = false, onRendered) {
     const keyword = this.data.keyword.trim().toLowerCase();
     const favoriteSet = new Set(this.data.favorites);
-    const filteredSalons = this.data.salons
+    const offset = append ? this.data.salonCards.length : 0;
+    const cards = salons
       .filter((salon) => !keyword || String(salon.name || '').toLowerCase().includes(keyword))
-      .map((salon) => {
-        const isFavorite = favoriteSet.has(salon.id);
-        return { ...salon, isFavorite };
+      .map((salon, index) => {
+        const previous = this.data.salonCards[offset + index];
+        return {
+          id: salon.id,
+          image: salon.image,
+          nameText: salon.nameText,
+          descriptionText: salon.descriptionText,
+          tags: salon.tags,
+          hasRating: salon.hasRating,
+          ratingText: salon.ratingText,
+          distanceText: salon.distanceText,
+          businessDistrict: salon.businessDistrict,
+          isFavorite: favoriteSet.has(salon.id),
+          cardKey: `salon-card-${offset + index}`,
+          isPlaceholder: false,
+          lightActive: Boolean(previous && previous.id === salon.id && previous.lightActive)
+        };
       });
-    const visibleSalons = filteredSalons.slice(0, this.data.visibleCount);
-    this.setData({
-      filteredSalons,
-      visibleSalons,
-      salonCards: visibleSalons.map((salon, index) => ({
-        ...salon,
-        cardKey: `salon-card-${index}`,
-        isPlaceholder: false,
-        lightActive: Boolean(this.data.salonCards[index] && this.data.salonCards[index].lightActive)
-      })),
-      recommendedPackages: this.data.recommendedPackages.map((item) => ({
-        ...item,
-        isFavorite: favoriteSet.has(item.salonId)
-      }))
-    }, () => {
+    const updates = { salonCount: offset + cards.length };
+    if (append) {
+      cards.forEach((card, index) => { updates[`salonCards[${offset + index}]`] = card; });
+    } else {
+      updates.salonCards = cards;
+    }
+    this.setData(updates, () => {
       this.observeSalonCards();
       if (onRendered) onRendered();
     });
+  },
+
+  updateFavoriteCards() {
+    const favoriteSet = new Set(this.data.favorites);
+    const updates = {};
+    this.data.salonCards.forEach((card, index) => {
+      if (card.isPlaceholder) return;
+      const isFavorite = favoriteSet.has(card.id);
+      if (card.isFavorite !== isFavorite) updates[`salonCards[${index}].isFavorite`] = isFavorite;
+    });
+    this.data.recommendedPackages.forEach((item, index) => {
+      const isFavorite = favoriteSet.has(item.salonId);
+      if (item.isFavorite !== isFavorite) updates[`recommendedPackages[${index}].isFavorite`] = isFavorite;
+    });
+    if (Object.keys(updates).length) this.setData(updates);
   },
 
   observeSalonCards() {
@@ -451,19 +479,21 @@ Page({
       const result = await api.requestPage(this.salonListPath(), { page, limit: SALON_PAGE_SIZE });
       const nextSalons = await this.normalizeSalonPage(result.items);
       if (version !== this.salonListVersion) return;
-      const knownIds = new Set(this.data.salons.map((salon) => salon.id));
-      const newSalons = nextSalons.filter((salon) => !knownIds.has(salon.id));
+      const knownIds = new Set((this.salons || []).map((salon) => salon.id));
+      const newSalons = nextSalons.filter((salon) => {
+        if (knownIds.has(salon.id)) return false;
+        knownIds.add(salon.id);
+        return true;
+      });
       if (nextSalons.length && !newSalons.length) {
         throw new Error('未加载到新店铺，请稍后重试');
       }
-      const salons = this.data.salons.concat(newSalons);
+      this.salons = (this.salons || []).concat(newSalons);
       this.setData({
-        salons,
-        visibleCount: salons.length,
         salonPage: page,
         hasMoreSalons: result.hasMore
       });
-      await new Promise(resolve => this.applyFilter(resolve));
+      await new Promise(resolve => this.renderSalons(newSalons, true, resolve));
     } catch (err) {
       if (version === this.salonListVersion) {
         wx.showToast({ title: err.message || '加载失败，请稍后重试', icon: 'none' });
@@ -496,20 +526,22 @@ Page({
     }, 180);
   },
 
-  scrollToTop() {
+  scrollToTop(animated = true, onScrolled) {
+    const shouldAnimate = animated !== false;
     this.createSelectorQuery()
       .select('#home-list')
       .node()
       .exec((result) => {
         const scrollView = result[0] && result[0].node;
-        if (scrollView) scrollView.scrollTo({ top: 0, animated: true, duration: 500 });
+        if (scrollView) scrollView.scrollTo({ top: 0, animated: shouldAnimate, duration: shouldAnimate ? 500 : 0 });
+        if (onScrolled) onScrolled();
       });
   },
 
   async toggleFavorite(e) {
     if (!api.requireLogin()) return;
     try {
-      const salon = this.data.salons.find((item) => item.id === e.currentTarget.dataset.id);
+      const salon = (this.salons || []).find((item) => item.id === e.currentTarget.dataset.id);
       if (!salon) return;
       await api.request(`/favorites/${encodeURIComponent(salon.id)}`, {
         method: this.data.favorites.includes(salon.id) ? 'DELETE' : 'PUT'

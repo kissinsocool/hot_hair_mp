@@ -168,7 +168,7 @@ button::after {
 .salon-rating {
   flex: 0 0 auto;
   overflow: hidden;
-  color: #f39c12;
+  color: #d06884;
   font-size: 24rpx;
   font-weight: 800;
   line-height: 34rpx;

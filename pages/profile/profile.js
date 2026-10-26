@@ -1,3 +1,4 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const app = getApp();
 const couponUtils = require('../../utils/coupons');
@@ -9,6 +10,8 @@ const initiallyLoggedIn = Boolean(initialSession && initialSession.token);
 const initialUser = initialSession && initialSession.user || {};
 
 Page({
+  onShareAppMessage,
+
   data: {
     loggedIn: initiallyLoggedIn,
     displayName: initialUser.displayName || initialUser.account || '未设置昵称',

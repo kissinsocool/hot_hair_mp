@@ -14,18 +14,20 @@
   <view class="body">
     <view class="head-row">
       <view class="head-main">
+        <view wx:if="{{salon.isFeatured === true}}" class="featured-badge"><text>靓丝精选</text></view>
         <view class="detail-heading">{{salon.name}}{{salon.description ? ' 「' + salon.description + '」' : ''}}</view>
         <view class="stars">
-          <image wx:for="{{salon.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon" mode="aspectFit" src="{{star}}" />
-          <text class="rating-text">{{salon.ratingText}} ({{salon.reviewTotalText}}人评分)</text>
+          <image wx:for="{{salon.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon rating-star" mode="aspectFit" src="{{star}}" />
+          <text class="rating-text">{{salon.ratingText}}</text>
+          <text class="rating-count">({{salon.reviewTotalText}}人评分)</text>
         </view>
         <view class="hours">
           <text>营业时间： {{salon.openingHoursText}}</text>
           <text wx:if="{{salon.weeklyClosedDaysText}}">{{salon.weeklyClosedDaysText}}</text>
         </view>
         <view wx:if="{{salon.afterSalesPolicies.length || salon.acceptsSameDayBooking === true}}" class="after-sales">
-          <view wx:for="{{salon.afterSalesPolicies}}" wx:key="*this" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right_gray.png" /><text>{{item}}</text></view>
-          <view wx:if="{{salon.acceptsSameDayBooking === true}}" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right_gray.png" /><text>当日可约</text></view>
+          <view wx:for="{{salon.afterSalesPolicies}}" wx:key="*this" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right_gray.svg" /><text>{{item}}</text></view>
+          <view wx:if="{{salon.acceptsSameDayBooking === true}}" class="after-sales-row"><image class="after-sales-icon" mode="aspectFit" src="/assets/icons/right_gray.svg" /><text>当日可约</text></view>
         </view>
       </view>
     </view>
@@ -57,10 +59,10 @@
               <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
             </view>
             <view class="service-name">{{item.name}}</view>
-            <view wx:if="{{item.noteText}}" class="service-note">{{item.noteText}}</view>
+            <view class="service-note">{{item.noteText}}</view>
           </view>
           <view class="service-meta">
-            <view class="price">{{item.priceText || '免费'}}</view>
+            <service-price class="service-price-slot" price-fen="{{item.priceFen}}" discount-tenths="{{item.discountTenths}}" original-price-fen="{{item.originalPriceFen}}" />
             <view class="service-duration">{{item.durationText}}</view>
           </view>
         </view>
@@ -96,7 +98,7 @@
             <view class="salon-post-service-name">{{item.relatedService.name}}</view>
             <view wx:if="{{item.relatedService.noteText}}" class="salon-post-service-note">{{item.relatedService.noteText}}</view>
             <view class="salon-post-service-bottom">
-              <text class="salon-post-service-price">{{item.relatedService.priceText}}</text>
+              <service-price price-fen="{{item.relatedService.priceFen}}" discount-tenths="{{item.relatedService.discountTenths}}" original-price-fen="{{item.relatedService.originalPriceFen}}" compact />
             </view>
           </view>
           <view class="salon-post-service-arrow" aria-hidden="true"></view>
@@ -109,8 +111,23 @@
       </view>
       <button wx:if="{{salon.hasMorePosts}}" class="ghost-btn" bindtap="showAllPosts">展示更多</button>
     </view>
+    <view wx:if="{{relatedSalons.length}}" class="related-salons">
+      <view class="related-salons-title">看了这个店铺的用户还看了</view>
+      <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="related-salons-strip">
+        <navigator wx:for="{{relatedSalons}}" wx:key="id" class="related-salon-card" url="{{item.detailUrl}}" hover-class="none" aria-label="查看店铺：{{item.name}}">
+          <image class="related-salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
+          <view class="related-salon-name">{{item.name}}</view>
+        </navigator>
+      </scroll-view>
+    </view>
     <view class="section">
-      <view class="section-title">客户评价</view>
+      <view class="reviews-heading">
+        <view class="section-title">客户评价（{{salon.reviewTotalText}}）</view>
+        <view class="reviews-all" bindtap="showAllReviews" aria-role="button">
+          <text>查看全部</text>
+          <view class="reviews-all-arrow" aria-hidden="true"></view>
+        </view>
+      </view>
       <view wx:if="{{salon.reviewTags.length}}" class="review-tag-summary">
         <view wx:for="{{salon.reviewTags}}" wx:key="name" class="review-tag-count">{{item.name}}（{{item.count}}）</view>
       </view>
@@ -119,20 +136,24 @@
         <view class="review-head">
           <view class="review-user">
             <image class="avatar" mode="{{item.avatarUrl ? 'aspectFill' : 'aspectFit'}}" src="{{item.avatarUrl || '/assets/icons/person.png'}}" />
-            <view>
-              <view class="review-name">{{item.userText}}</view>
-              <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>
-            </view>
+            <view class="review-name">{{item.userText}}</view>
           </view>
-          <text class="review-date">{{item.dateText}}</text>
+          <view class="review-helpful {{item.helpful ? 'active' : ''}}" bindtap="markReviewHelpful" data-booking-id="{{item.bookingId}}" data-review-id="{{item.id}}" aria-role="button" aria-disabled="{{item.helpful || item.helpfulSubmitting}}">
+            <image class="review-helpful-icon" mode="aspectFit" src="{{item.helpful ? '/assets/icons/check_circle_pink.png' : '/assets/icons/thumb_up.svg'}}" aria-hidden="true" />
+            <text>{{item.helpful ? '感谢您提供反馈' : item.helpfulSubmitting ? '提交中...' : '有用'}}</text>
+          </view>
         </view>
-        <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon" mode="aspectFit" src="{{star}}" /></view>
-        <view class="desc">{{item.comment}}</view>
+        <view class="review-rating-row">
+          <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon rating-star" mode="aspectFit" src="{{star}}" /></view>
+        </view>
+        <view wx:if="{{item.dateText}}" class="review-date">{{item.dateText}}发布评论</view>
+        <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>
+        <review-content class="review-comment-content" content="{{item.comment}}" />
         <view wx:if="{{item.imageUrls.length}}" class="review-images">
           <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
         </view>
+        <view wx:if="{{item.helpfulCount > 0}}" class="review-helpful-count">{{item.helpfulCount}}位用户认为这个有帮助</view>
       </view>
-      <button wx:if="{{salon.reviews.length > reviewCount}}" class="ghost-btn" bindtap="showAllReviews">查看更多</button>
     </view>
   </view>
   <view class="bar">

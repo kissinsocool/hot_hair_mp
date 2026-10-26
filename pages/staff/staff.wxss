@@ -36,7 +36,7 @@
 }
 
 .rating > text {
-  color: #f2a51f;
+  color: #d06884;
   font-size: 44rpx;
   font-weight: 700;
   line-height: 1;

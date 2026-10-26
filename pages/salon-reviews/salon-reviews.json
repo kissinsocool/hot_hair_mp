@@ -1,4 +1,7 @@
 {
   "navigationBarTitleText": "客户评价",
-  "enablePullDownRefresh": true
+  "enablePullDownRefresh": true,
+  "usingComponents": {
+    "review-content": "/components/review-content/review-content"
+  }
 }

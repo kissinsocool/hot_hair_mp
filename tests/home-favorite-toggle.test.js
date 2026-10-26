@@ -20,7 +20,8 @@ global.wx = {
 require('../pages/home/home');
 
 const page = {
-  data: { salons: [{ id: 'salon-1' }], favorites: ['salon-1'] },
+  salons: [{ id: 'salon-1' }],
+  data: { favorites: ['salon-1'] },
   async loadFavorites() {}
 };
 const event = { currentTarget: { dataset: { id: 'salon-1' } } };

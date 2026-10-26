@@ -1,6 +1,9 @@
+const { onShareAppMessage } = require('../../utils/share');
 const { normalizeHttpsUrl } = require('../../utils/webUrl');
 
 Page({
+  onShareAppMessage,
+
   data: { url: '' },
 
   onLoad(options = {}) {

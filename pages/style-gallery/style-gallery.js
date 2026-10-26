@@ -1,8 +1,11 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const { promotionCategory } = require('../../utils/promotionCategories');
 const PAGE_SIZE = 30;
 
 Page({
+  onShareAppMessage,
+
   data: {
     category: '',
     sort: 'latest',

@@ -1,0 +1,63 @@
+:host {
+  display: block;
+}
+
+.review-content,
+.review-content-preview {
+  position: relative;
+}
+
+.review-content-text {
+  color: #101111;
+  font-size: 32rpx;
+  font-weight: 350;
+  line-height: 44rpx;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.review-content-text.collapsed {
+  max-height: 176rpx;
+  overflow: hidden;
+}
+
+.review-content-fade {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 88rpx;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.85));
+  pointer-events: none;
+}
+
+.review-content-expand {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  padding: 10rpx 0;
+  color: #2465a4;
+  font-size: 32rpx;
+  line-height: 48rpx;
+}
+
+.review-content-arrow {
+  display: block;
+  flex-shrink: 0;
+  width: 32rpx;
+  height: 32rpx;
+}
+
+.review-content-arrow.up {
+  transform: rotate(180deg);
+}
+
+.review-content-measure,
+.review-content-line {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  visibility: hidden;
+  pointer-events: none;
+}

@@ -1,0 +1,10 @@
+<view class="service-price {{compact ? 'compact' : ''}}">
+  <view class="price-line">
+    <text wx:if="{{discountText}}" class="discount">{{discountText}}</text>
+    <view class="selling-price">
+      <text class="currency">¥</text><text class="amount">{{amountText}}</text>
+      <text wx:if="{{discountText}}" class="limited-offer">限时优惠</text>
+    </view>
+  </view>
+  <view wx:if="{{originalPriceText}}" class="original">原价：<text class="original-amount">{{originalPriceText}}</text></view>
+</view>

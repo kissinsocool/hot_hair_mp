@@ -1,3 +1,4 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const { SERVICE_TABS, serviceCategory, serviceMatchesCategory } = require('../../utils/serviceCategories.js');
 const { serviceTagLabels } = require('../../utils/serviceTags.js');
@@ -6,6 +7,8 @@ const { formatFen } = require('../../utils/money');
 const { staffRoleLabel } = require('../../utils/staffRoles');
 
 Page({
+  onShareAppMessage,
+
   data: {
     salon: null,
     dates: [],
@@ -224,10 +227,10 @@ Page({
     }));
     const serviceOptions = (salon.services || []).map((service) => ({
       ...service,
-      imageUrl: api.thumbnailUrl(service.imageUrl || '', 360),
+      imageUrl: api.thumbnailUrl((service.imageUrls || [])[0] || service.imageUrl || '', 480),
       tags: serviceTagLabels(service.tagIds),
       noteText: service.note || service.description || '',
-      durationText: service.durationMinutes ? `${service.durationMinutes} min` : '',
+      durationText: service.durationMinutes ? `${service.durationMinutes}分钟` : '',
       priceText: formatFen(service.priceFen),
       className: this.data.selectedServiceId === String(service.id) ? 'active-card' : ''
     })).filter((service) => serviceMatchesCategory(service, this.data.activeServiceCategory));

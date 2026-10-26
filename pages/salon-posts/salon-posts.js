@@ -1,7 +1,10 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const PAGE_SIZE = 10;
 
 Page({
+  onShareAppMessage,
+
   data: {
     salonId: '',
     posts: [],

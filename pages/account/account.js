@@ -1,7 +1,10 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const MAX_IMAGE_BYTES = 800 * 1024;
 
 Page({
+  onShareAppMessage,
+
   data: {
     displayName: '',
     gender: '保密',
@@ -116,7 +119,7 @@ Page({
       content: '确定要退出当前账号吗？',
       success: (result) => {
         if (!result.confirm) return;
-        api.clearSession();
+        api.logout();
         wx.reLaunch({ url: '/pages/login/login' });
       }
     });

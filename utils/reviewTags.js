@@ -6,7 +6,7 @@ const REVIEW_TAGS = [
   '无推销',
   '环镜整洁',
   '效果好评',
-  '好沟通',
+  '接待热情',
 ];
 
 const buildReviewTags = (selected = []) => REVIEW_TAGS.map((name) => ({

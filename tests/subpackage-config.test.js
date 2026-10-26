@@ -20,3 +20,10 @@ assert.deepEqual(app.subPackages, [
 for (const extension of ['js', 'json', 'wxml']) {
   assert(fs.existsSync(path.join(root, 'pages/web', `web.${extension}`)));
 }
+
+const project = JSON.parse(fs.readFileSync(path.join(root, 'project.config.json'), 'utf8'));
+// The IDE analyzer drops this imported stylesheet from real-device debug packages.
+assert(project.packOptions.include.some(item => (
+  item.type === 'file' && item.value === 'styles/service-card.wxss'
+)));
+assert(fs.existsSync(path.join(root, 'styles/service-card.wxss')));

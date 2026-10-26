@@ -1,27 +1,50 @@
 <view class="page">
+  <view class="review-filters" role="tablist" aria-label="评价筛选">
+    <view class="review-filter {{filter === 'latest' ? 'active' : ''}}" bindtap="changeFilter" data-filter="latest" role="tab" aria-selected="{{filter === 'latest'}}">全部<text wx:if="{{counts}}">（{{counts.all}}）</text></view>
+    <view class="review-filter {{filter === 'neutral' ? 'active' : ''}}" bindtap="changeFilter" data-filter="neutral" role="tab" aria-selected="{{filter === 'neutral'}}">中评<text wx:if="{{counts}}">（{{counts.neutral}}）</text></view>
+    <view class="review-filter {{filter === 'negative' ? 'active' : ''}}" bindtap="changeFilter" data-filter="negative" role="tab" aria-selected="{{filter === 'negative'}}">差评<text wx:if="{{counts}}">（{{counts.negative}}）</text></view>
+    <view class="review-filter {{filter === 'photos' ? 'active' : ''}}" bindtap="changeFilter" data-filter="photos" role="tab" aria-selected="{{filter === 'photos'}}">晒图<text wx:if="{{counts}}">（{{counts.photos}}）</text></view>
+  </view>
+  <view wx:if="{{filter === 'latest' && !loading && !errorMessage && reviewTags.length}}" class="review-tag-summary">
+    <view wx:for="{{reviewTags}}" wx:key="name" class="review-tag-count">{{item.name}}（{{item.count}}）</view>
+  </view>
   <view wx:if="{{loading}}" class="state">正在加载...</view>
   <view wx:elif="{{errorMessage}}" class="state">
     <view>{{errorMessage}}</view>
     <button class="retry" bindtap="load">重新加载</button>
   </view>
-  <view wx:elif="{{!reviews.length}}" class="state">暂无评价</view>
+  <view wx:elif="{{!reviews.length}}" class="state">暂无{{filter === 'negative' ? '差评' : filter === 'neutral' ? '中评' : filter === 'photos' ? '晒图评价' : '评价'}}</view>
   <view wx:else class="review-list">
     <view wx:for="{{reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review-card">
       <view class="review-head">
         <view class="review-user">
           <image class="avatar" mode="{{item.avatarUrl ? 'aspectFill' : 'aspectFit'}}" src="{{item.avatarUrl || '/assets/icons/person.png'}}" />
-          <view class="review-user-copy">
-            <view class="review-name">{{item.userText}}</view>
-            <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>
-          </view>
+          <view class="review-name">{{item.userText}}</view>
         </view>
-        <text class="review-date">{{item.dateText}}</text>
+        <view class="review-helpful {{item.helpful ? 'active' : ''}}" bindtap="markReviewHelpful" data-booking-id="{{item.bookingId}}" data-review-id="{{item.id}}" aria-role="button" aria-disabled="{{item.helpful || item.helpfulSubmitting}}">
+          <image class="review-helpful-icon" mode="aspectFit" src="{{item.helpful ? '/assets/icons/check_circle_pink.png' : '/assets/icons/thumb_up.svg'}}" aria-hidden="true" />
+          <text>{{item.helpful ? '感谢您提供反馈' : item.helpfulSubmitting ? '提交中...' : '有用'}}</text>
+        </view>
       </view>
-      <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon" mode="aspectFit" src="{{star}}" /></view>
-      <view class="review-comment">{{item.comment}}</view>
+      <view class="review-rating-row">
+        <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon rating-star" mode="aspectFit" src="{{star}}" /></view>
+      </view>
+      <view wx:if="{{item.dateText}}" class="review-date">{{item.dateText}}发布评论</view>
+      <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>
+      <review-content class="review-comment-content" content="{{item.comment}}" />
       <view wx:if="{{item.imageUrls.length}}" class="review-images">
         <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
       </view>
+      <view wx:if="{{item.helpfulCount > 0}}" class="review-helpful-count">{{item.helpfulCount}}位用户认为这个有帮助</view>
+    </view>
+    <view class="pagination-state">
+      <text wx:if="{{loadingMore}}">正在加载...</text>
+      <view wx:elif="{{loadMoreError}}">
+        <view>{{loadMoreError}}</view>
+        <button class="retry" bindtap="loadMore">重试加载</button>
+      </view>
+      <text wx:elif="{{!hasMore}}">已显示全部评价</text>
+      <text wx:else>上拉加载更多</text>
     </view>
   </view>
 </view>

@@ -34,10 +34,6 @@ const page = {
   ...pageDefinition,
   data: {
     ...pageDefinition.data,
-    salons: [
-      { id: 'nearby', name: '附近店铺' },
-      { id: '931870', name: '皇佳尊苑·护肤造型' }
-    ],
     suggestions: [{ id: '931870', name: '皇佳尊苑·护肤造型' }]
   },
   setData(values) { Object.assign(this.data, values); }
@@ -51,7 +47,7 @@ const page = {
   assert.equal(navigatedUrl, undefined);
   assert.equal(page.data.keyword, '皇佳尊苑·护肤造型');
   assert.deepEqual(page.data.suggestions, []);
-  assert.deepEqual(page.data.visibleSalons.map((salon) => salon.id), ['931870']);
+  assert.deepEqual(page.data.salonCards.map((salon) => salon.id), ['931870']);
 })().catch((error) => {
   console.error(error);
   process.exitCode = 1;

@@ -1,9 +1,12 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const app = getApp();
 const { ratingDisplay } = require('../../utils/rating');
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 Page({
+  onShareAppMessage,
+
   data: {
     loggedIn: initiallyLoggedIn,
     loading: initiallyLoggedIn,
@@ -42,7 +45,7 @@ Page({
         nameText: salon.name || '未知沙龙',
         descriptionText: salon.description || '暂无描述',
         ...ratingDisplay(salon.rating, salon.reviewCount),
-        distanceText: salon.distanceKm ? `距离你 ${Number(salon.distanceKm).toFixed(1)} km` : ''
+        distanceText: salon.distanceKm ? `${Number(salon.distanceKm).toFixed(1)} km` : ''
       }))) });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });

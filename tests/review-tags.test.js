@@ -17,7 +17,7 @@ assert.deepEqual(tags.map((tag) => tag.name), [
   '无推销',
   '环镜整洁',
   '效果好评',
-  '好沟通',
+  '接待热情',
 ]);
 assert.deepEqual(selectedReviewTags(tags), ['环境舒适']);
 
@@ -26,3 +26,8 @@ assert.deepEqual(selectedReviewTags(tags), ['环境舒适', '技术一流']);
 
 tags = toggleReviewTag(tags, '环境舒适');
 assert.deepEqual(selectedReviewTags(tags), ['技术一流']);
+
+tags = buildReviewTags(['接待热情']);
+assert.deepEqual(selectedReviewTags(tags), ['接待热情']);
+tags = toggleReviewTag(tags, '接待热情');
+assert.deepEqual(selectedReviewTags(tags), []);

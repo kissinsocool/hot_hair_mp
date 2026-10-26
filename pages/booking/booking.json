@@ -1,3 +1,6 @@
 {
-  "navigationBarTitleText": "预约时间"
+  "navigationBarTitleText": "预约时间",
+  "usingComponents": {
+    "service-price": "/components/service-price/service-price"
+  }
 }

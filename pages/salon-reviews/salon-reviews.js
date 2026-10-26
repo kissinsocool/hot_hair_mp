@@ -1,11 +1,24 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
+const { markReviewHelpful } = require('../../utils/reviewHelpful');
+const { formatReviewDate } = require('../../utils/reviewDate');
+const PAGE_SIZE = 10;
 
 Page({
+  onShareAppMessage,
+
   data: {
     salonId: '',
     reviews: [],
+    filter: 'latest',
+    counts: null,
+    reviewTags: [],
+    page: 0,
+    hasMore: false,
     loading: true,
-    errorMessage: ''
+    loadingMore: false,
+    errorMessage: '',
+    loadMoreError: ''
   },
 
   onLoad(query) {
@@ -14,22 +27,59 @@ Page({
   },
 
   onPullDownRefresh() {
-    this.load().finally(() => wx.stopPullDownRefresh());
+    return this.load().finally(() => wx.stopPullDownRefresh());
   },
 
-  async load() {
+  onReachBottom() {
+    return this.loadMore();
+  },
+
+  onUnload() {
+    this.reviewFeedbackDisposed = true;
+    this.loadVersion = (this.loadVersion || 0) + 1;
+  },
+
+  load() {
+    return this.loadPage(true);
+  },
+
+  loadMore() {
+    if (this.data.loading || this.data.loadingMore || !this.data.hasMore) return;
+    return this.loadPage(false);
+  },
+
+  async loadPage(reset) {
     if (!this.data.salonId) {
       this.setData({ loading: false, errorMessage: '店铺信息无效' });
       return;
     }
-    this.setData({ loading: true, errorMessage: '' });
+    if (reset) this.loadVersion = (this.loadVersion || 0) + 1;
+    const version = this.loadVersion;
+    const page = reset ? 1 : this.data.page + 1;
+    const filter = this.data.filter;
+    this.setData(reset
+      ? { loading: true, loadingMore: false, reviews: [], page: 0, hasMore: false, errorMessage: '', loadMoreError: '' }
+      : { loadingMore: true, loadMoreError: '' });
     try {
-      const salon = await api.request(`/salons/${encodeURIComponent(this.data.salonId)}`);
-      this.setData({ reviews: await Promise.all((salon.reviews || []).map((review) => this.normalizeReview(review))) });
+      const result = await api.request(`/salons/${encodeURIComponent(this.data.salonId)}/reviews?filter=${filter}&page=${page}&limit=${PAGE_SIZE}`);
+      if (version !== this.loadVersion) return;
+      const reviews = await Promise.all(result.items.map((review) => this.normalizeReview(review)));
+      if (version !== this.loadVersion) return;
+      const existing = reset ? [] : this.data.reviews;
+      const knownIds = new Set(existing.map(review => review.id));
+      this.setData({
+        reviews: existing.concat(reviews.filter(review => !knownIds.has(review.id))),
+        page,
+        hasMore: result.hasMore,
+        counts: result.counts,
+        reviewTags: result.reviewTags || []
+      });
     } catch (error) {
-      this.setData({ errorMessage: error.message || '评价加载失败，请稍后重试' });
+      if (version !== this.loadVersion) return;
+      const message = error.message || '评价加载失败，请稍后重试';
+      this.setData(reset ? { errorMessage: message } : { loadMoreError: message });
     } finally {
-      this.setData({ loading: false });
+      if (version === this.loadVersion) this.setData({ loading: false, loadingMore: false });
     }
   },
 
@@ -37,14 +87,28 @@ Page({
     const images = review.imageUrls || review.images || [review.imageUrl || review.image].filter(Boolean);
     return {
       ...review,
+      helpfulCount: Number(review.helpfulCount) || 0,
+      helpful: false, // 感谢提示仅表示本次页面内提交成功，不恢复历史反馈状态。
+      helpfulSubmitting: false,
       userText: review.user || review.userName || review.phone || '用户',
       avatarUrl: api.thumbnailUrl(review.avatarUrl, 160),
       starIcons: starIcons(review.rating || 5),
       serviceText: review.serviceName || review.service || '染发+修复',
       staffText: review.staffName || review.staff || 'Sato',
-      dateText: formatDate(review.createdAt || review.date),
+      dateText: formatReviewDate(review.createdAt || review.date),
       imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
     };
+  },
+
+  markReviewHelpful(e) {
+    return markReviewHelpful(this, 'reviews', e);
+  },
+
+  changeFilter(e) {
+    const filter = e.currentTarget.dataset.filter;
+    if (!['latest', 'negative', 'neutral', 'photos'].includes(filter) || filter === this.data.filter) return;
+    this.setData({ filter });
+    return this.load();
   },
 
   previewImage(e) {
@@ -62,12 +126,4 @@ function starIcons(value) {
     if (index === full && hasHalf) return '/assets/icons/star_half_gold.png';
     return '/assets/icons/star_border_gold.png';
   });
-}
-
-function formatDate(value) {
-  if (!value) return '';
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return value;
-  const pad = (number) => String(number).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }

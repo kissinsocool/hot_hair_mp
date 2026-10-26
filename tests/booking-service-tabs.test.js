@@ -32,4 +32,16 @@ assert.match(template, /class="no-preference-img" mode="aspectFill" src="\/asset
 assert.match(styles, /\.staff-img\.no-preference\s*\{[^}]*overflow:\s*hidden;[^}]*background:\s*#000;/s);
 assert.match(styles, /\.no-preference-img\s*\{[^}]*transform:\s*scale\(1\.04\);/s);
 assert.match(styles, /\.service-tab-slider\s*\{[^}]*transition: transform 220ms ease/s);
-assert.match(styles, /padding: 14rpx 54rpx 14rpx 14rpx/);
+const detailStyles = fs.readFileSync(path.join(__dirname, '../pages/detail/detail.wxss'), 'utf8');
+const cardStyles = fs.readFileSync(path.join(__dirname, '../styles/service-card.wxss'), 'utf8');
+assert.ok(styles.includes("@import '../../styles/service-card.wxss';"));
+assert.ok(detailStyles.includes("@import '../../styles/service-card.wxss';"));
+assert.match(cardStyles, /\.service-image-wrap\s*\{[^}]*flex:\s*0 0 220rpx;[^}]*width:\s*220rpx/s);
+assert.match(cardStyles, /\.service-image-wrap\s*\{[^}]*align-self:\s*center;[^}]*height:\s*250rpx;[^}]*border:\s*1rpx solid #ddd;[^}]*overflow:\s*hidden;/s);
+assert.doesNotMatch(cardStyles.match(/\.service-image-wrap\s*\{([^}]*)\}/)[1], /border-radius/);
+assert.doesNotMatch(cardStyles.match(/\.service-note\s*\{([^}]*)\}/)[1], /line-clamp|overflow|(?:^|;)\s*(?:max-|min-)?height\s*:/);
+assert.match(cardStyles, /\.service-meta\s*\{[^}]*align-items:\s*flex-end;/s);
+assert.match(template, /<view class="service-note">\{\{item\.noteText\}\}<\/view>/);
+assert.match(template, /<service-price[^>]*original-price-fen="\{\{item\.originalPriceFen\}\}"/);
+assert.match(template, /class="service-card service-option \{\{item\.className\}\}" bindtap="selectService"/);
+assert.match(template, /class="check-img check-pink"/);

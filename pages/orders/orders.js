@@ -1,3 +1,4 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const app = getApp();
 const bookingSocket = require('../../utils/bookingSocket');
@@ -10,6 +11,8 @@ const PAGE_SIZE = 20;
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 Page({
+  onShareAppMessage,
+
   data: {
     loggedIn: initiallyLoggedIn,
     loading: initiallyLoggedIn,
@@ -61,7 +64,7 @@ Page({
     }
     this.load();
     this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
-      if (event.event === 'booking.created' || event.event === 'booking.updated') {
+      if (event.event === 'authenticated' || event.event === 'booking.created' || event.event === 'booking.updated') {
         this.load();
       }
     });
@@ -85,8 +88,9 @@ Page({
   },
 
   async load() {
-    if (this.loadingOrders) return;
+    if (this.loadingOrders) { this.ordersDirty = true; return; }
     this.loadingOrders = true;
+    const requestToken = (api.session() || {}).token;
     const version = (this.ordersVersion || 0) + 1;
     this.ordersVersion = version;
     this.setData({ loading: !this.data.orders.length, loadingMoreOrders: false });
@@ -95,7 +99,7 @@ Page({
         api.requestPage('/bookings', { page: 1, limit: PAGE_SIZE }),
         api.request('/booking-messages/unread-count')
       ]);
-      if (version !== this.ordersVersion) return;
+      if (version !== this.ordersVersion || requestToken !== (api.session() || {}).token) return;
       this.setData({
         orders: result.items.map(orderUtils.formatOrder),
         orderPage: 1,
@@ -107,6 +111,10 @@ Page({
     } finally {
       this.loadingOrders = false;
       this.setData({ loading: false });
+      if (this.ordersDirty) {
+        this.ordersDirty = false;
+        if ((api.session() || {}).token) this.load();
+      }
     }
   },
 

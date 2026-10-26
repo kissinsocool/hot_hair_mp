@@ -1,11 +1,15 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const { ratingDisplay } = require('../../utils/rating');
 const { staffRoleLabel } = require('../../utils/staffRoles');
 
 Page({
+  onShareAppMessage,
+
   data: {
     id: '',
     salonId: '',
+    salonName: '',
     staff: null,
     services: [],
     loading: true
@@ -34,7 +38,7 @@ Page({
           imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
         };
       }));
-      this.setData({ staff: data, services: data.salonServices || [] });
+      this.setData({ staff: data, salonName: data.salonName || '', services: data.salonServices || [] });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {

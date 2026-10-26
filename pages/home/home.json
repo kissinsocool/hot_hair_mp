@@ -2,5 +2,8 @@
   "navigationBarTitleText": "",
   "navigationBarBackgroundColor": "#f3dce7",
   "navigationBarTextStyle": "black",
-  "navigationStyle": "custom"
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "service-price": "/components/service-price/service-price"
+  }
 }

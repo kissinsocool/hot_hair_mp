@@ -13,6 +13,8 @@ function mediaUrl(value) {
   const origin = app.globalData.apiBaseUrl.replace(/\/api\/?$/, '');
   const mediaOrigin = app.globalData.mediaBaseUrl;
   if (!text || text.startsWith('data:') || text.startsWith('wxfile://')) return text;
+  // Signed URLs are already encoded; changing their query invalidates the signature.
+  if (/^https?:\/\//i.test(text) && /[?&](?:Signature|X-Amz-Signature|x-oss-signature)=/i.test(text)) return text;
   if (mediaOrigin) {
     const publicOssUrl = text.replace(
       /^https?:\/\/hothair(?:app|media)\.oss-cn-beijing\.aliyuncs\.com(?=\/)/,
@@ -151,8 +153,12 @@ function request(path, options = {}) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(options.withResponse ? { data: res.data, headers: res.header || {} } : res.data);
         } else {
-          if (res.statusCode === 401) handleUnauthorized(token);
-          reject(new Error(responseErrorMessage(res.statusCode, res.data)));
+          if (res.statusCode === 401 && !options.skipUnauthorized) handleUnauthorized(token);
+          const error = new Error(responseErrorMessage(res.statusCode, res.data));
+          error.statusCode = res.statusCode;
+          error.code = res.data && res.data.code;
+          error.data = res.data;
+          reject(error);
         }
       },
       fail(err) {
@@ -247,14 +253,25 @@ function formatTime(value) {
 }
 
 function saveSession(data) {
+  const previousToken = (session() || {}).token;
   app.globalData.session = data;
   wx.setStorageSync('session', data);
+  if (previousToken !== (data && data.token)) require('./bookingSocket').reset();
 }
 
 function clearSession() {
   app.globalData.session = null;
   wx.removeStorageSync('session');
   clearPendingAvatarPreview();
+  require('./bookingSocket').reset();
+}
+
+async function logout() {
+  const pending = request('/auth/logout', { method: 'POST', skipUnauthorized: true });
+  clearSession();
+  try { await pending; } catch (_) {
+    // Local logout remains available offline; server sessions still have an expiry.
+  }
 }
 
 function handleUnauthorized(requestToken) {
@@ -293,6 +310,7 @@ module.exports = {
   formatTime,
   hasMorePages,
   mediaUrl,
+  logout,
   previewImage,
   request,
   requestAllPages,

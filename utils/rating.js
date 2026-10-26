@@ -4,7 +4,7 @@ const ratingDisplay = (rating, reviewCount) => {
   const hasRating = count > 0 && Number.isFinite(value) && value > 0;
   return {
     hasRating,
-    ratingText: hasRating ? String(value) : '暂无评分'
+    ratingText: hasRating ? String(Number(value.toFixed(2))) : '暂无评分'
   };
 };
 

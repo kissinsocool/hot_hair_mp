@@ -69,7 +69,12 @@
         "value": "THIRD_PARTY_NOTICES.md"
       }
     ],
-    "include": []
+    "include": [
+      {
+        "type": "file",
+        "value": "styles/service-card.wxss"
+      }
+    ]
   },
   "editorSetting": {}
 }

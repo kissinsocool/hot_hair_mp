@@ -1,8 +1,11 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const orderUtils = require('../../utils/orders');
 const analytics = require('../../utils/analytics');
 
 Page({
+  onShareAppMessage,
+
   data: {
     loading: true,
     errorMessage: '',

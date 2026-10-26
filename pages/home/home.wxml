@@ -73,7 +73,7 @@
                 <view class="package-service-name">{{item.serviceName}}</view>
                 <view wx:if="{{item.serviceNote}}" class="package-service-note">{{item.serviceNote}}</view>
               </view>
-              <view class="package-price">{{item.priceText}}</view>
+              <view class="package-price"><service-price price-fen="{{item.priceFen}}" discount-tenths="{{item.discountTenths}}" original-price-fen="{{item.originalPriceFen}}" compact /></view>
               <view class="package-arrow">›</view>
             </view>
           </view>
@@ -111,11 +111,11 @@
         <view class="empty-sub">{{errorMessage}}</view>
         <button class="retry" bindtap="loadSalons">重新加载</button>
       </view>
-      <view wx:elif="{{keyword && !visibleSalons.length}}" class="empty">
+      <view wx:elif="{{keyword && !salonCount}}" class="empty">
         <view class="empty-title">没有找到匹配的沙龙</view>
         <view class="empty-sub">换个名称试试看</view>
       </view>
-      <view wx:elif="{{!loading && !visibleSalons.length}}" class="empty">
+      <view wx:elif="{{!loading && !salonCount}}" class="empty">
         <view class="empty-title">附近暂无沙龙请更换定位重新尝试</view>
       </view>
 
@@ -133,11 +133,11 @@
         <view wx:if="{{!item.isPlaceholder}}" class="salon-body">
           <view class="salon-head">
             <view class="salon-name">{{item.nameText}}</view>
-            <view class="salon-rating"><image wx:if="{{item.hasRating}}" class="star-icon" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
+            <view class="salon-rating"><image wx:if="{{item.hasRating}}" class="star-icon rating-star" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
           </view>
           <view class="salon-desc">{{item.descriptionText}}</view>
           <view class="salon-foot">
-            <view class="distance">{{item.distanceText}}</view>
+            <view class="distance">{{item.distanceText}}<text wx:if="{{item.businessDistrict}}">{{item.distanceText ? ' · ' : ''}}{{item.businessDistrict}}</text></view>
             <view class="favorite" catchtap="toggleFavorite" data-id="{{item.id}}">
               <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
             </view>
@@ -189,6 +189,6 @@
     <image mode="aspectFit" src="/assets/icons/support_agent.png" />
   </view>
   <view class="back-to-top {{supportHidden ? 'support-fab-hidden' : ''}}" hover-class="none" bindtap="scrollToTop" role="button" aria-label="返回顶部">
-    <image mode="aspectFit" src="/assets/icons/keyboard_arrow_down.png" />
+    <image mode="aspectFit" src="/assets/icons/keyboard_arrow_down_thin.svg" />
   </view>
 </view>

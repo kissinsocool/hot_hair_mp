@@ -7,7 +7,7 @@
     <view class="rating">
       <text>{{staff.ratingText}}</text>
       <view>
-        <view wx:if="{{staff.hasRating}}" class="stars"><image wx:for="{{staff.starIcons}}" wx:key="*this" mode="aspectFit" src="{{item}}" /></view>
+        <view wx:if="{{staff.hasRating}}" class="stars"><image wx:for="{{staff.starIcons}}" wx:key="*this" class="rating-star" mode="aspectFit" src="{{item}}" /></view>
       </view>
     </view>
   </view>
@@ -21,7 +21,7 @@
       <view wx:for="{{staff.reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
           <text>{{item.userText}}</text>
-          <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="review-star-icon" mode="aspectFit" src="{{star}}" /></view>
+          <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="review-star-icon rating-star" mode="aspectFit" src="{{star}}" /></view>
         </view>
         <view class="desc">{{item.comment}}</view>
         <view wx:if="{{item.imageUrls.length}}" class="review-images">

@@ -1,8 +1,11 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const couponUtils = require('../../utils/coupons');
 const { formatFen } = require('../../utils/money');
 
 Page({
+  onShareAppMessage,
+
   data: {
     booking: {},
     timeText: '',
@@ -140,20 +143,56 @@ Page({
         salonId: booking.salonId,
         staffId: booking.staffId,
         serviceId: booking.serviceId,
-        startTime: booking.startTime
+        startTime: booking.startTime,
+        expectedOriginalAmountFen: booking.totalFen,
+        expectedPayableAmountFen: booking.totalFen - (this.data.selectedCoupon ? nonNegativeFen(this.data.selectedCoupon.discountFen) : 0)
       };
       if (this.data.selectedCouponId) data.couponId = this.data.selectedCouponId;
-      await api.request('/bookings', {
+      const result = await api.request('/bookings', {
         method: 'POST',
         data
       });
+      if (result && result.booking) {
+        const actual = result.booking;
+        this.updatePrice({
+          servicePriceFen: actual.servicePriceFen,
+          extraServiceFeeFen: actual.staffExtraServiceFeeFen,
+          originalAmountFen: actual.originalAmountFen,
+          couponDiscountFen: actual.couponDiscountFen,
+          payableAmountFen: actual.payableAmountFen
+        });
+      }
       this.setData({ successVisible: true });
     } catch (err) {
-      wx.showToast({ title: err.message, icon: 'none' });
+      if (err.code === 'BOOKING_PRICE_CHANGED' && err.data && err.data.quote) {
+        this.updatePrice(err.data.quote);
+        await this.loadCoupons();
+        wx.showModal({ title: '价格已更新', content: '套餐价格或优惠已变更，请核对新金额后再次提交。', showCancel: false });
+      } else {
+        if (err.statusCode === 409) await this.loadCoupons();
+        wx.showToast({ title: err.message, icon: 'none' });
+      }
     } finally {
       this._submitting = false;
       this.setData({ submitting: false });
     }
+  },
+
+  updatePrice(quote) {
+    const booking = {
+      ...this.data.booking,
+      servicePriceFen: quote.servicePriceFen,
+      extraServiceFeeFen: quote.extraServiceFeeFen,
+      servicePriceText: formatFen(quote.servicePriceFen),
+      extraFeeText: formatFen(quote.extraServiceFeeFen),
+      totalFen: quote.originalAmountFen,
+      totalText: formatFen(quote.originalAmountFen)
+    };
+    this.setData({
+      booking,
+      payableText: formatFen(quote.payableAmountFen),
+      couponDiscountText: quote.couponDiscountFen ? `- ${formatFen(quote.couponDiscountFen)}` : ''
+    });
   },
 
   openMessages() {

@@ -11,4 +11,15 @@ function formatFen(value) {
   return `¥${formatFenAmount(value)}`;
 }
 
-module.exports = { formatFen, formatFenAmount };
+function servicePriceDisplay(priceFen, discountTenths, originalPriceFen) {
+  const hasDiscount = Number.isSafeInteger(priceFen) && priceFen > 0
+    && Number.isSafeInteger(originalPriceFen) && originalPriceFen > priceFen
+    && Number.isInteger(discountTenths) && discountTenths >= 1 && discountTenths < 100;
+  return {
+    priceText: formatFen(priceFen),
+    discountText: hasDiscount ? `-${100 - discountTenths}%` : '',
+    originalPriceText: hasDiscount ? formatFen(originalPriceFen) : ''
+  };
+}
+
+module.exports = { formatFen, formatFenAmount, servicePriceDisplay };

@@ -76,7 +76,7 @@ test('salon detail renders posts above reviews with an all-posts entry', () => {
   assert.match(template, / · 投稿时间：\{\{item\.dateText\}\}/);
   assert.ok(template.indexOf('salon-post-images') < template.indexOf('class="salon-post-service"'));
   assert.match(template, /class="salon-post-service" bindtap="bookPostService"/);
-  assert.match(template, /\{\{item\.relatedService\.priceText\}\}/);
+  assert.match(template, /<service-price price-fen="\{\{item\.relatedService\.priceFen\}\}" discount-tenths="\{\{item\.relatedService\.discountTenths\}\}" original-price-fen="\{\{item\.relatedService\.originalPriceFen\}\}" compact/);
   assert.match(template, /\{\{item\.relatedService\.noteText\}\}/);
   assert.doesNotMatch(template, /item\.relatedService\.durationText/);
   assert.match(template, /class="salon-post-service-arrow"[^>]*><\/view>/);

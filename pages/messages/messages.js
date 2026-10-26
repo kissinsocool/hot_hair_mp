@@ -1,3 +1,4 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
@@ -5,6 +6,8 @@ const orderUtils = require('../../utils/orders');
 const PAGE_SIZE = 20;
 
 Page({
+  onShareAppMessage,
+
   data: {
     loading: true,
     messages: [],
@@ -17,13 +20,22 @@ Page({
 
   onLoad() {
     this.setData(layout.appBarSize());
+  },
+
+  onShow() {
     if (!api.requireLogin()) return;
+    if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
     this.load();
     this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
-      if (event.event === 'booking.created' || event.event === 'booking.updated') {
+      if (event.event === 'authenticated' || event.event === 'booking.created' || event.event === 'booking.updated') {
         this.load();
       }
     });
+  },
+
+  onHide() {
+    if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
+    this.unsubscribeBookingSocket = null;
   },
 
   onUnload() {
@@ -48,14 +60,15 @@ Page({
   },
 
   async load() {
-    if (this.loadingMessages) return;
+    if (this.loadingMessages) { this.messagesDirty = true; return; }
     this.loadingMessages = true;
+    const requestToken = (api.session() || {}).token;
     const version = (this.messagesVersion || 0) + 1;
     this.messagesVersion = version;
     this.setData({ loading: true, loadingMoreMessages: false });
     try {
       const result = await api.requestPage('/booking-messages', { page: 1, limit: PAGE_SIZE });
-      if (version !== this.messagesVersion) return;
+      if (version !== this.messagesVersion || requestToken !== (api.session() || {}).token) return;
       this.setData({
         messages: result.items.map(orderUtils.formatMessage),
         messagePage: 1,
@@ -72,6 +85,10 @@ Page({
     } finally {
       this.loadingMessages = false;
       this.setData({ loading: false });
+      if (this.messagesDirty) {
+        this.messagesDirty = false;
+        if ((api.session() || {}).token) this.load();
+      }
     }
   },
 

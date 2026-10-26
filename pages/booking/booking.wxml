@@ -30,22 +30,26 @@
   </view>
   <view class="service-count">共<text class="service-count-number">{{serviceOptions.length}}</text>个服务</view>
   <view wx:if="{{!serviceOptions.length}}" class="service-empty">该分类暂无服务</view>
-  <view wx:for="{{serviceOptions}}" wx:key="id" class="service-option {{item.className}}" bindtap="selectService" data-id="{{item.id}}">
-    <image class="service-img" mode="aspectFill" src="{{item.imageUrl}}" />
-    <view class="service-copy">
-      <view class="service-tags">
-        <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
-      </view>
-      <view class="service-name">{{item.name}}</view>
-      <view wx:if="{{item.noteText}}" class="service-note">{{item.noteText}}</view>
-      <view class="service-duration">{{item.durationText}}</view>
+  <view wx:for="{{serviceOptions}}" wx:key="id" class="service-card service-option {{item.className}}" bindtap="selectService" data-id="{{item.id}}" aria-role="button" aria-label="选择套餐：{{item.name}}" aria-pressed="{{item.className == 'active-card'}}">
+    <view class="service-image-wrap">
+      <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
     </view>
-    <view class="service-side">
-      <view class="price">{{item.priceText}}</view>
-      <view class="check">
-        <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
-        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />
+    <view class="service-main">
+      <view class="service-copy">
+        <view class="service-tags">
+          <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
+        </view>
+        <view class="service-name">{{item.name}}</view>
+        <view class="service-note">{{item.noteText}}</view>
       </view>
+      <view class="service-meta">
+        <service-price class="service-price-slot" price-fen="{{item.priceFen}}" discount-tenths="{{item.discountTenths}}" original-price-fen="{{item.originalPriceFen}}" />
+        <view class="service-duration">{{item.durationText}}</view>
+      </view>
+    </view>
+    <view class="check">
+      <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
+      <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />
     </view>
   </view>
 

@@ -29,3 +29,11 @@ test('signed, animated, external and local images keep their URLs', () => {
   assert.equal(api.thumbnailUrl('https://example.com/photo.jpg', 480), 'https://example.com/photo.jpg');
   assert.equal(api.thumbnailUrl('wxfile://photo.jpg', 480), 'wxfile://photo.jpg');
 });
+
+test('OSS signatures and encoded object paths are preserved byte for byte', () => {
+  const signed = 'https://hothairprivate.oss-cn-beijing.aliyuncs.com/moderation/%E5%9B%BE.jpg?OSSAccessKeyId=dummy&Signature=abc%2Fdef%2Bghi%3D&Expires=2000000000';
+  assert.equal(api.thumbnailUrl(signed, 360), signed);
+  assert.equal(api.mediaUrl(signed), signed);
+  const publicSigned = signed.replace('hothairprivate', 'hothairmedia');
+  assert.equal(api.thumbnailUrl(publicSigned, 360), publicSigned, 'signed origins must not be rewritten either');
+});

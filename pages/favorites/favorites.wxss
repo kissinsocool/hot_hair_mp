@@ -36,7 +36,7 @@
   display: flex;
   align-items: center;
   gap: 6rpx;
-  color: #ff9800;
+  color: #d06884;
   line-height: 30rpx;
 }
 

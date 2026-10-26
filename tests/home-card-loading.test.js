@@ -18,9 +18,9 @@ assert.ok(pageDefinition.data.salonCards.every((card, index) => (
 
 const page = {
   ...pageDefinition,
+  salons: [{ id: 'salon-1', name: '店铺一', tags: [] }],
   data: {
-    ...pageDefinition.data,
-    salons: [{ id: 'salon-1', name: '店铺一', tags: [] }]
+    ...pageDefinition.data
   },
   setData(values) { Object.assign(this.data, values); }
 };
@@ -30,7 +30,7 @@ assert.equal(normalized instanceof Promise, false);
 assert.equal(normalized.image, '');
 assert.equal(normalized.nameText, '店铺二');
 
-page.applyFilter();
+page.renderSalons(page.salons);
 
 assert.equal(page.data.salonCards.length, 1);
 assert.equal(page.data.salonCards[0].id, 'salon-1');

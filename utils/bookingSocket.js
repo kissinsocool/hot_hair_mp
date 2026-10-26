@@ -11,20 +11,24 @@ function socketUrl() {
 }
 
 function connect() {
-  if (socket || !listeners.length) return;
+  if (socket || reconnectTimer || !listeners.length) return;
 
-  socket = wx.connectSocket({ url: socketUrl() });
-  socket.onMessage((res) => {
+  const session = app.globalData.session || wx.getStorageSync('session');
+  const token = session && session.token;
+  if (!token) return;
+  const connection = wx.connectSocket({ url: socketUrl() });
+  socket = connection;
+  connection.onMessage((res) => {
+    if (socket !== connection) return;
     try {
       const data = JSON.parse(res.data);
       if (data.event === 'auth.required') {
-        const session = app.globalData.session || wx.getStorageSync('session');
-        if (session && session.token) {
-          socket.send({
+        if (token) {
+          connection.send({
             data: JSON.stringify({
               event: 'authenticate',
               role: 'client',
-              token: session.token
+              token
             })
           });
         }
@@ -33,12 +37,24 @@ function connect() {
       listeners.forEach((listener) => listener(data));
     } catch (_) {}
   });
-  socket.onClose(reconnect);
-  socket.onError(reconnect);
+  connection.onClose(() => reconnect(connection));
+  connection.onError(() => reconnect(connection, true));
 }
 
-function reconnect() {
+function closeConnection(connection) {
+  connection.close({
+    fail(error) {
+      // onError 后底层可能已释放任务；此时连接已达到关闭目的。
+      if (error.errMsg === 'closeSocket:fail wcwss taskID not exist') return;
+      console.warn('预约连接关闭失败', error);
+    }
+  });
+}
+
+function reconnect(connection, close = false) {
+  if (socket !== connection) return;
   socket = null;
+  if (close) closeConnection(connection);
   if (!listeners.length || reconnectTimer) return;
   reconnectTimer = setTimeout(() => {
     reconnectTimer = null;
@@ -51,10 +67,22 @@ function subscribe(listener) {
   connect();
   return () => {
     listeners = listeners.filter((item) => item !== listener);
-    if (listeners.length || !socket) return;
-    socket.close();
+    if (listeners.length) return;
+    clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+    const connection = socket;
     socket = null;
+    if (connection) closeConnection(connection);
   };
 }
 
-module.exports = { subscribe };
+function reset() {
+  clearTimeout(reconnectTimer);
+  reconnectTimer = null;
+  const previous = socket;
+  socket = null;
+  if (previous) closeConnection(previous);
+  connect();
+}
+
+module.exports = { subscribe, reset };

@@ -1,4 +1,7 @@
+const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
+const { markReviewHelpful } = require('../../utils/reviewHelpful');
+const { formatReviewDate } = require('../../utils/reviewDate');
 const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
 const { formatFen } = require('../../utils/money');
@@ -8,13 +11,16 @@ const { staffRoleLabel } = require('../../utils/staffRoles');
 const { afterSalesPolicyLabels } = require('../../utils/afterSalesPolicies');
 
 Page({
+  onShareAppMessage,
+
   data: {
     id: '',
     salon: null,
     isFavorite: false,
     currentPromoIndex: 0,
-    reviewCount: 10,
+    reviewCount: 3,
     visibleReviews: [],
+    relatedSalons: [],
     loading: true,
     ad: ad.DEFAULT
   },
@@ -23,6 +29,14 @@ Page({
     this.setData({ id: query.id || '' });
     ad.load().then((config) => this.setData({ ad: config }));
     this.load();
+  },
+
+  onUnload() {
+    this.reviewFeedbackDisposed = true;
+  },
+
+  markReviewHelpful(e) {
+    return markReviewHelpful(this, 'visibleReviews', e);
   },
 
   async load() {
@@ -41,7 +55,7 @@ Page({
       salon.reviewTags = (salon.reviewTags || []).filter((tag) => tag.name && Number(tag.count) > 0);
       salon.reviewTotalText = salon.reviewCount;
       Object.assign(salon, ratingDisplay(salon.rating, salon.reviewTotalText));
-      salon.starIcons = salon.hasRating ? starIcons(salon.ratingText) : [];
+      salon.starIcons = starIcons(salon.hasRating ? salon.ratingText : 5);
       salon.services = await Promise.all((salon.services || []).map(async (service) => {
         const imageUrls = Array.isArray(service.imageUrls) ? service.imageUrls : [service.imageUrl].filter(Boolean);
         return {
@@ -65,6 +79,7 @@ Page({
       salon.hasMorePosts = salon.hasMorePosts === true;
       this.setData({ salon, visibleReviews: salon.reviews.slice(0, this.data.reviewCount) });
       this.loadFavoriteState();
+      this.loadRelatedSalons(salon);
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
@@ -72,17 +87,41 @@ Page({
     }
   },
 
+  async loadRelatedSalons(salon) {
+    const coordinates = salonCoordinates(salon);
+    if (!coordinates) return;
+    try {
+      const { latitude, longitude } = coordinates;
+      const result = await api.requestPage(`/salons?latitude=${latitude}&longitude=${longitude}`, { page: 1, limit: 10 });
+      const relatedSalons = await Promise.all(result.items
+        .filter((item) => item.id !== this.data.id)
+        .slice(0, 9)
+        .map(async (item) => ({
+          id: item.id,
+          name: item.name,
+          image: await api.displayImageUrl(api.salonImage(item), 480),
+          detailUrl: `/pages/detail/detail?id=${encodeURIComponent(item.id)}`
+        })));
+      if (!this.reviewFeedbackDisposed) this.setData({ relatedSalons });
+    } catch (_) {
+      // 附近店铺加载失败不影响当前店铺详情和评价。
+    }
+  },
+
   async normalizeReview(review) {
     const images = review.imageUrls || review.images || [review.imageUrl || review.image].filter(Boolean);
     return {
       ...review,
+      helpfulCount: Number(review.helpfulCount) || 0,
+      helpful: false, // 感谢提示仅表示本次页面内提交成功，不恢复历史反馈状态。
+      helpfulSubmitting: false,
       userText: review.user || review.userName || review.phone || '用户',
       avatarUrl: api.thumbnailUrl(review.avatarUrl, 160),
       ratingText: review.rating || 5,
       starIcons: starIcons(review.rating || 5),
       serviceText: review.serviceName || review.service || '染发+修复',
       staffText: review.staffName || review.staff || 'Sato',
-      dateText: this.formatDate(review.createdAt || review.date),
+      dateText: formatReviewDate(review.createdAt || review.date),
       imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
     };
   },
@@ -130,8 +169,8 @@ Page({
     const session = api.session();
     if (!(session && session.token)) return;
     try {
-      const favorites = await api.request('/favorites');
-      const isFavorite = favorites.some((salon) => salon.id === this.data.id);
+      const favorites = await api.request('/favorites/ids');
+      const isFavorite = Array.isArray(favorites.salonIds) && favorites.salonIds.includes(this.data.id);
       this.setData({ isFavorite });
     } catch (_) {}
   },

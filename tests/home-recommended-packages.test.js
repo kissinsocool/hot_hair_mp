@@ -46,8 +46,8 @@ const page = {
   Math.random = () => 0.999;
   try {
     await page.loadRecommendedPackages([
-      { id: 'salon-1', distanceText: '附近约 300 m' },
-      { id: 'salon-2', distanceText: '附近约 500 m' }
+      { id: 'salon-1', distanceText: '300 m' },
+      { id: 'salon-2', distanceText: '500 m' }
     ]);
   } finally {
     Math.random = originalRandom;
@@ -62,7 +62,7 @@ const page = {
   assert.equal(firstSalonPackage.priceText, '¥168');
   assert.equal(firstSalonPackage.image, 'https://example.com/salon-cover.jpg');
   assert.equal(firstSalonPackage.salonDescription, '这是首页简介');
-  assert.equal(firstSalonPackage.distanceText, '附近约 300 m');
+  assert.equal(firstSalonPackage.distanceText, '300 m');
   assert.equal(firstSalonPackage.isFavorite, true);
   assert.equal(page.data.showRecommendedPackages, false);
 

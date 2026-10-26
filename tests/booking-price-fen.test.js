@@ -46,7 +46,19 @@ const optionsPage = {
 };
 bookingPage.refreshOptions.call(optionsPage);
 assert.equal(optionsPage.data.staffOptions[1].extraServiceFeeText, '¥399');
-assert.equal(optionsPage.data.serviceOptions[0].durationText, '90 min');
+assert.equal(optionsPage.data.serviceOptions[0].durationText, '90分钟');
+Object.assign(optionsPage.data.salon.services[0], {
+  priceFen: 25200, originalPriceFen: 28000, discountTenths: 90,
+  imageUrls: ['/cover.jpg', '/second.jpg']
+});
+bookingPage.refreshOptions.call(optionsPage);
+const discountedService = optionsPage.data.serviceOptions[0];
+assert.equal(discountedService.priceFen, 25200);
+assert.equal(discountedService.originalPriceFen, 28000);
+assert.equal(discountedService.discountTenths, 90);
+assert.equal(discountedService.className, 'active-card');
+assert.match(discountedService.imageUrl, /cover\.jpg/);
+
 
 bookingPage.submit.call({
   salonId: 'salon-1',
