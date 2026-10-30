@@ -40,6 +40,7 @@ assert.match(cardStyles, /\.service-image-wrap\s*\{[^}]*flex:\s*0 0 220rpx;[^}]*
 assert.match(cardStyles, /\.service-image-wrap\s*\{[^}]*align-self:\s*center;[^}]*height:\s*250rpx;[^}]*border:\s*1rpx solid #ddd;[^}]*overflow:\s*hidden;/s);
 assert.doesNotMatch(cardStyles.match(/\.service-image-wrap\s*\{([^}]*)\}/)[1], /border-radius/);
 assert.doesNotMatch(cardStyles.match(/\.service-note\s*\{([^}]*)\}/)[1], /line-clamp|overflow|(?:^|;)\s*(?:max-|min-)?height\s*:/);
+assert.match(cardStyles, /\.service-note\s*\{[^}]*white-space:\s*pre-wrap;/s);
 assert.match(cardStyles, /\.service-meta\s*\{[^}]*align-items:\s*flex-end;/s);
 assert.match(template, /<view class="service-note">\{\{item\.noteText\}\}<\/view>/);
 assert.match(template, /<service-price[^>]*original-price-fen="\{\{item\.originalPriceFen\}\}"/);

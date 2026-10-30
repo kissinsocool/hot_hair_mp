@@ -23,7 +23,7 @@ function onShareAppMessage() {
   }
 
   if (this.route === 'pages/home/home') {
-    title = '放心预约、安心享受｜美发预约';
+    title = '您的专属美发预约平台';
     return { title, path, imageUrl: '/assets/images/home-share.jpg' };
   }
   let imageUrl = '/assets/images/auth_hero.jpg';

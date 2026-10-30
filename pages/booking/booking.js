@@ -148,7 +148,12 @@ Page({
   },
 
   selectStaff(e) {
-    this.setData({ selectedStaffId: e.currentTarget.dataset.id });
+    const staffId = e.currentTarget.dataset.id;
+    const service = ((this.data.salon || {}).services || [])
+      .find((item) => String(item.id) === this.data.selectedServiceId);
+    if (service && service.staffSelectionRestricted === true && staffId !== '__no_preference__'
+      && !(service.selectableStaffIds || []).includes(staffId)) return;
+    this.setData({ selectedStaffId: staffId });
     return this.loadSlots({ animate: true });
   },
 
@@ -203,6 +208,11 @@ Page({
     const salon = this.data.salon || {};
     const selectedService = (salon.services || [])
       .find((service) => String(service.id) === this.data.selectedServiceId);
+    const staffSelectionRestricted = selectedService && selectedService.staffSelectionRestricted === true;
+    if (staffSelectionRestricted && this.data.selectedStaffId !== '__no_preference__'
+      && !(selectedService.selectableStaffIds || []).includes(this.data.selectedStaffId)) {
+      this.setData({ selectedStaffId: '__no_preference__' });
+    }
     const showStaffExtraFee = selectedService
       ? serviceCategory(selectedService) === 'cut'
       : this.data.activeServiceCategory === 'cut';
@@ -219,7 +229,11 @@ Page({
       })))
     ].map((staff) => ({
       ...staff,
-      className: this.data.selectedStaffId === staff.id ? 'active' : ''
+      disabled: Boolean(staffSelectionRestricted && !staff.isNoPreference
+        && !(selectedService.selectableStaffIds || []).includes(staff.id)),
+      className: staffSelectionRestricted && !staff.isNoPreference
+        && !(selectedService.selectableStaffIds || []).includes(staff.id)
+        ? 'disabled' : this.data.selectedStaffId === staff.id ? 'active' : ''
     }));
     const serviceTabs = SERVICE_TABS.map((tab) => ({
       ...tab,

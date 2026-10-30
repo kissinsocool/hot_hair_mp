@@ -12,7 +12,7 @@ test('salon detail shows at most three reviews and only links to all reviews fro
   assert.match(script, /reviewCount:\s*3/);
   assert.match(script, /visibleReviews:\s*salon\.reviews\.slice\(0, this\.data\.reviewCount\)/);
   assert.match(script, /pages\/salon-reviews\/salon-reviews\?salonId=/);
-  assert.match(template, /<view class="reviews-heading">\s*<view class="section-title">客户评价（\{\{salon\.reviewTotalText\}\}）<\/view>\s*<view class="reviews-all" bindtap="showAllReviews" aria-role="button">\s*<text>查看全部<\/text>\s*<view class="reviews-all-arrow" aria-hidden="true"><\/view>\s*<\/view>\s*<\/view>/);
+  assert.match(template, /<view class="reviews-heading">\s*<view class="section-title">客户评价（\{\{salon\.reviewTotalText\}\}）<\/view>\s*<view wx:if="\{\{salon\.reviewCount > 0\}\}" class="reviews-all" bindtap="showAllReviews" aria-role="button">\s*<text>查看全部<\/text>\s*<view class="reviews-all-arrow" aria-hidden="true"><\/view>\s*<\/view>\s*<\/view>/);
   assert.equal((template.match(/bindtap="showAllReviews"/g) || []).length, 1);
   assert.ok(app.pages.includes('pages/salon-reviews/salon-reviews'));
 });

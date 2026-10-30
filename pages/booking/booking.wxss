@@ -422,3 +422,7 @@
   background: #dddddf;
   opacity: 1;
 }
+
+.staff-option.disabled {
+  opacity: 0.4;
+}

@@ -99,6 +99,7 @@ Page({
         .map(async (item) => ({
           id: item.id,
           name: item.name,
+          description: item.description || '',
           image: await api.displayImageUrl(api.salonImage(item), 480),
           detailUrl: `/pages/detail/detail?id=${encodeURIComponent(item.id)}`
         })));

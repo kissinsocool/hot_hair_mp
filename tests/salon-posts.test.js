@@ -68,6 +68,8 @@ test('salon detail renders posts above reviews with an all-posts entry', () => {
   const template = fs.readFileSync(path.join(__dirname, '../pages/detail/detail.wxml'), 'utf8');
   const styles = fs.readFileSync(path.join(__dirname, '../pages/detail/detail.wxss'), 'utf8');
   assert.ok(template.indexOf('店铺动态') < template.indexOf('客户评价'));
+  assert.match(template, /<view wx:if="\{\{salon\.latestPosts\.length > 0\}\}" class="section">\s*<view class="section-title">店铺动态<\/view>/);
+  assert.doesNotMatch(template, /暂无动态/);
   assert.doesNotMatch(template, /class="card section salon-posts-section"/);
   assert.match(template, /wx:for="\{\{salon\.latestPosts\}\}"/);
   assert.match(styles, /\.salon-post\s*\{[^}]*border:\s*1rpx solid #eadbd2;[^}]*background:\s*#fff;[^}]*box-shadow:/s);

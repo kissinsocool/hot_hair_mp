@@ -1,5 +1,6 @@
 const SERVICE_TAG_LABELS = Object.freeze({
   wash_cut_blow: '洗剪吹',
+  wash_blow: '洗吹',
   color: '染发',
   perm: '烫发',
   care: '护理',

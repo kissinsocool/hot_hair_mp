@@ -20,7 +20,7 @@ test('nearby cards exclude current salon, keep list order and use shared images'
     assert.deepEqual(options, { page: 1, limit: 10 });
     return { items: [
       { id: 'current', name: '当前店铺' },
-      { id: 'other/1', name: '其他店铺', coverImage: 'cover.jpg' },
+      { id: 'other/1', name: '其他店铺', description: '专业剪染', fullDescription: '详情页长简介', coverImage: 'cover.jpg' },
       ...Array.from({ length: 10 }, (_, i) => ({ id: `salon-${i}`, name: `店铺${i}` }))
     ] };
   };
@@ -29,10 +29,11 @@ test('nearby cards exclude current salon, keep list order and use shared images'
   await page.loadRelatedSalons({ geoLocation: { coordinates: [121.6, 31.2] } });
   assert.equal(page.data.relatedSalons.length, 9);
   assert.deepEqual(page.data.relatedSalons[0], {
-    id: 'other/1', name: '其他店铺', image: 'cover.jpg:480',
+    id: 'other/1', name: '其他店铺', description: '专业剪染', image: 'cover.jpg:480',
     detailUrl: '/pages/detail/detail?id=other%2F1'
   });
   assert.ok(page.data.relatedSalons.every(item => item.id !== 'current'));
+  assert.equal(page.data.relatedSalons[1].description, '');
 });
 
 test('missing coordinates, empty lists and network failures leave the module hidden', async () => {
@@ -68,5 +69,6 @@ test('horizontal image-and-name cards sit directly before customer reviews', () 
   assert.match(section, /scroll-x enhanced show-scrollbar="\{\{false\}\}"/);
   assert.match(section, /<navigator[^>]*url="\{\{item.detailUrl\}\}"/);
   assert.match(section, /class="related-salon-image" mode="aspectFill"/);
+  assert.ok(section.includes(`{{item.name}}{{item.description ? ' 「' + item.description + '」' : ''}}`));
   assert.doesNotMatch(section, /更多|查看全部|もっと見る/);
 });

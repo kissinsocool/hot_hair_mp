@@ -34,7 +34,7 @@ test('every registered page enables forwarding with the shared title and safe de
     assert.equal(typeof definition.onShareAppMessage, 'function', route);
     const result = definition.onShareAppMessage.call({ route, data: definition.data || {} });
     assert.equal(result.path, '/pages/home/home', route);
-    assert.equal(result.title, route === 'pages/home/home' ? '放心预约、安心享受｜美发预约' : '放心预约安心享受｜美发专属预约平台', route);
+    assert.equal(result.title, route === 'pages/home/home' ? '您的专属美发预约平台' : '放心预约安心享受｜美发专属预约平台', route);
     assert.ok(fs.existsSync(path.join(root, result.imageUrl)), route);
   }
 });
@@ -58,7 +58,7 @@ test('public shares preserve only the identifiers required to open the content',
 
 test('home always uses the saved screenshot regardless of page content or scroll position', () => {
   assert.deepEqual(share('pages/home/home'), {
-    title: '放心预约、安心享受｜美发预约', path: '/pages/home/home',
+    title: '您的专属美发预约平台', path: '/pages/home/home',
     imageUrl: '/assets/images/home-share.jpg'
   });
   assert.equal(share('pages/home/home', { keyword: '搜索', salonCards: [], scrollTop: 1200 }).imageUrl,

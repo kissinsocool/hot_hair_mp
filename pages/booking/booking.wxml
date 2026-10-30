@@ -1,28 +1,6 @@
 <view wx:if="{{loading}}" class="empty">正在加载...</view>
 <view wx:else class="page booking">
   <view class="hint">请完成以下预约选项</view>
-  <view class="block-title">选择理发师</view>
-  <view class="staff-list">
-    <view wx:for="{{staffOptions}}" wx:key="id" class="staff-option {{item.className}}" bindtap="selectStaff" data-id="{{item.id}}">
-      <view wx:if="{{item.isNoPreference}}" class="staff-img no-preference">
-        <image class="no-preference-img" mode="aspectFill" src="/assets/icons/who.png" />
-      </view>
-      <image wx:else class="staff-img" mode="aspectFill" src="{{item.imageUrl}}" />
-      <view class="staff-copy">
-        <view class="staff-head">
-          <view class="staff-name">{{item.name}}</view>
-          <view wx:if="{{item.extraServiceFeeText}}" class="fee">+{{item.extraServiceFeeText}}</view>
-        </view>
-        <view wx:if="{{!item.isNoPreference}}" class="staff-role">{{item.role}}{{item.experience ? '（' + item.experience + '）' : ''}}</view>
-        <view wx:if="{{item.bio}}" class="staff-bio">{{item.bio}}</view>
-      </view>
-      <view class="check">
-        <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
-        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />
-      </view>
-    </view>
-  </view>
-
   <view class="block-title">选择服务项目</view>
   <view class="service-tabs" role="tablist">
     <view wx:for="{{serviceTabs}}" wx:key="id" class="service-tab {{item.className}}" bindtap="selectServiceCategory" data-category="{{item.id}}" role="tab" aria-selected="{{item.className == 'active'}}">{{item.label}}</view>
@@ -50,6 +28,28 @@
     <view class="check">
       <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
       <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />
+    </view>
+  </view>
+
+  <view class="block-title">选择理发师</view>
+  <view class="staff-list">
+    <view wx:for="{{staffOptions}}" wx:key="id" class="staff-option {{item.className}}" bindtap="selectStaff" data-id="{{item.id}}" aria-role="button" aria-disabled="{{item.disabled}}">
+      <view wx:if="{{item.isNoPreference}}" class="staff-img no-preference">
+        <image class="no-preference-img" mode="aspectFill" src="/assets/icons/who.png" />
+      </view>
+      <image wx:else class="staff-img" mode="aspectFill" src="{{item.imageUrl}}" />
+      <view class="staff-copy">
+        <view class="staff-head">
+          <view class="staff-name">{{item.name}}</view>
+          <view wx:if="{{item.extraServiceFeeText}}" class="fee">+{{item.extraServiceFeeText}}</view>
+        </view>
+        <view wx:if="{{!item.isNoPreference}}" class="staff-role">{{item.role}}{{item.experience ? '（' + item.experience + '）' : ''}}</view>
+        <view wx:if="{{item.bio}}" class="staff-bio">{{item.bio}}</view>
+      </view>
+      <view class="check">
+        <image class="check-img check-gray" mode="aspectFit" src="/assets/icons/check_circle_light_gray.png" />
+        <image class="check-img check-pink" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />
+      </view>
     </view>
   </view>
 
