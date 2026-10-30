@@ -21,6 +21,10 @@
   ],
   "subPackages": [
     {
+      "root": "pages/coupon-gift",
+      "pages": ["coupon-gift"]
+    },
+    {
       "root": "pages/web",
       "pages": ["web"]
     },

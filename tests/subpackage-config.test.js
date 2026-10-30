@@ -12,7 +12,9 @@ assert.equal(app.permission['scope.userLocation'].desc, '你选择的位置将�
 assert(!app.pages.includes('pages/ad/ad'));
 assert(!app.pages.includes('pages/rules/user-agreement'));
 assert(!app.pages.includes('pages/rules/privacy-policy'));
+assert(!app.pages.includes('pages/coupon-gift/coupon-gift'));
 assert.deepEqual(app.subPackages, [
+  { root: 'pages/coupon-gift', pages: ['coupon-gift'] },
   { root: 'pages/web', pages: ['web'] },
   { root: 'pages/rules', pages: ['user-agreement', 'privacy-policy'] }
 ]);

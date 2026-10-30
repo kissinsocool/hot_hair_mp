@@ -1,0 +1,31 @@
+.gift-page {
+  padding: 32rpx 48rpx;
+  text-align: center;
+}
+
+.gift-promotion {
+  display: block;
+  width: 100%;
+}
+
+.gift-message {
+  margin: 48rpx 0;
+  color: #806f66;
+  line-height: 1.7;
+}
+
+.gift-message-success {
+  color: #228b55;
+}
+
+.gift-claim {
+  margin-top: 48rpx;
+  background: #d06884;
+  color: #ffffff;
+}
+
+.gift-coupons {
+  margin-top: 28rpx;
+  background: #ffffff;
+  color: #806f66;
+}

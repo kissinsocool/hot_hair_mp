@@ -3,6 +3,7 @@ const api = require('../../utils/api');
 const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const ad = require('../../utils/ad');
+const couponCampaign = require('../../utils/couponCampaign');
 const analytics = require('../../utils/analytics');
 const { formatFen } = require('../../utils/money');
 const { ratingDisplay } = require('../../utils/rating');
@@ -13,7 +14,6 @@ const DEFAULT_SERVICE_LOCATION = {
   longitude: 116.4074,
   locationText: '选择定位'
 };
-const CAMPAIGN_CACHE_MS = 5 * 60 * 1000;
 const INITIAL_SALON_CARD_COUNT = 10;
 const SALON_PAGE_SIZE = 10;
 const SALON_TAG_CLASSES = ['salon-tag-neon', 'salon-tag-nature'];
@@ -22,7 +22,6 @@ const loadingSalonCards = () => Array.from({ length: INITIAL_SALON_CARD_COUNT },
   isPlaceholder: true,
   lightActive: false
 }));
-let campaignCache;
 
 Page({
   onShareAppMessage,
@@ -297,25 +296,8 @@ Page({
   },
 
   async loadNewUserGift() {
-    const session = api.session();
-    const cacheKey = session && session.token ? `authenticated:${session.token}` : 'anonymous';
     try {
-      let image;
-      if (campaignCache && campaignCache.key === cacheKey && campaignCache.expiresAt > Date.now()) {
-        image = campaignCache.image;
-      } else {
-        const gift = await api.request(session && session.token
-          ? '/auth/coupon-campaign'
-          : '/coupon-campaign');
-        image = gift.enabled && gift.promotionImageUrl
-          ? await api.displayImageUrl(gift.promotionImageUrl, 960)
-          : '';
-        campaignCache = {
-          key: cacheKey,
-          image,
-          expiresAt: Date.now() + CAMPAIGN_CACHE_MS
-        };
-      }
+      const image = await couponCampaign.loadPromotionImage();
       this.setData({
         newUserGiftVisible: Boolean(image) && !this.data.newUserGiftDismissed,
         newUserGiftImage: image
@@ -336,8 +318,7 @@ Page({
     if (this.data.claimingNewUserGift || !api.requireLogin()) return;
     this.setData({ claimingNewUserGift: true });
     try {
-      await api.request('/auth/coupon-campaign/claim', { method: 'POST' });
-      campaignCache = null;
+      await couponCampaign.claim();
       this.setData({ newUserGiftVisible: false });
       wx.showToast({ title: '新人礼包领取成功', icon: 'success' });
       wx.switchTab({

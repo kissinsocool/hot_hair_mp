@@ -1,0 +1,10 @@
+<view class="gift-page">
+  <image class="gift-promotion" src="/pages/coupon-gift/new-user-gift.jpeg" mode="widthFix" bindtap="claim" role="button" aria-label="领取新人礼包" />
+  <view wx:if="{{errorMessage}}" class="gift-message">{{errorMessage}}</view>
+  <view wx:elif="{{claimed}}" class="gift-message gift-message-success">新人礼包已领取</view>
+  <view wx:elif="{{!loggedIn}}" class="gift-message">登录后即可领取，优惠券使用规则以券面为准</view>
+  <button wx:if="{{!claimed}}" class="gift-claim" bindtap="claim" loading="{{claiming}}" disabled="{{claiming}}">
+    {{claiming ? '正在领取' : (!loggedIn ? '登录并领取' : (errorMessage ? '重新领取' : '立即领取'))}}
+  </button>
+  <button class="gift-coupons" bindtap="viewCoupons">查看我的优惠券</button>
+</view>
