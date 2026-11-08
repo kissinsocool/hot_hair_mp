@@ -1,0 +1,7 @@
+.rating-fields { margin: 20rpx 0 28rpx; }
+.rating-row { display: flex; align-items: center; gap: 16rpx; }
+.rating-label { flex: 0 0 226rpx; color: #5a565d; font-size: 30rpx; }
+.rating-stars { display: flex; gap: 12rpx; }
+.star-button { display: flex; align-items: center; justify-content: center; width: 64rpx; height: 64rpx; }
+.star-icon { width: 40rpx; height: 40rpx; opacity: 0.22; }
+.star-icon.selected { opacity: 1; }

@@ -26,11 +26,11 @@
           <text>{{item.helpful ? '感谢您提供反馈' : item.helpfulSubmitting ? '提交中...' : '有用'}}</text>
         </view>
       </view>
-      <view class="review-rating-row">
-        <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon rating-star" mode="aspectFit" src="{{star}}" /></view>
-      </view>
       <view wx:if="{{item.dateText}}" class="review-date">{{item.dateText}}发布评论</view>
-      <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>
+      <review-booking-info service-name="{{item.serviceText}}" staff-name="{{item.staffText}}" />
+      <view class="review-rating-row">
+        <review-rating-summary rating="{{item.rating}}" ratings="{{item.ratings}}" />
+      </view>
       <review-content class="review-comment-content" content="{{item.comment}}" />
       <view wx:if="{{item.imageUrls.length}}" class="review-images">
         <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />

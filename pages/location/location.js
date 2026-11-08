@@ -4,11 +4,9 @@ Page({
 
   data: {
     locating: false,
-    address: '',
     addressText: '可使用微信地图选择位置',
     latitude: 0,
-    longitude: 0,
-    manual: ''
+    longitude: 0
   },
 
   onLoad(options) {
@@ -42,16 +40,5 @@ Page({
       fail: () => wx.showToast({ title: '定位失败', icon: 'none' }),
       complete: () => this.setData({ locating: false })
     });
-  },
-
-  onManual(e) {
-    this.setData({ manual: e.detail.value });
-  },
-
-  useManual() {
-    const pages = getCurrentPages();
-    const prev = pages[pages.length - 2];
-    if (prev) prev.setData({ locationText: this.data.manual || '手动选择位置' });
-    wx.navigateBack();
   }
 });

@@ -1,0 +1,6 @@
+{
+  "navigationBarTitleText": "评价晒单",
+  "usingComponents": {
+    "review-rating-picker": "/components/review-rating-picker/review-rating-picker"
+  }
+}

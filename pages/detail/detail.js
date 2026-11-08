@@ -4,7 +4,8 @@ const { markReviewHelpful } = require('../../utils/reviewHelpful');
 const { formatReviewDate } = require('../../utils/reviewDate');
 const ad = require('../../utils/ad');
 const analytics = require('../../utils/analytics');
-const { formatFen } = require('../../utils/money');
+const favoriteStore = require('../../utils/favorites');
+const salonDetail = require('../../utils/salonDetail');
 const { ratingDisplay } = require('../../utils/rating');
 const { serviceTagLabels } = require('../../utils/serviceTags');
 const { staffRoleLabel } = require('../../utils/staffRoles');
@@ -22,6 +23,7 @@ Page({
     visibleReviews: [],
     relatedSalons: [],
     loading: true,
+    errorMessage: '',
     ad: ad.DEFAULT
   },
 
@@ -40,51 +42,95 @@ Page({
   },
 
   async load() {
+    if (this.loadingSalon) return;
+    this.loadingSalon = true;
+    this.setData({ loading: true, errorMessage: '' });
     try {
-      const salon = await api.request(`/salons/${this.data.id}`);
-      salon.image = await api.displayImageUrl(api.salonImage(salon), 960);
-      salon.promoImages = await Promise.all((salon.promoImages || salon.images || []).map((image) => api.displayImageUrl(image, 960)));
-      if (!salon.promoImages.length && salon.image) salon.promoImages = [salon.image];
-      salon.openingHoursText = salon.openingHours || '暂无营业时间';
-      salon.weeklyClosedDaysText = this.formatWeeklyClosedDays(salon.weeklyClosedDays);
-      salon.afterSalesPolicies = afterSalesPolicyLabels(salon.afterSalesPolicyIds);
-      salon.phoneText = salon.phone || '暂无电话';
-      salon.addressText = this.formatAddress(salon.address);
-      salon.descriptionText = salon.fullDescription || salon.description || '暂无详细描述';
-      salon.reviews = await Promise.all((salon.reviews || []).map((review) => this.normalizeReview(review)));
-      salon.reviewTags = (salon.reviewTags || []).filter((tag) => tag.name && Number(tag.count) > 0);
-      salon.reviewTotalText = salon.reviewCount;
-      Object.assign(salon, ratingDisplay(salon.rating, salon.reviewTotalText));
-      salon.starIcons = starIcons(salon.hasRating ? salon.ratingText : 5);
-      salon.services = await Promise.all((salon.services || []).map(async (service) => {
-        const imageUrls = Array.isArray(service.imageUrls) ? service.imageUrls : [service.imageUrl].filter(Boolean);
-        return {
-          ...service,
-          imageUrls,
-          imageUrl: await api.displayImageUrl(imageUrls[0] || '', 480),
-          tags: serviceTagLabels(service.tagIds),
-          noteText: service.note || service.description || '',
-          durationText: this.formatDuration(service.durationMinutes),
-          priceText: formatFen(service.priceFen)
-        };
-      }));
-      salon.staff = await Promise.all((salon.staff || []).map(async (staff) => ({
-        ...staff,
+      // 详情页始终读取最新数据，并刷新供预约页复用的缓存。
+      const source = await salonDetail.load(this.data.id, { maxAgeMs: 0 });
+      const salon = await this.buildSalonView(source);
+      // 仅供交互方法使用的原始数据不进入 setData，避免增加视图层传输体积。
+      this.salonSource = {
+        name: source.name || '',
+        phone: source.phone || '',
+        address: source.address || '',
+        location: source.location,
+        geoLocation: source.geoLocation,
+        serviceImageUrls: Object.fromEntries((source.services || []).map((service) => [service.id, serviceImageUrls(service)]))
+      };
+      // 详情页只展示前几条评价，完整列表在“查看全部”页面分页加载。
+      const visibleReviews = await Promise.all((source.reviews || [])
+        .slice(0, this.data.reviewCount)
+        .map((review) => this.normalizeReview(review)));
+      this.setData({ salon, visibleReviews });
+      this.loadFavoriteState();
+      this.loadRelatedSalons(source);
+    } catch (err) {
+      this.setData({ errorMessage: err.message || '店铺加载失败，请稍后重试' });
+    } finally {
+      this.loadingSalon = false;
+      this.setData({ loading: false });
+    }
+  },
+
+  // 只保留模板使用的字段。
+  async buildSalonView(source) {
+    const image = await api.displayImageUrl(api.salonImage(source), 960);
+    const promoImages = await Promise.all((source.promoImages || source.images || []).map((item) => api.displayImageUrl(item, 960)));
+    const rating = ratingDisplay(source.rating, source.reviewCount);
+    const services = await Promise.all((source.services || []).map((service) => this.normalizeService(service)));
+    return {
+      name: source.name,
+      description: source.description,
+      isFeatured: source.isFeatured,
+      image,
+      promoImages: promoImages.length || !image ? promoImages : [image],
+      descriptionText: source.fullDescription || source.description || '暂无详细描述',
+      openingHoursText: source.openingHours || '暂无营业时间',
+      weeklyClosedDaysText: this.formatWeeklyClosedDays(source.weeklyClosedDays),
+      afterSalesPolicies: afterSalesPolicyLabels(source.afterSalesPolicyIds),
+      acceptsSameDayBooking: source.acceptsSameDayBooking,
+      phoneText: source.phone || '暂无电话',
+      addressText: this.formatAddress(source.address),
+      ...rating,
+      starIcons: starIcons(rating.hasRating ? rating.ratingText : 5),
+      reviewCount: source.reviewCount,
+      reviewTotalText: source.reviewCount,
+      reviewTags: (source.reviewTags || [])
+        .filter((tag) => tag.name && Number(tag.count) > 0)
+        .map((tag) => ({ name: tag.name, count: tag.count })),
+      services,
+      staff: await Promise.all((source.staff || []).map(async (staff) => ({
+        id: staff.id,
+        name: staff.name,
         imageUrl: await api.displayImageUrl(staff.imageUrl, 240),
         roleText: staffRoleLabel(staff.roleId),
         experienceText: staff.experience || '',
         bioText: staff.bio || staff.description || '暂无简介'
-      })));
-      salon.latestPosts = await Promise.all((salon.latestPosts || []).map((post) => this.normalizePost(post, salon.services)));
-      salon.hasMorePosts = salon.hasMorePosts === true;
-      this.setData({ salon, visibleReviews: salon.reviews.slice(0, this.data.reviewCount) });
-      this.loadFavoriteState();
-      this.loadRelatedSalons(salon);
-    } catch (err) {
-      wx.showToast({ title: err.message, icon: 'none' });
-    } finally {
-      this.setData({ loading: false });
-    }
+      }))),
+      latestPosts: await Promise.all((source.latestPosts || []).map((post) => this.normalizePost(post, services))),
+      hasMorePosts: source.hasMorePosts === true
+    };
+  },
+
+  async normalizeService(service) {
+    const imageUrls = serviceImageUrls(service);
+    return {
+      id: service.id,
+      name: service.name,
+      imageUrl: await api.displayImageUrl(imageUrls[0] || '', 480),
+      hasGallery: imageUrls.length > 1,
+      tags: serviceTagLabels(service.tagIds),
+      noteText: service.note || service.description || '',
+      durationText: this.formatDuration(service.durationMinutes),
+      priceFen: service.priceFen,
+      discountTenths: service.discountTenths,
+      originalPriceFen: service.originalPriceFen
+    };
+  },
+
+  retryLoad() {
+    return this.load();
   },
 
   async loadRelatedSalons(salon) {
@@ -112,16 +158,18 @@ Page({
   async normalizeReview(review) {
     const images = review.imageUrls || review.images || [review.imageUrl || review.image].filter(Boolean);
     return {
-      ...review,
+      id: review.id,
+      bookingId: review.bookingId,
+      rating: review.rating,
+      ratings: review.ratings,
+      comment: review.comment,
       helpfulCount: Number(review.helpfulCount) || 0,
       helpful: false, // 感谢提示仅表示本次页面内提交成功，不恢复历史反馈状态。
       helpfulSubmitting: false,
       userText: review.user || review.userName || review.phone || '用户',
       avatarUrl: api.thumbnailUrl(review.avatarUrl, 160),
-      ratingText: review.rating || 5,
-      starIcons: starIcons(review.rating || 5),
-      serviceText: review.serviceName || review.service || '染发+修复',
-      staffText: review.staffName || review.staff || 'Sato',
+      serviceText: review.serviceName || review.service || '',
+      staffText: review.staffName || review.staff || '',
       dateText: formatReviewDate(review.createdAt || review.date),
       imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
     };
@@ -130,9 +178,20 @@ Page({
   async normalizePost(post, services) {
     const service = post.serviceId ? (services || []).find((item) => item.id === post.serviceId) : null;
     return {
-      ...post,
-      relatedService: service ? { ...service, noteText: service.noteText.trim().replace(/\s*[\r\n]+\s*/g, '，') } : null,
-      authorImageUrl: await api.displayImageUrl(post.authorImageUrl, 160),
+      id: post.id,
+      content: post.content,
+      authorName: post.authorName,
+      authorStaffId: post.authorStaffId,
+      serviceName: post.serviceName,
+      relatedService: service ? {
+        id: service.id,
+        name: service.name,
+        tags: service.tags,
+        noteText: service.noteText.trim().replace(/\s*[\r\n]+\s*/g, '，'),
+        priceFen: service.priceFen,
+        discountTenths: service.discountTenths,
+        originalPriceFen: service.originalPriceFen
+      } : null,
       imageUrls: await Promise.all((post.imageUrls || []).map((image) => api.displayImageUrl(image, 480))),
       dateText: this.formatDate(post.createdAt)
     };
@@ -170,19 +229,16 @@ Page({
     const session = api.session();
     if (!(session && session.token)) return;
     try {
-      const favorites = await api.request('/favorites/ids');
-      const isFavorite = Array.isArray(favorites.salonIds) && favorites.salonIds.includes(this.data.id);
-      this.setData({ isFavorite });
+      const ids = await favoriteStore.loadIds();
+      this.setData({ isFavorite: ids.includes(this.data.id) });
     } catch (_) {}
   },
 
   async toggleFavorite() {
     if (!api.requireLogin()) return;
     try {
-      await api.request(`/favorites/${encodeURIComponent(this.data.id)}`, {
-        method: this.data.isFavorite ? 'DELETE' : 'PUT'
-      });
       const isFavorite = !this.data.isFavorite;
+      await favoriteStore.setFavorite(this.data.id, isFavorite);
       this.setData({ isFavorite });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
@@ -190,12 +246,13 @@ Page({
   },
 
   callPhone() {
-    if (!this.data.salon.phone) return;
-    wx.makePhoneCall({ phoneNumber: this.data.salon.phone });
+    const phone = this.salonSource && this.salonSource.phone;
+    if (!phone) return;
+    wx.makePhoneCall({ phoneNumber: phone });
   },
 
   openMap() {
-    const salon = this.data.salon || {};
+    const salon = this.salonSource || {};
     const coordinates = salonCoordinates(salon);
     if (!coordinates) {
       wx.showToast({ title: '商家暂未配置导航位置', icon: 'none' });
@@ -204,7 +261,7 @@ Page({
     wx.openLocation({
       ...coordinates,
       name: salon.name || '预约门店',
-      address: salon.address || salon.addressText || '',
+      address: salon.address,
       scale: 16,
       fail: () => wx.showToast({ title: '地图打开失败', icon: 'none' })
     });
@@ -252,7 +309,8 @@ Page({
     analytics.track('service_click', { salonId: this.data.id, serviceId });
     const service = this.data.salon.services.find((item) => item.id === serviceId);
     if (!service || !service.imageUrl) return;
-    const remainingImages = await Promise.all(service.imageUrls.slice(1).map((image) => api.displayImageUrl(image)));
+    const imageUrls = (this.salonSource && this.salonSource.serviceImageUrls[serviceId]) || [];
+    const remainingImages = await Promise.all(imageUrls.slice(1).map((image) => api.displayImageUrl(image)));
     api.previewImage({ urls: [service.imageUrl, ...remainingImages], current: service.imageUrl });
   },
 
@@ -277,6 +335,10 @@ function starIcons(value) {
     if (index === full && hasHalf) return '/assets/icons/star_half_gold.png';
     return '/assets/icons/star_border_gold.png';
   });
+}
+
+function serviceImageUrls(service = {}) {
+  return Array.isArray(service.imageUrls) ? service.imageUrls : [service.imageUrl].filter(Boolean);
 }
 
 function salonCoordinates(salon = {}) {

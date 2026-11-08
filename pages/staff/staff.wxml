@@ -17,16 +17,26 @@
     </view>
     <view class="card section">
       <view class="section-title">客户评价（{{staff.reviewCount}}）</view>
-      <view wx:if="{{!staff.reviews.length}}" class="muted">暂无评价</view>
-      <view wx:for="{{staff.reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
+      <view wx:if="{{!reviews.length && !loadingReviews && !reviewsError}}" class="muted">暂无评价</view>
+      <view wx:for="{{reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
           <text>{{item.userText}}</text>
-          <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="review-star-icon rating-star" mode="aspectFit" src="{{star}}" /></view>
         </view>
+        <review-booking-info service-name="{{item.serviceName || item.service}}" staff-name="{{item.staffName || staff.name}}" />
+        <review-rating-summary rating="{{item.rating}}" ratings="{{item.ratings}}" />
         <view class="desc">{{item.comment}}</view>
         <view wx:if="{{item.imageUrls.length}}" class="review-images">
           <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
         </view>
+      </view>
+      <view wx:if="{{reviews.length || loadingReviews || reviewsError}}" class="pagination-state">
+        <text wx:if="{{loadingReviews}}">正在加载...</text>
+        <view wx:elif="{{reviewsError}}">
+          <view>{{reviewsError}}</view>
+          <button class="retry" bindtap="retryReviews">重试加载</button>
+        </view>
+        <text wx:elif="{{hasMoreReviews}}">上拉加载更多</text>
+        <text wx:else>没有更多评价了</text>
       </view>
     </view>
   </view>

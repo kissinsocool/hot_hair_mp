@@ -2,6 +2,7 @@ const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const app = getApp();
 const { ratingDisplay } = require('../../utils/rating');
+const favoriteStore = require('../../utils/favorites');
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 Page({
@@ -39,6 +40,7 @@ Page({
     this.setData({ loading: !this.data.salons.length });
     try {
       const salons = await api.request('/favorites');
+      favoriteStore.invalidate();
       this.setData({ salons: await Promise.all(salons.map(async (salon) => ({
         ...salon,
         image: await api.displayImageUrl(api.salonImage(salon), 480),
@@ -62,7 +64,7 @@ Page({
     try {
       const salon = this.data.salons.find((item) => item.id === e.currentTarget.dataset.id);
       if (!salon) return;
-      await api.request(`/favorites/${encodeURIComponent(salon.id)}`, { method: 'DELETE' });
+      await favoriteStore.setFavorite(salon.id, false);
       this.load();
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });

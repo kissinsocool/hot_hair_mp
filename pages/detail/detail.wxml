@@ -1,4 +1,9 @@
 <view wx:if="{{loading}}" class="empty">正在加载...</view>
+<view wx:elif="{{errorMessage}}" class="page-error" role="alert">
+  <view class="page-error-title">店铺加载失败</view>
+  <view class="page-error-sub">{{errorMessage}}</view>
+  <button class="primary-btn page-error-retry" bindtap="retryLoad">重新加载</button>
+</view>
 <view wx:else class="detail">
   <view wx:if="{{ad.enabled}}" class="detail-top">
     <navigator class="ad-link" url="{{ad.link}}" hover-class="none" aria-label="查看广告详情">
@@ -51,7 +56,7 @@
       <view wx:for="{{salon.services}}" wx:key="id" class="service-card" bindtap="openService" data-id="{{item.id}}" aria-role="{{item.imageUrl ? 'button' : ''}}" aria-label="{{item.imageUrl ? '查看套餐大图：' + item.name : item.name}}">
         <view class="service-image-wrap">
           <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
-          <image wx:if="{{item.imageUrls.length > 1}}" class="service-gallery-icon" mode="aspectFit" src="/assets/icons/stack.png" aria-label="点击查看多张图片" />
+          <image wx:if="{{item.hasGallery}}" class="service-gallery-icon" mode="aspectFit" src="/assets/icons/stack.png" aria-label="点击查看多张图片" />
         </view>
         <view class="service-main">
           <view class="service-copy">
@@ -146,11 +151,11 @@
             <text>{{item.helpful ? '感谢您提供反馈' : item.helpfulSubmitting ? '提交中...' : '有用'}}</text>
           </view>
         </view>
-        <view class="review-rating-row">
-          <view class="review-stars"><image wx:for="{{item.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon rating-star" mode="aspectFit" src="{{star}}" /></view>
-        </view>
         <view wx:if="{{item.dateText}}" class="review-date">{{item.dateText}}发布评论</view>
-        <view class="review-sub">{{item.serviceText}} · {{item.staffText}}</view>
+        <review-booking-info service-name="{{item.serviceText}}" staff-name="{{item.staffText}}" />
+        <view class="review-rating-row">
+          <review-rating-summary rating="{{item.rating}}" ratings="{{item.ratings}}" />
+        </view>
         <review-content class="review-comment-content" content="{{item.comment}}" />
         <view wx:if="{{item.imageUrls.length}}" class="review-images">
           <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />

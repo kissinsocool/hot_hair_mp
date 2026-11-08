@@ -37,13 +37,26 @@
     </view>
 
     <view wx:if="{{order.complaint}}">
-      <view class="section-title">投诉进度</view>
+      <view class="section-title">问题处理进度</view>
       <view class="card panel complaint-panel">
         <view class="row compact"><text>当前状态</text><text class="complaint-status">{{order.complaint.statusText}}</text></view>
         <view class="row compact"><text>提交时间</text><text>{{order.complaint.createdTimeText}}</text></view>
+        <view class="row compact"><text>问题类型</text><text>{{order.complaint.reasonText}}</text></view>
         <view class="complaint-description">{{order.complaint.description}}</view>
+        <block wx:if="{{order.complaint.response}}">
+          <view class="row compact"><text>处理时间</text><text>{{order.complaint.handledTimeText}}</text></view>
+          <view class="complaint-description">平台处理意见：{{order.complaint.response}}</view>
+        </block>
       </view>
     </view>
+
+    <block wx:if="{{order.canReportIssue}}">
+      <view class="section-title">订单问题</view>
+      <view class="card panel">
+        <view class="complaint-description issue-notice">如未到店、服务未完成或订单有问题，请向平台反馈。</view>
+        <button class="ghost-btn issue-feedback-btn" bindtap="reportIssue">反馈订单问题</button>
+      </view>
+    </block>
 
     <view wx:if="{{order.canRebook}}" class="bottom-actions">
       <button class="primary-btn action-btn" bindtap="rebook">再次预约</button>

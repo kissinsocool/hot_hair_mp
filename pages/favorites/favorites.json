@@ -2,5 +2,11 @@
   "navigationBarTitleText": "我的收藏",
   "navigationBarBackgroundColor": "#2B2726",
   "navigationBarTextStyle": "white",
-  "enablePullDownRefresh": true
+  "enablePullDownRefresh": true,
+  "navigationStyle": "custom",
+  "backgroundTextStyle": "light",
+  "backgroundColorTop": "#2B2726",
+  "usingComponents": {
+    "tab-appbar": "/components/tab-appbar/tab-appbar"
+  }
 }

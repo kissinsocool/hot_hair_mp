@@ -129,6 +129,14 @@
   line-height: 1.6;
 }
 
+.issue-notice {
+  color: #e53935;
+}
+
+.issue-feedback-btn {
+  margin-top: 28rpx;
+}
+
 .bottom-actions {
   display: flex;
   gap: 20rpx;

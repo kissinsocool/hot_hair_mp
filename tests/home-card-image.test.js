@@ -19,7 +19,7 @@ assert.match(imageWrapRule[1], /flex:\s*0 0 calc\(291\.2rpx \+ 12\.6px\);/);
 assert.ok(imageRule);
 assert.match(template, /<image[^>]*class="salon-image"[^>]*mode="aspectFill"/);
 assert.match(template, /class="salon-image-placeholder" aria-hidden="true">靓丝美约<\/text>/);
-assert.match(template, /wx:for="\{\{salonCards\}\}"[^>]*wx:key="cardKey"[^>]*class="salon-card"[^>]*data-card-index="\{\{salonIndex\}\}"/);
+assert.match(template, /wx:for="\{\{salonCards\}\}"[^>]*wx:key="cardKey"[^>]*class="salon-card \{\{item\.lightActive \? 'salon-card--visible' : ''\}\}"[^>]*data-card-index="\{\{salonIndex\}\}"/);
 assert.match(template, /salon-card-border-light \{\{item\.lightActive \? 'salon-card-border-light--active' : ''\}\}/);
 assert.match(template, /<image wx:if="\{\{!item\.isPlaceholder\}\}" class="salon-image"/);
 assert.doesNotMatch(template, /salon-card-flipper|salon-card-face|salon-card-back/);

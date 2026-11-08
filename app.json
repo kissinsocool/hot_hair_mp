@@ -12,6 +12,7 @@
     "pages/coupons/coupons",
     "pages/orders/orders",
     "pages/order-detail/order-detail",
+    "pages/review-editor/review-editor",
     "pages/favorites/favorites",
     "pages/profile/profile",
     "pages/account/account",

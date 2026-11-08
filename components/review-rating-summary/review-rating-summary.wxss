@@ -1,0 +1,13 @@
+:host { display: block; width: 100%; }
+.rating-summary { margin: 10rpx 0; color: #615a5c; }
+.overall-row { display: flex; align-items: center; gap: 14rpx; min-height: 40rpx; }
+.overall-label { font-size: 28rpx; font-weight: 600; }
+.overall-score { color: #b95370; font-size: 38rpx; font-weight: 600; }
+.overall-stars { display: flex; flex-shrink: 0; gap: 4rpx; }
+.star { position: relative; width: 36rpx; height: 36rpx; }
+.star-image { display: block; width: 36rpx; height: 36rpx; }
+.star-fill { position: absolute; top: 0; left: 0; height: 100%; overflow: hidden; }
+.dimension-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 36rpx; row-gap: 10rpx; margin-top: 6rpx; padding: 8rpx 0 18rpx; border-bottom: 1rpx solid #e5e5e5; }
+.dimension { display: flex; align-items: center; gap: 26rpx; min-width: 0; line-height: 40rpx; }
+.dimension-label { flex: 0 0 156rpx; white-space: nowrap; color: #655b5d; font-size: 24rpx; font-weight: 600; }
+.dimension-score { color: #bf365e; font-size: 32rpx; font-weight: 600; }

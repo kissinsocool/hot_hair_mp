@@ -78,8 +78,7 @@
   background: #fff;
 }
 
-.stars,
-.review-stars {
+.stars {
   display: flex;
   align-items: center;
   gap: 3rpx;
@@ -91,8 +90,8 @@
 }
 
 .star-icon {
-  width: 36.67rpx;
-  height: 36.67rpx;
+  width: 30rpx;
+  height: 30rpx;
 }
 
 .rating-text {
@@ -630,33 +629,21 @@
   white-space: nowrap;
 }
 
-.review-sub,
 .review-date {
   color: #999;
   font-size: 30rpx;
   line-height: 40rpx;
 }
 
-.review-sub {
-  margin-bottom: 10rpx;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.review-date {
+  margin-top: 8rpx;
+  margin-bottom: 6rpx;
 }
+
+
 
 .review-rating-row {
-  display: flex;
-  align-items: center;
-  margin: 14rpx 0 10rpx;
-}
-
-.review-stars {
-  flex-shrink: 0;
-}
-
-.review-stars .star-icon {
-  width: 40rpx;
-  height: 40rpx;
+  width: 100%;
 }
 
 .review-images {

@@ -10,7 +10,8 @@ test('salon detail shows at most three reviews and only links to all reviews fro
   const app = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
 
   assert.match(script, /reviewCount:\s*3/);
-  assert.match(script, /visibleReviews:\s*salon\.reviews\.slice\(0, this\.data\.reviewCount\)/);
+  assert.match(script, /\(source\.reviews \|\| \[\]\)\s*\.slice\(0, this\.data\.reviewCount\)\s*\.map\(\(review\) => this\.normalizeReview\(review\)\)/);
+  assert.match(script, /this\.setData\(\{ salon, visibleReviews \}\)/);
   assert.match(script, /pages\/salon-reviews\/salon-reviews\?salonId=/);
   assert.match(template, /<view class="reviews-heading">\s*<view class="section-title">客户评价（\{\{salon\.reviewTotalText\}\}）<\/view>\s*<view wx:if="\{\{salon\.reviewCount > 0\}\}" class="reviews-all" bindtap="showAllReviews" aria-role="button">\s*<text>查看全部<\/text>\s*<view class="reviews-all-arrow" aria-hidden="true"><\/view>\s*<\/view>\s*<\/view>/);
   assert.equal((template.match(/bindtap="showAllReviews"/g) || []).length, 1);
@@ -52,7 +53,7 @@ test('reviews use server pagination and counts without stale requests changing t
       assert.equal(requests[0], '/salons/salon%2F1/reviews?filter=latest&page=1&limit=10');
       assert.equal(page.data.reviews.length, 10);
       assert.equal(page.data.reviews[0].userText, '顾客');
-      assert.equal(page.data.reviews[0].starIcons[4], '/assets/icons/star_half_gold.png');
+      assert.equal(page.data.reviews[0].rating, 4.5);
       assert.deepEqual(page.data.counts, counts);
       assert.deepEqual(page.data.reviewTags, reviewTags);
       await page.onReachBottom();

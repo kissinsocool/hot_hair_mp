@@ -3,11 +3,13 @@ const test = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
 global.getApp = () => ({ globalData: {} });
+global.wx = { getStorageSync: () => null };
 let definition;
 global.Page = page => { definition = page; };
 require('../pages/booking/booking');
 const api = require('../utils/api');
 const analytics = require('../utils/analytics');
+const salonDetail = require('../utils/salonDetail');
 analytics.track = () => Promise.resolve();
 api.thumbnailUrl = url => url;
 api.request = async () => ({
@@ -18,6 +20,7 @@ api.request = async () => ({
   ]
 });
 function page() {
+  salonDetail.clear();
   return {
     ...definition,
     salonId: 'salon-1',

@@ -1,3 +1,4 @@
+<tab-appbar title="我的收藏" />
 <view class="page">
   <view wx:if="{{!loggedIn}}"></view>
   <view wx:elif="{{loading && !salons.length}}" class="empty">正在加载...</view>

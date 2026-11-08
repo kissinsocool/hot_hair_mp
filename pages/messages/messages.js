@@ -1,6 +1,7 @@
 const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const bookingSocket = require('../../utils/bookingSocket');
+const unreadMessages = require('../../utils/unreadMessages');
 const layout = require('../../utils/layout');
 const orderUtils = require('../../utils/orders');
 const PAGE_SIZE = 20;
@@ -51,6 +52,11 @@ Page({
     this.loadMore();
   },
 
+  openOrder(e) {
+    const id = e.currentTarget.dataset.id;
+    if (id) wx.navigateTo({ url: `/pages/order-detail/order-detail?id=${encodeURIComponent(id)}` });
+  },
+
   goBack() {
     wx.navigateBack();
   },
@@ -79,6 +85,7 @@ Page({
           method: 'PATCH',
           data: { through: result.items[0].createdAt }
         });
+        unreadMessages.invalidate();
       }
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });

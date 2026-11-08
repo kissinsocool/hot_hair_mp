@@ -1,0 +1,10 @@
+<view class="rating-fields">
+  <view wx:for="{{fields}}" wx:for-item="field" wx:key="key" class="rating-row">
+    <text class="rating-label">{{field.label}}：</text>
+    <view class="rating-stars">
+      <view wx:for="{{stars}}" wx:for-item="star" wx:key="*this" class="star-button" data-key="{{field.key}}" data-value="{{star}}" catchtap="chooseRating" role="button" aria-label="{{field.label}} {{star}}星" aria-pressed="{{value[field.key] == star}}">
+        <image class="star-icon {{value[field.key] >= star ? 'selected' : ''}}" mode="aspectFit" src="{{value[field.key] >= star ? '/assets/icons/star_gold.png' : '/assets/icons/star_border.png'}}" />
+      </view>
+    </view>
+  </view>
+</view>

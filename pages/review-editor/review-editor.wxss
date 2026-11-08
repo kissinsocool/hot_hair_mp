@@ -1,0 +1,24 @@
+.editor-page { padding: 24rpx 24rpx calc(170rpx + env(safe-area-inset-bottom)); }
+.editor-card { padding: 28rpx 24rpx; border-radius: 24rpx; background: #fff; }
+.salon-name { color: #4d4a54; font-size: 36rpx; font-weight: 700; }
+.service-name { margin: 12rpx 0 24rpx; color: #8f8a91; font-size: 30rpx; }
+.review-tags { display: flex; flex-wrap: wrap; gap: 16rpx; margin: 20rpx 0 26rpx; }
+.review-tag { padding: 12rpx 24rpx; border-radius: 999rpx; background: #f1f1f1; color: #888; font-size: 27rpx; }
+.review-tag.active { background: #f8dce5; color: #d06884; }
+.review-textarea { width: 100%; height: 260rpx; padding: 24rpx; border: 2rpx solid #eadbd1; border-radius: 14rpx; background: #fffdfb; color: #4d4a54; font-size: 32rpx; line-height: 1.45; }
+.review-placeholder { color: #8f8a91; }
+.textarea-count { margin-top: 8rpx; color: #888; font-size: 26rpx; text-align: right; }
+.upload-row { display: flex; align-items: center; margin-top: 26rpx; }
+.field-title { flex: 1; color: #5a565d; font-size: 30rpx; font-weight: 700; }
+.pick-btn { flex: 0 0 auto; width: auto; height: 64rpx; margin: 0; padding: 0 8rpx; background: transparent; color: #6f50b5; font-size: 30rpx; }
+.btn-icon { width: 36rpx; height: 36rpx; margin-right: 10rpx; }
+.picked-list { display: flex; flex-wrap: wrap; gap: 16rpx; margin-top: 16rpx; }
+.picked { position: relative; width: 144rpx; height: 144rpx; overflow: hidden; border-radius: 16rpx; background: #eee; }
+.picked > image { width: 144rpx; height: 144rpx; }
+.remove { position: absolute; top: 0; right: 0; z-index: 2; display: flex; align-items: center; justify-content: center; width: 44rpx; height: 44rpx; border-radius: 0 0 0 16rpx; background: rgba(0, 0, 0, 0.55); }
+.remove image { width: 28rpx; height: 28rpx; }
+.bar { position: fixed; right: 0; bottom: 0; left: 0; z-index: 10; padding: 20rpx 20rpx calc(18rpx + env(safe-area-inset-bottom)); background: #fff; }
+.bar .primary-btn { height: 82rpx; }
+
+.issue-reasons { display: flex; flex-direction: column; gap: 20rpx; margin: 24rpx 0; }
+.issue-reason { display: flex; align-items: center; color: #5a565d; font-size: 30rpx; }

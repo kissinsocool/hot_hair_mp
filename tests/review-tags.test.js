@@ -3,19 +3,19 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { buildReviewTags, selectedReviewTags, toggleReviewTag } = require('../utils/reviewTags');
 
-for (const file of ['pages/orders/orders.js', 'pages/profile/profile.js']) {
+for (const file of ['pages/review-editor/review-editor.js']) {
   const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
   assert.match(source, /require\(['"]\.\.\/\.\.\/utils\/reviewTags\.js['"]\)/);
 }
 
 let tags = buildReviewTags(['环境舒适']);
 assert.deepEqual(tags.map((tag) => tag.name), [
+  '守时商家',
   '善于沟通',
   '环境舒适',
   '技术一流',
   '服务周到',
   '无推销',
-  '环镜整洁',
   '效果好评',
   '接待热情',
 ]);
@@ -30,4 +30,11 @@ assert.deepEqual(selectedReviewTags(tags), ['技术一流']);
 tags = buildReviewTags(['接待热情']);
 assert.deepEqual(selectedReviewTags(tags), ['接待热情']);
 tags = toggleReviewTag(tags, '接待热情');
+assert.deepEqual(selectedReviewTags(tags), []);
+
+tags = toggleReviewTag(tags, '守时商家');
+assert.deepEqual(selectedReviewTags(tags), ['守时商家']);
+tags = buildReviewTags(selectedReviewTags(tags));
+assert.deepEqual(selectedReviewTags(tags), ['守时商家']);
+tags = toggleReviewTag(tags, '守时商家');
 assert.deepEqual(selectedReviewTags(tags), []);

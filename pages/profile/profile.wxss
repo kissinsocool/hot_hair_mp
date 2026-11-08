@@ -1,5 +1,8 @@
+page {
+  background: #fffdfb;
+}
+
 .profile-page {
-  min-height: 100vh;
   padding: 24rpx 20rpx calc(120rpx + env(safe-area-inset-bottom));
   background: #fffdfb;
 }
@@ -104,10 +107,7 @@
 
 .review-head { display: flex; align-items: flex-start; gap: 18rpx; }
 .review-salon { flex: 1; min-width: 0; color: #4d4a54; font-size: 32rpx; font-weight: 800; }
-.review-date { flex: 0 0 auto; color: #aaa; font-size: 24rpx; }
-.review-meta { margin-top: 8rpx; color: #888; font-size: 26rpx; }
-.review-stars { display: flex; gap: 6rpx; margin-top: 16rpx; }
-.review-stars image { width: 34rpx; height: 34rpx; }
+.review-date { margin-top: 8rpx; margin-bottom: 6rpx; color: #aaa; font-size: 24rpx; }
 .review-comment { margin-top: 14rpx; color: #555; font-size: 29rpx; line-height: 1.55; }
 .review-images { display: flex; flex-wrap: wrap; gap: 14rpx; margin-top: 16rpx; }
 .review-image { width: 144rpx; height: 144rpx; border-radius: 14rpx; background: #eee; }
@@ -127,34 +127,3 @@
 .review-btn.edit { border-color: #d06884; color: #d06884; }
 .review-btn.delete { border-color: #ff5252; color: #ff5252; }
 .review-btn.disabled { border-color: #bbb; color: #aaa; }
-
-.sheet-mask { position: fixed; z-index: 1100; top: 0; right: 0; bottom: 0; left: 0; background: rgba(0, 0, 0, 0.5); }
-.sheet { position: fixed; z-index: 1101; right: 0; bottom: 0; left: 0; display: flex; flex-direction: column; min-height: 0; max-height: 88vh; padding: 28rpx 20rpx calc(28rpx + env(safe-area-inset-bottom)); overflow: hidden; border-radius: 32rpx 32rpx 0 0; background: #fff; box-sizing: border-box; }
-.sheet-body { flex: 0 1 auto; min-height: 0; max-height: calc(88vh - 132rpx - env(safe-area-inset-bottom)); }
-.sheet-title { margin-bottom: 20rpx; padding-right: 80rpx; color: #4d4a54; font-size: 42rpx; font-weight: 700; }
-.sheet-close { position: absolute; z-index: 1; top: 16rpx; right: 16rpx; display: flex; align-items: center; justify-content: center; width: 80rpx; height: 80rpx; }
-.sheet-close image { width: 48rpx; height: 48rpx; }
-.sheet-info { display: flex; align-items: center; min-height: 44rpx; color: #8f8a91; font-size: 30rpx; }
-.inline-icon { width: 30rpx; height: 30rpx; margin-right: 12rpx; opacity: 0.62; }
-.field-title { margin-top: 26rpx; color: #5a565d; font-size: 30rpx; font-weight: 700; }
-.stars-row { display: flex; gap: 30rpx; margin: 24rpx 0 30rpx 14rpx; }
-.star-btn,
-.star-btn image { width: 54rpx; height: 54rpx; }
-.star-btn image { opacity: 0.22; }
-.star-btn.active image { opacity: 1; }
-.review-tags { display: flex; flex-wrap: wrap; gap: 16rpx; margin-bottom: 26rpx; }
-.review-tag { padding: 12rpx 24rpx; border-radius: 999rpx; background: #f1f1f1; color: #888; font-size: 27rpx; }
-.review-tag.active { background: #f8dce5; color: #d06884; }
-.textarea-wrap { margin-top: 8rpx; }
-.sheet-textarea { width: 100%; height: 200rpx; padding: 22rpx; border: 2rpx solid #eadbd1; border-radius: 14rpx; background: #fffdfb; color: #4d4a54; font-size: 30rpx; line-height: 1.45; }
-.sheet-placeholder { color: #8f8a91; }
-.textarea-count { margin-top: 8rpx; color: #888; font-size: 25rpx; text-align: right; }
-.upload-row { display: flex; align-items: center; }
-.upload-row .field-title { flex: 1; }
-.pick-btn { flex: 0 0 auto; width: 170rpx !important; height: 56rpx; margin: 24rpx 0 0; background: transparent; color: #6f50b5; font-size: 28rpx; }
-.picked-list { display: flex; flex-wrap: wrap; gap: 16rpx; margin-top: 16rpx; }
-.picked { position: relative; width: 144rpx; height: 144rpx; overflow: hidden; border-radius: 16rpx; background: #eee; }
-.picked > image { width: 144rpx; height: 144rpx; }
-.remove { position: absolute; z-index: 2; top: 0; right: 0; display: flex; align-items: center; justify-content: center; width: 44rpx; height: 44rpx; border-radius: 0 0 0 16rpx; background: rgba(0, 0, 0, 0.55); }
-.remove image { width: 28rpx; height: 28rpx; }
-.sheet-submit { flex: 0 0 auto; width: 100% !important; height: 82rpx; margin: 28rpx 0 0; border-radius: 999rpx; background: #d06884; color: #fff; font-size: 34rpx; font-weight: 700; }

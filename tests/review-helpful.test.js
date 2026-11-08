@@ -107,10 +107,13 @@ test('re-entering either page resets the thank-you prompt and allows an idempote
   }
 });
 
-test('both card templates place dates below stars and helpful totals below images', () => {
+test('both card templates place dates and single-line booking details above ratings', () => {
   for (const name of ['detail', 'salon-reviews']) {
     const template = fs.readFileSync(path.join(__dirname, `../pages/${name}/${name}.wxml`), 'utf8');
-    assert.ok(template.indexOf('class="review-rating-row"') < template.indexOf('class="review-date"'));
+    assert.ok(template.indexOf('class="review-head"') < template.indexOf('class="review-date"'));
+    assert.ok(template.indexOf('class="review-date"') < template.indexOf('<review-booking-info'));
+    assert.ok(template.indexOf('<review-booking-info') < template.indexOf('class="review-rating-row"'));
+    assert.ok(template.indexOf('<review-booking-info') < template.indexOf('<review-content'));
     assert.match(template, /\{\{item\.dateText\}\}发布评论/);
     assert.match(template, /bindtap="markReviewHelpful"/);
     assert.match(template, /感谢您提供反馈/);

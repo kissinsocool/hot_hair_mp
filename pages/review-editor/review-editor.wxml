@@ -1,0 +1,35 @@
+<view wx:if="{{ready}}" class="editor-page">
+  <view class="editor-card">
+    <view class="salon-name">{{salonName}}</view>
+    <view class="service-name">{{serviceName}}</view>
+    <block wx:if="{{mode != 'complaint'}}">
+      <review-rating-picker value="{{ratings}}" bind:change="chooseRating" />
+      <view class="review-tags">
+        <view wx:for="{{tags}}" wx:key="name" class="review-tag {{item.selected ? 'active' : ''}}" data-name="{{item.name}}" bindtap="chooseReviewTag">{{item.name}}</view>
+      </view>
+    </block>
+    <radio-group class="issue-reasons" wx:if="{{mode == 'complaint'}}" bindchange="chooseIssueReason">
+      <label wx:for="{{issueReasons}}" wx:key="value" class="issue-reason">
+        <radio color="#d06884" value="{{item.value}}" checked="{{reason == item.value}}" disabled="{{submitting || submitted}}" />{{item.label}}
+      </label>
+    </radio-group>
+    <view class="textarea-wrap">
+      <textarea class="review-textarea" adjust-position="{{true}}" cursor-spacing="24" show-confirm-bar="{{true}}" disabled="{{submitting || submitted}}" placeholder-class="review-placeholder" value="{{content}}" bindinput="onContent" maxlength="{{mode == 'complaint' ? 300 : 200}}" placeholder="{{mode == 'complaint' ? '请描述遇到的问题...' : '分享这次服务体验...'}}" />
+      <view class="textarea-count">{{content.length}}/{{mode == 'complaint' ? 300 : 200}}</view>
+    </view>
+    <view class="upload-row">
+      <view class="field-title">上传图片 {{images.length}}/5</view>
+      <button class="pick-btn" disabled="{{submitting || submitted}}" bindtap="pickImages"><image class="btn-icon" mode="aspectFit" src="/assets/icons/add_photo_alternate_outlined.png" />选择图片</button>
+    </view>
+    <view wx:if="{{images.length}}" class="picked-list">
+      <view wx:for="{{images}}" wx:for-index="index" wx:key="tempPath" class="picked">
+        <image mode="aspectFill" src="{{item.tempPath}}" />
+        <view class="remove" data-index="{{index}}" catchtap="removeImage" role="button" aria-label="删除图片"><image mode="aspectFit" src="/assets/icons/close.png" /></view>
+      </view>
+    </view>
+  </view>
+  <view class="bar">
+    <button class="primary-btn" loading="{{submitting}}" disabled="{{submitting || submitted}}" bindtap="submit">{{submitting ? '提交中...' : submitted ? '已提交' : mode == 'edit' ? '提交修改' : mode == 'complaint' ? '提交投诉' : '提交评价'}}</button>
+  </view>
+</view>
+<view wx:else class="empty">请从订单或我的评价进入</view>

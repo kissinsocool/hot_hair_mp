@@ -2,13 +2,13 @@
   <view class="appbar" style="padding-top: {{statusBarHeight}}px; min-height: {{appBarHeight}}px;">
     <view class="appbar-row" style="height: {{navBarHeight}}px;">
       <view class="location" style="max-width: calc(100% - {{menuButtonOffset}}px - 62rpx);" bindtap="openLocation">
-        <image class="top-icon" mode="aspectFit" src="/assets/icons/location_on_outlined.png" />
+        <image class="top-icon" mode="aspectFit" src="/assets/icons/location_on_outlined_ink.png" />
         <text class="location-text">{{locationText}}</text>
-        <image class="arrow-icon" mode="aspectFit" src="/assets/icons/keyboard_arrow_down_white.png" />
+        <image class="arrow-icon" mode="aspectFit" src="/assets/icons/keyboard_arrow_down_ink.png" />
       </view>
       <view class="message-btn" style="margin-right: calc({{menuButtonOffset}}px + 5rpx);" bindtap="openMessages" role="button" aria-label="消息">
         <view class="message-wrap">
-          <image class="message-icon" mode="aspectFit" src="/assets/icons/notifications_none.png" />
+          <image class="message-icon" mode="aspectFit" src="/assets/icons/notifications_none_ink.png" />
           <view wx:if="{{unreadMessageCount}}" class="message-dot">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</view>
         </view>
       </view>
@@ -41,46 +41,6 @@
       </view>
     </view>
 
-    <view wx:if="{{showRecommendedPackages && recommendedPackages.length}}" class="package-recommendations">
-      <view class="package-recommendations-title">经典套餐推荐</view>
-      <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="package-scroll">
-        <view class="package-track">
-          <view
-            wx:for="{{recommendedPackages}}"
-            wx:key="id"
-            class="package-card"
-          >
-            <view class="package-salon" bindtap="openDetail" data-id="{{item.salonId}}" role="button" aria-label="查看店铺：{{item.salonName}}">
-              <image class="package-image" mode="aspectFill" src="{{item.image}}" lazy-load />
-              <view class="package-salon-copy">
-                <view class="package-salon-name">{{item.salonName}}</view>
-                <view class="package-salon-description">{{item.salonDescription}}</view>
-                <view wx:if="{{item.distanceText}}" class="package-distance">{{item.distanceText}}</view>
-              </view>
-              <view class="package-favorite" catchtap="toggleFavorite" data-id="{{item.salonId}}" role="button" aria-label="{{item.isFavorite ? '取消收藏' : '收藏'}}{{item.salonName}}">
-                <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
-              </view>
-            </view>
-            <view
-              class="package-service"
-              bindtap="openRecommendedPackage"
-              data-salon-id="{{item.salonId}}"
-              data-service-id="{{item.serviceId}}"
-              role="button"
-              aria-label="预约{{item.salonName}}的{{item.serviceName}}，{{item.priceText}}"
-            >
-              <view class="package-service-copy">
-                <view class="package-service-name">{{item.serviceName}}</view>
-                <view wx:if="{{item.serviceNote}}" class="package-service-note">{{item.serviceNote}}</view>
-              </view>
-              <view class="package-price"><service-price price-fen="{{item.priceFen}}" discount-tenths="{{item.discountTenths}}" original-price-fen="{{item.originalPriceFen}}" compact /></view>
-              <view class="package-arrow">›</view>
-            </view>
-          </view>
-        </view>
-      </scroll-view>
-    </view>
-
     <view class="category-finder-title">按分类查找</view>
     <view class="category-finder" aria-label="按分类查找店铺">
       <view
@@ -106,6 +66,11 @@
           <view class="salon-sort-option {{salonSort === 'rating' ? 'salon-sort-active' : ''}}" catchtap="changeSalonSort" data-sort="rating" role="tab" aria-selected="{{salonSort === 'rating'}}">评分</view>
         </view>
       </view>
+      <view wx:if="{{locationFailed && !locatedOnce}}" class="location-fallback" bindtap="openLocation" role="button" aria-label="未获取到你的位置，当前展示默认城市的店铺，点击选择位置">
+        <image class="location-fallback-icon" mode="aspectFit" src="/assets/icons/location_on.png" />
+        <text class="location-fallback-text">未获取到你的位置，当前为默认城市店铺</text>
+        <text class="location-fallback-action">选择位置</text>
+      </view>
       <view wx:if="{{errorMessage}}" class="empty">
         <view class="empty-title">加载失败</view>
         <view class="empty-sub">{{errorMessage}}</view>
@@ -119,7 +84,7 @@
         <view class="empty-title">附近暂无沙龙请更换定位重新尝试</view>
       </view>
 
-      <view wx:for="{{salonCards}}" wx:for-index="salonIndex" wx:key="cardKey" class="salon-card" bindtap="openDetail" data-card-index="{{salonIndex}}" data-id="{{item.id}}">
+      <view wx:for="{{salonCards}}" wx:for-index="salonIndex" wx:key="cardKey" class="salon-card {{item.lightActive ? 'salon-card--visible' : ''}}" bindtap="openDetail" data-card-index="{{salonIndex}}" data-id="{{item.id}}">
         <view class="salon-card-border-light {{item.lightActive ? 'salon-card-border-light--active' : ''}}" style="animation-delay: {{salonIndex * 70 + 560}}ms;" aria-hidden="true"></view>
         <view class="salon-image-wrap">
           <text class="salon-image-placeholder" aria-hidden="true">靓丝美约</text>
@@ -140,18 +105,6 @@
             <view class="distance">{{item.distanceText}}<text wx:if="{{item.businessDistrict}}">{{item.distanceText ? ' · ' : ''}}{{item.businessDistrict}}</text></view>
             <view class="favorite" catchtap="toggleFavorite" data-id="{{item.id}}">
               <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
-            </view>
-          </view>
-          <view wx:if="{{salonIndex === 2}}" class="salon-sale" role="img" aria-label="店铺大促，60%OFF">
-            <view class="salon-sale-track" aria-hidden="true">
-              <view class="salon-sale-copy"><text>店铺大促 60%OFF</text><text>店铺大促 60%OFF</text><text>店铺大促 60%OFF</text></view>
-              <view class="salon-sale-copy"><text>店铺大促 60%OFF</text><text>店铺大促 60%OFF</text><text>店铺大促 60%OFF</text></view>
-            </view>
-          </view>
-          <view wx:if="{{salonIndex === 2}}" class="salon-sale-cross" role="img" aria-label="60%OFF">
-            <view class="salon-sale-cross-track" aria-hidden="true">
-              <view class="salon-sale-cross-copy"><text>60%OFF</text><text>60%OFF</text><text>60%OFF</text></view>
-              <view class="salon-sale-cross-copy"><text>60%OFF</text><text>60%OFF</text><text>60%OFF</text></view>
             </view>
           </view>
         </view>
@@ -186,7 +139,7 @@
   </view>
 
   <view class="support-fab {{supportHidden ? 'support-fab-hidden' : ''}}" hover-class="none" bindtap="openSupport" role="button" aria-label="平台客服">
-    <image mode="aspectFit" src="/assets/icons/support_agent.png" />
+    <image mode="aspectFit" src="/assets/icons/support_agent_muted.png" />
   </view>
   <view class="back-to-top {{supportHidden ? 'support-fab-hidden' : ''}}" hover-class="none" bindtap="scrollToTop" role="button" aria-label="返回顶部">
     <image mode="aspectFit" src="/assets/icons/keyboard_arrow_down_thin.svg" />

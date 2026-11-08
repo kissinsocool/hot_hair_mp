@@ -2,8 +2,6 @@ const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const app = getApp();
 const couponUtils = require('../../utils/coupons');
-const { buildReviewTags, selectedReviewTags, toggleReviewTag } = require('../../utils/reviewTags.js');
-const MAX_IMAGE_BYTES = 800 * 1024;
 const PAGE_SIZE = 20;
 const initialSession = api.session();
 const initiallyLoggedIn = Boolean(initialSession && initialSession.token);
@@ -26,20 +24,12 @@ Page({
     reviewPage: 0,
     hasMoreReviews: false,
     loadingMoreReviews: false,
-    sheetVisible: false,
-    sheetReview: null,
-    sheetRating: 0,
-    sheetStars: buildStars(0),
-    sheetTags: buildReviewTags(),
-    sheetContent: '',
-    sheetImages: [],
-    sheetSubmitting: false,
     deletingReviewId: ''
   },
 
   onShow() {
     const tabBar = this.getTabBar && this.getTabBar();
-    if (tabBar && !this.data.sheetVisible) tabBar.show();
+    if (tabBar) tabBar.show();
     this.sync();
   },
 
@@ -89,10 +79,6 @@ Page({
 
   onReachBottom() {
     if (this.data.activeTab === 'reviews') this.loadMoreReviews();
-  },
-
-  onHide() {
-    if (!this.data.sheetVisible) this.getTabBar().show();
   },
 
   openSettings() {
@@ -172,89 +158,10 @@ Page({
   editReview(e) {
     const review = this.data.reviews[Number(e.currentTarget.dataset.index)];
     if (!review || review.isAwaitingReview) return;
-    const imageKeys = review.imageKeys || [];
-    this.getTabBar().hide();
-    this.setData({
-      sheetVisible: true,
-      sheetReview: review,
-      sheetRating: review.rating,
-      sheetStars: buildStars(review.rating),
-      sheetTags: buildReviewTags(review.tags),
-      sheetContent: review.comment,
-      sheetImages: review.imageUrls.map((tempPath, index) => ({
-        tempPath,
-        retainedUrl: imageKeys[index] || tempPath,
-        existing: true
-      })),
-      sheetSubmitting: false
+    wx.navigateTo({
+      url: '/pages/review-editor/review-editor',
+      success: ({ eventChannel }) => eventChannel.emit('init', { mode: 'edit', booking: review })
     });
-  },
-
-  closeSheet() {
-    if (this.data.sheetSubmitting) return;
-    this.getTabBar().show();
-    this.setData({ sheetVisible: false });
-  },
-
-  chooseRating(e) {
-    const rating = Number(e.currentTarget.dataset.value);
-    this.setData({ sheetRating: rating, sheetStars: buildStars(rating) });
-  },
-
-  chooseReviewTag(e) {
-    this.setData({ sheetTags: toggleReviewTag(this.data.sheetTags, e.currentTarget.dataset.name) });
-  },
-
-  onSheetContent(e) {
-    this.setData({ sheetContent: e.detail.value });
-  },
-
-  pickImages() {
-    const remain = 5 - this.data.sheetImages.length;
-    if (remain <= 0) return;
-    wx.chooseMedia({
-      count: remain,
-      mediaType: ['image'],
-      sizeType: ['compressed'],
-      success: async (res) => {
-        const additions = await prepareImages(res.tempFiles || []);
-        this.setData({ sheetImages: this.data.sheetImages.concat(additions).slice(0, 5) });
-      }
-    });
-  },
-
-  removeImage(e) {
-    const index = Number(e.currentTarget.dataset.index);
-    this.setData({ sheetImages: this.data.sheetImages.filter((_, itemIndex) => itemIndex !== index) });
-  },
-
-  async submitEdit() {
-    const content = this.data.sheetContent.trim();
-    if (!this.data.sheetRating) return wx.showToast({ title: '请先选择星级', icon: 'none' });
-    if (!content) return wx.showToast({ title: '请输入具体评价', icon: 'none' });
-    this.setData({ sheetSubmitting: true });
-    try {
-      const newImages = this.data.sheetImages.filter((image) => !image.existing);
-      const imageObjects = await uploadImages(newImages);
-      await api.request(`/bookings/${this.data.sheetReview.bookingId}/review`, {
-        method: 'PATCH',
-        data: {
-          rating: this.data.sheetRating,
-          comment: content,
-          tags: selectedReviewTags(this.data.sheetTags),
-          retainedImageUrls: this.data.sheetImages.filter((image) => image.existing).map((image) => image.retainedUrl),
-          imageObjects
-        }
-      });
-      this.getTabBar().show();
-      this.setData({ sheetVisible: false });
-      wx.showToast({ title: '评价修改已提交审核' });
-      await this.loadReviews();
-    } catch (err) {
-      wx.showToast({ title: err.message || '提交失败，请稍后重试', icon: 'none' });
-    } finally {
-      this.setData({ sheetSubmitting: false });
-    }
   },
 
   deleteReview(e) {
@@ -293,67 +200,8 @@ function normalizeReview(review) {
     rating,
     imageUrls: (review.imageUrls || []).map((image) => api.thumbnailUrl(image, 360)),
     imageKeys: review.imageKeys || [],
-    starIcons: buildStars(rating).map((star) => star.icon),
-    metaText: [review.serviceName, review.staffName].filter(Boolean).join(' · '),
     replyText: reply && typeof reply === 'object' ? reply.content || '' : reply || '',
     isAwaitingReview: reviewStatus === 'pending' || editStatus === 'pending',
     editButtonText: editStatus === 'pending' ? '修改审核中' : reviewStatus === 'pending' ? '评价审核中' : '编辑'
   };
-}
-
-function buildStars(rating) {
-  return [1, 2, 3, 4, 5].map((value) => ({
-    value,
-    selected: value <= rating,
-    icon: value <= rating ? '/assets/icons/star_gold.png' : '/assets/icons/star_border.png'
-  }));
-}
-
-function compressImage(src) {
-  return new Promise((resolve) => {
-    if (!wx.compressImage) return resolve(src);
-    wx.compressImage({
-      src,
-      quality: 35,
-      success: (res) => resolve(res.tempFilePath || src),
-      fail: () => resolve(src)
-    });
-  });
-}
-
-async function prepareImages(files) {
-  const fs = wx.getFileSystemManager();
-  const images = [];
-  for (const file of files) {
-    try {
-      const tempPath = await compressImage(file.tempFilePath);
-      const size = fs.statSync(tempPath).size;
-      if (!size || size > MAX_IMAGE_BYTES) {
-        wx.showToast({ title: '图片过大，请换一张', icon: 'none' });
-        continue;
-      }
-      const fileName = tempPath.split('/').pop() || 'image.jpg';
-      images.push({ tempPath, fileName, contentType: imageContentType(fileName), size, existing: false });
-    } catch (_) {}
-  }
-  return images;
-}
-
-function imageContentType(fileName) {
-  const name = String(fileName || '').toLowerCase();
-  if (name.endsWith('.png')) return 'image/png';
-  if (name.endsWith('.webp')) return 'image/webp';
-  if (name.endsWith('.gif')) return 'image/gif';
-  return 'image/jpeg';
-}
-
-async function uploadImages(images) {
-  if (!images.length) return [];
-  const { uploads = [] } = await api.request('/uploads/moderation/sign', {
-    method: 'POST',
-    data: { type: 'review', files: images.map(({ fileName, contentType, size }) => ({ fileName, contentType, size })) }
-  });
-  if (uploads.length !== images.length) throw new Error('图片上传凭证数量不正确');
-  await Promise.all(uploads.map((upload, index) => api.uploadFile(upload.uploadUrl, images[index].tempPath, upload.fields)));
-  return uploads.map((upload) => upload.objectName);
 }

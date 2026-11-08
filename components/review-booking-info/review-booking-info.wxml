@@ -1,0 +1,1 @@
+<view class="booking-info">{{serviceName}}{{serviceName && staffName ? ' · ' : ''}}{{staffName}}</view>

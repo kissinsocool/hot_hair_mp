@@ -65,7 +65,6 @@ assert.equal(tabBar.data.initialized, true);
 assert.equal(tabBar.data.selected, 3);
 assert.equal(tabBar.data.hidden, false);
 
-profile.data.sheetVisible = true;
 tabBar.hide();
 profile.onShow();
-assert.equal(tabBar.data.hidden, true);
+assert.equal(tabBar.data.hidden, false, 'returning from the editor restores the profile tab bar');

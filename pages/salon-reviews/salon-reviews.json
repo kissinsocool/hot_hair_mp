@@ -2,6 +2,8 @@
   "navigationBarTitleText": "客户评价",
   "enablePullDownRefresh": true,
   "usingComponents": {
-    "review-content": "/components/review-content/review-content"
+    "review-content": "/components/review-content/review-content",
+    "review-rating-summary": "/components/review-rating-summary/review-rating-summary",
+    "review-booking-info": "/components/review-booking-info/review-booking-info"
   }
 }

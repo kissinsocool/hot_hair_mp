@@ -10,6 +10,7 @@ test('service cards load only the cover, then preview the ordered gallery withou
   global.getApp = () => ({ globalData: { apiBaseUrl: 'https://example.com/api' } });
   global.Page = (page) => { definition = page; };
   global.wx = {
+    getStorageSync: () => null,
     previewImage: (options) => previews.push(options),
     navigateTo: (options) => navigations.push(options),
     showToast: ({ title }) => assert.fail(title)
@@ -61,10 +62,13 @@ test('service cards load only the cover, then preview the ordered gallery withou
     assert.equal(previews.length, 0);
     assert.equal(page.data.salon.latestPosts[0].relatedService.name, '剪发套餐');
     assert.deepEqual(page.data.salon.latestPosts[0].relatedService.tags, ['洗剪吹']);
-    assert.equal(page.data.salon.latestPosts[0].relatedService.priceText, '¥7,980');
+    assert.equal(page.data.salon.latestPosts[0].relatedService.priceFen, 798000);
+    assert.equal(page.data.salon.services[0].hasGallery, true);
+    assert.equal(page.data.salon.services[1].hasGallery, false);
+    assert.ok(!('imageUrls' in page.data.salon.services[0]), '原始图片路径不进入视图数据');
     assert.equal(page.data.salon.latestPosts[0].relatedService.noteText, '洗护，造型，护理');
     assert.equal(page.data.salon.services[0].noteText, '洗护\r\n造型\n护理');
-    assert.equal(page.data.salon.latestPosts[0].relatedService.durationText, '60分钟');
+    assert.equal(page.data.salon.services[0].durationText, '60分钟');
     assert.equal(page.data.salon.latestPosts[1].relatedService, null);
 
     await page.openService({ currentTarget: { dataset: { id: 'multi' } } });

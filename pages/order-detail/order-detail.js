@@ -19,7 +19,19 @@ Page({
       this.setData({ loading: false, errorMessage: '订单编号无效' });
       return;
     }
-    this.load();
+  },
+
+  onShow() {
+    if (this.bookingId) return this.load();
+  },
+
+  reportIssue() {
+    const order = this.data.order;
+    if (!order || !order.canReportIssue) return;
+    wx.navigateTo({
+      url: '/pages/review-editor/review-editor',
+      success: res => res.eventChannel.emit('init', { mode: 'complaint', booking: order })
+    });
   },
 
   onPullDownRefresh() {

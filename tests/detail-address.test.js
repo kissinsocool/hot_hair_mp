@@ -31,19 +31,20 @@ assert.equal(pageDefinition.formatWeeklyClosedDays([]), '');
 assert.equal(pageDefinition.formatWeeklyClosedDays(undefined), '');
 
 pageDefinition.openMap.call({
-  data: {
-    salon: {
-      name: '靓丝造型',
-      address: '上海市浦东新区张江路88号',
-      geoLocation: { coordinates: [121.6, 31.2] }
-    }
+  salonSource: {
+    name: '靓丝造型',
+    address: '上海市浦东新区张江路88号',
+    geoLocation: { coordinates: [121.6, 31.2] }
   }
 });
 assert.equal(openedLocation.latitude, 31.2);
 assert.equal(openedLocation.longitude, 121.6);
 assert.equal(openedLocation.name, '靓丝造型');
 
-pageDefinition.openMap.call({ data: { salon: { address: '未配置坐标' } } });
+pageDefinition.openMap.call({ salonSource: { address: '未配置坐标' } });
+assert.equal(toastTitle, '商家暂未配置导航位置');
+toastTitle = '';
+pageDefinition.openMap.call({});
 assert.equal(toastTitle, '商家暂未配置导航位置');
 
 delete global.Page;

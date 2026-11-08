@@ -1,3 +1,7 @@
 {
-  "navigationBarTitleText": "理发师详情"
+  "navigationBarTitleText": "理发师详情",
+  "usingComponents": {
+    "review-rating-summary": "/components/review-rating-summary/review-rating-summary",
+    "review-booking-info": "/components/review-booking-info/review-booking-info"
+  }
 }

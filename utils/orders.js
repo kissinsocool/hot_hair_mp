@@ -38,6 +38,24 @@ function couponDisplay(order) {
   };
 }
 
+function cardStatusLabel(status, fallback) {
+  return {
+    pending: '等待确认',
+    accepted: '预约成功',
+    rejected: '预约未通过',
+    canceled: '已取消',
+    cancelled: '已取消',
+    completed: '已到店',
+    no_show: '未到店'
+  }[status] || fallback || api.statusText(status);
+}
+
+function cardStartTime(value) {
+  const text = api.formatTime(value);
+  const match = /^(\d{4})-(\d{2})-(\d{2}) (\d{2}:\d{2})$/.exec(text);
+  return match ? `${match[1]}年${Number(match[2])}月${Number(match[3])}日 ${match[4]}` : text;
+}
+
 function formatOrder(order) {
   const date = new Date(order.startTime);
   const startTimeText = api.formatTime(order.startTime);
@@ -45,11 +63,14 @@ function formatOrder(order) {
   return {
     ...order,
     orderNo: order.orderNo || order.id,
+    salonImageUrl: order.salonImageUrl ? api.thumbnailUrl(order.salonImageUrl, 360) : '',
     staffName: displayStaffName(order),
     statusLabel: order.statusLabel || api.statusText(order.status),
+    cardStatusLabel: cardStatusLabel(order.status, order.statusLabel),
     statusClass: statusClass(order.status),
     startTimeMs: Number.isNaN(date.getTime()) ? 0 : date.getTime(),
     startTimeText,
+    cardStartTimeText: cardStartTime(order.startTime),
     createdTimeText,
     ...couponDisplay(order),
     canCancel: ['pending', 'accepted'].includes(order.status),
@@ -87,13 +108,13 @@ function formatOrderDetail(order) {
     reasonText: ['rejected', 'canceled', 'cancelled', 'no_show'].includes(order.status)
       ? order.rejectReason || ''
       : '',
+    canReportIssue: order.status === 'completed' && !order.complained && !complaint,
     complaint: complaint && {
       ...complaint,
-      statusText: {
-        pending: '审核中',
-        approved: '已通过审核',
-        rejected: '未通过审核'
-      }[complaint.reviewStatus] || '已提交',
+      reasonText: { not_arrived: '未到店', service_incomplete: '服务未完成', other: '其他问题' }[complaint.reason] || '其他问题',
+      response: complaint.response || '',
+      handledTimeText: complaint.handledAt ? api.formatTime(complaint.handledAt) : '',
+      statusText: complaint.status === 'handled' ? '已处理' : '待平台处理',
       createdTimeText: api.formatTime(complaint.createdAt)
     }
   };

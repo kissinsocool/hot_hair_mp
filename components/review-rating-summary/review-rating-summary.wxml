@@ -1,0 +1,18 @@
+<view class="rating-summary">
+  <view class="overall-row">
+    <text class="overall-label">综合</text>
+    <text class="overall-score">{{ratingText}}</text>
+    <view wx:if="{{stars.length}}" class="overall-stars" aria-label="综合评分 {{ratingText}}星">
+      <view wx:for="{{stars}}" wx:key="index" class="star" aria-hidden="true">
+        <image class="star-image" src="/assets/icons/star_border_pink.svg" mode="aspectFit" />
+        <view class="star-fill" style="width: {{item.fill}}%;"><image class="star-image" src="/assets/icons/star_pink.svg" mode="aspectFit" /></view>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{fields.length}}" class="dimension-grid">
+    <view wx:for="{{fields}}" wx:for-item="field" wx:key="key" class="dimension">
+      <text class="dimension-label">{{field.label}}</text>
+      <text class="dimension-score">{{field.score}}</text>
+    </view>
+  </view>
+</view>

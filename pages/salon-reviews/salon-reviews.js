@@ -92,9 +92,8 @@ Page({
       helpfulSubmitting: false,
       userText: review.user || review.userName || review.phone || '用户',
       avatarUrl: api.thumbnailUrl(review.avatarUrl, 160),
-      starIcons: starIcons(review.rating || 5),
-      serviceText: review.serviceName || review.service || '染发+修复',
-      staffText: review.staffName || review.staff || 'Sato',
+      serviceText: review.serviceName || review.service || '',
+      staffText: review.staffName || review.staff || '',
       dateText: formatReviewDate(review.createdAt || review.date),
       imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
     };
@@ -116,14 +115,3 @@ Page({
     api.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   }
 });
-
-function starIcons(value) {
-  const rating = Math.max(0, Math.min(5, Number(value) || 0));
-  const full = Math.floor(rating);
-  const hasHalf = rating > full;
-  return Array.from({ length: 5 }, (_, index) => {
-    if (index < full) return '/assets/icons/star_gold.png';
-    if (index === full && hasHalf) return '/assets/icons/star_half_gold.png';
-    return '/assets/icons/star_border_gold.png';
-  });
-}

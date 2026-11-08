@@ -7,6 +7,7 @@ const template = fs.readFileSync(path.join(root, 'pages/detail/detail.wxml'), 'u
 const styles = fs.readFileSync(path.join(root, 'pages/detail/detail.wxss'), 'utf8');
 
 global.getApp = () => ({ globalData: {} });
+global.wx = { getStorageSync: () => null };
 global.Page = definition => { global.definition = definition; };
 require('../pages/detail/detail');
 const definition = global.definition;

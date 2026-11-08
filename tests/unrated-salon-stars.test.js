@@ -5,7 +5,7 @@ test('salon detail keeps the unrated label and count with five pink stars', asyn
   let definition;
   global.getApp = () => ({ globalData: { apiBaseUrl: 'https://example.com/api' } });
   global.Page = value => { definition = value; };
-  global.wx = { showToast(options) { assert.fail(options.title); } };
+  global.wx = { getStorageSync: () => null, showToast(options) { assert.fail(options.title); } };
   const api = require('../utils/api');
   const original = { request: api.request, displayImageUrl: api.displayImageUrl };
   api.displayImageUrl = async value => value;
@@ -21,7 +21,6 @@ test('salon detail keeps the unrated label and count with five pink stars', asyn
     await page.load();
     assert.equal(page.data.salon.ratingText, '暂无评分');
     assert.equal(page.data.salon.hasRating, false);
-    assert.equal(page.data.salon.rating, null);
     assert.equal(page.data.salon.reviewTotalText, 0);
     assert.deepEqual(page.data.salon.starIcons, Array(5).fill('/assets/icons/star_gold.png'));
     api.request = async () => ({ id: 'salon-1', rating: 3.5, reviewCount: 2 });

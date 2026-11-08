@@ -8,7 +8,10 @@ const orders = fs.readFileSync(path.join(root, 'pages/orders/orders.js'), 'utf8'
 const messages = fs.readFileSync(path.join(root, 'pages/messages/messages.js'), 'utf8');
 const template = fs.readFileSync(path.join(root, 'pages/messages/messages.wxml'), 'utf8');
 
-assert.match(home, /api\.request\('\/booking-messages\/unread-count'\)/);
+const unread = fs.readFileSync(path.join(root, 'utils/unreadMessages.js'), 'utf8');
+assert.match(home, /unreadMessages\.count\(/);
+assert.match(unread, /api\.request\('\/booking-messages\/unread-count'\)/);
+assert.match(messages, /through: result\.items\[0\]\.createdAt[\s\S]*unreadMessages\.invalidate\(\)/);
 assert.doesNotMatch(home, /requestAllPages\('\/bookings'\)[\s\S]*unreadBookingMessageCount/);
 assert.match(orders, /api\.request\('\/booking-messages\/unread-count'\)/);
 assert.match(messages, /requestPage\('\/booking-messages'/);

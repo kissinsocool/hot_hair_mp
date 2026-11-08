@@ -1,4 +1,9 @@
 <view wx:if="{{loading}}" class="empty">正在加载...</view>
+<view wx:elif="{{errorMessage}}" class="page-error" role="alert">
+  <view class="page-error-title">店铺加载失败</view>
+  <view class="page-error-sub">{{errorMessage}}</view>
+  <button class="primary-btn page-error-retry" bindtap="retryLoad">重新加载</button>
+</view>
 <view wx:else class="page booking">
   <view class="hint">请完成以下预约选项</view>
   <view class="block-title">选择服务项目</view>

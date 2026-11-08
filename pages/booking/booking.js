@@ -3,6 +3,7 @@ const api = require('../../utils/api');
 const { SERVICE_TABS, serviceCategory, serviceMatchesCategory } = require('../../utils/serviceCategories.js');
 const { serviceTagLabels } = require('../../utils/serviceTags.js');
 const analytics = require('../../utils/analytics');
+const salonDetail = require('../../utils/salonDetail');
 const { formatFen } = require('../../utils/money');
 const { staffRoleLabel } = require('../../utils/staffRoles');
 
@@ -29,6 +30,7 @@ Page({
     canSubmit: false,
     submitText: '请选择时间段',
     loading: true,
+    errorMessage: '',
     submitting: false
   },
 
@@ -67,8 +69,9 @@ Page({
   async load() {
     if (this.loadingSalon) return;
     this.loadingSalon = true;
+    this.setData({ loading: true, errorMessage: '' });
     try {
-      const salon = await api.request(`/salons/${this.salonId}`);
+      const salon = await salonDetail.load(this.salonId);
       const dates = nextDates(salon.closedDates, salon.acceptsSameDayBooking !== false);
       const selectedDate = (dates.find((date) => !date.isDisabled) || {}).value || '';
       const requestedServiceId = String(this.initialServiceId || '');
@@ -97,11 +100,16 @@ Page({
         serviceId: selectedServiceId
       });
     } catch (err) {
-      wx.showToast({ title: err.message, icon: 'none' });
+      if (!this.data.salon) this.setData({ errorMessage: err.message || '店铺加载失败，请稍后重试' });
+      else wx.showToast({ title: err.message, icon: 'none' });
     } finally {
       this.loadingSalon = false;
       this.setData({ loading: false });
     }
+  },
+
+  retryLoad() {
+    return this.load();
   },
 
   async loadSlots({ animate = false } = {}) {

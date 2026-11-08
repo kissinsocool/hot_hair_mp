@@ -12,7 +12,12 @@ const page = { ...definition, data: { ...definition.data, id: 'salon-1' }, setDa
   request.success({ statusCode: 200, data: { salonIds: ['salon-1', 'salon-2'] } });
   await loading;
   assert.equal(page.data.isFavorite, true);
+  const firstRequest = request;
+  await page.loadFavoriteState();
+  assert.equal(request, firstRequest, '短期内重复进入详情页复用收藏缓存');
+  require('../utils/favorites').invalidate();
   loading = page.loadFavoriteState();
+  assert.notEqual(request, firstRequest);
   request.success({ statusCode: 200, data: { salonIds: [] } });
   await loading;
   assert.equal(page.data.isFavorite, false);

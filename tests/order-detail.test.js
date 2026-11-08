@@ -65,7 +65,7 @@ page.load().then(() => {
   assert.equal(page.data.order.payableAmountText, '¥189');
   assert.equal(page.data.order.couponDiscountText, '- ¥30');
   assert.equal(page.data.order.reasonText, '该时间段无法接单');
-  assert.equal(page.data.order.complaint.statusText, '审核中');
+  assert.equal(page.data.order.complaint.statusText, '待平台处理');
 
   page.openSalon();
   assert.equal(navigateUrl, '/pages/detail/detail?id=salon-1');
@@ -78,7 +78,7 @@ page.load().then(() => {
   assert.ok(appConfig.pages.includes('pages/order-detail/order-detail'));
   assert.match(ordersTemplate, /bindtap="openOrderDetail" data-id="\{\{item\.id\}\}"/);
   assert.match(detailTemplate, /费用明细/);
-  assert.match(detailTemplate, /投诉进度/);
+  assert.match(detailTemplate, /问题处理进度/);
   assert.match(detailTemplate, /订单编号：\{\{order\.orderNo\}\}<\/view>\s*<view class="order-number">下单时间：\{\{order\.createdTimeText\}\}<\/view>/);
   assert.match(detailTemplate, /class="salon-link" bindtap="openSalon"><text>\{\{order\.salonName\}\}<\/text>/);
   assert.doesNotMatch(detailTemplate, /联系门店|地图导航|bindtap="cancel"/);

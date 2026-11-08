@@ -41,8 +41,8 @@
 }
 
 .salon-rating .icon-img {
-  width: 25rpx;
-  height: 25rpx;
+  width: 21rpx;
+  height: 21rpx;
   margin-right: 0;
 }
 

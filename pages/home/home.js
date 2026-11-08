@@ -5,7 +5,8 @@ const layout = require('../../utils/layout');
 const ad = require('../../utils/ad');
 const couponCampaign = require('../../utils/couponCampaign');
 const analytics = require('../../utils/analytics');
-const { formatFen } = require('../../utils/money');
+const favoriteStore = require('../../utils/favorites');
+const unreadMessages = require('../../utils/unreadMessages');
 const { ratingDisplay } = require('../../utils/rating');
 const { PROMOTION_CATEGORIES, promotionCategory } = require('../../utils/promotionCategories');
 const TAB_BAR_SCROLL_TRIGGER = 8;
@@ -29,8 +30,6 @@ Page({
   data: {
     salonCount: 0,
     salonCards: loadingSalonCards(),
-    showRecommendedPackages: false,
-    recommendedPackages: [],
     salonCategories: PROMOTION_CATEGORIES,
     favorites: [],
     suggestions: [],
@@ -50,6 +49,7 @@ Page({
     navBarHeight: 44,
     appBarHeight: 148,
     locatedOnce: false,
+    locationFailed: false,
     locationIsFuzzy: true,
     unreadMessageCount: 0,
     supportHidden: false,
@@ -97,7 +97,7 @@ Page({
     if (session && session.token) {
       this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
         if (event.event === 'authenticated' || event.event === 'booking.created' || event.event === 'booking.updated') {
-          this.loadUnreadMessages();
+          this.loadUnreadMessages({ force: true });
         }
       });
     }
@@ -131,6 +131,7 @@ Page({
           latitude: res.latitude,
           longitude: res.longitude,
           locatedOnce: true,
+          locationFailed: false,
           locationIsFuzzy: true
         });
         this.loadSalons();
@@ -138,7 +139,8 @@ Page({
       fail: () => {
         this.setData({
           ...DEFAULT_SERVICE_LOCATION,
-          locatedOnce: false
+          locatedOnce: false,
+          locationFailed: true
         });
         this.loadSalons();
       },
@@ -160,7 +162,6 @@ Page({
         hasMoreSalons: result.hasMore
       });
       this.renderSalons(normalizedSalons);
-      if (this.data.showRecommendedPackages) this.loadRecommendedPackages(normalizedSalons);
     } catch (err) {
       if (version !== this.salonListVersion) return;
       const updates = { errorMessage: err.message || '网络请求失败' };
@@ -213,56 +214,6 @@ Page({
     };
   },
 
-  async loadRecommendedPackages(salons) {
-    const requestId = (this.recommendationRequestId || 0) + 1;
-    this.recommendationRequestId = requestId;
-    try {
-      const details = await Promise.all(salons.slice(0, 6).map((salon) =>
-        api.request(`/salons/${encodeURIComponent(salon.id)}`).catch(() => null)
-      ));
-      const packages = details.flatMap((salon, index) => {
-        const service = salon && salon.services && salon.services[0];
-        if (!service) return [];
-        const summary = salons[index];
-        return [{
-          id: `${salon.id}:${service.id}`,
-          salonId: salon.id,
-          serviceId: service.id,
-          salonName: salon.name || '未知沙龙',
-          salonDescription: salon.description || '暂无简介',
-          distanceText: summary.distanceText,
-          serviceName: service.name || '套餐',
-          serviceNote: service.note || '',
-          priceText: formatFen(service.priceFen),
-          priceFen: service.priceFen,
-          discountTenths: service.discountTenths,
-          originalPriceFen: service.originalPriceFen,
-          image: api.displayImageUrl(api.salonImage(salon), 480),
-          isFavorite: this.data.favorites.includes(salon.id)
-        }];
-      });
-      const normalizedPackages = await Promise.all(packages.map(async (item) => ({
-        ...item,
-        image: await item.image
-      })));
-      const shuffledPackages = normalizedPackages.slice();
-      for (let index = shuffledPackages.length - 1; index > 0; index -= 1) {
-        const targetIndex = Math.floor(Math.random() * (index + 1));
-        [shuffledPackages[index], shuffledPackages[targetIndex]] = [shuffledPackages[targetIndex], shuffledPackages[index]];
-      }
-      if (shuffledPackages.length > 1 && shuffledPackages.every((item, index) => item.id === normalizedPackages[index].id)) {
-        shuffledPackages.push(shuffledPackages.shift());
-      }
-      if (requestId === this.recommendationRequestId) {
-        this.setData({ recommendedPackages: shuffledPackages });
-      }
-    } catch (_) {
-      if (requestId === this.recommendationRequestId) {
-        this.setData({ recommendedPackages: [] });
-      }
-    }
-  },
-
   formatDistance(distanceKm) {
     const distance = Number(distanceKm);
     if (!this.data.locatedOnce || !distance) return '';
@@ -270,26 +221,17 @@ Page({
   },
 
   async loadFavorites(showError = true) {
-    const session = api.session();
-    if (!(session && session.token)) return;
     try {
-      const result = await api.request('/favorites/ids');
-      this.setData({ favorites: Array.isArray(result.salonIds) ? result.salonIds : [] });
+      this.setData({ favorites: await favoriteStore.loadIds() });
       this.updateFavoriteCards();
     } catch (err) {
       if (showError) wx.showToast({ title: err.message, icon: 'none' });
     }
   },
 
-  async loadUnreadMessages() {
-    const session = api.session();
-    if (!(session && session.token)) {
-      this.setData({ unreadMessageCount: 0 });
-      return;
-    }
+  async loadUnreadMessages(options = {}) {
     try {
-      const result = await api.request('/booking-messages/unread-count');
-      this.setData({ unreadMessageCount: Number(result.count) || 0 });
+      this.setData({ unreadMessageCount: await unreadMessages.count(options) });
     } catch (_) {
       this.setData({ unreadMessageCount: 0 });
     }
@@ -423,10 +365,6 @@ Page({
       const isFavorite = favoriteSet.has(card.id);
       if (card.isFavorite !== isFavorite) updates[`salonCards[${index}].isFavorite`] = isFavorite;
     });
-    this.data.recommendedPackages.forEach((item, index) => {
-      const isFavorite = favoriteSet.has(item.salonId);
-      if (item.isFavorite !== isFavorite) updates[`recommendedPackages[${index}].isFavorite`] = isFavorite;
-    });
     if (Object.keys(updates).length) this.setData(updates);
   },
 
@@ -524,10 +462,12 @@ Page({
     try {
       const salon = (this.salons || []).find((item) => item.id === e.currentTarget.dataset.id);
       if (!salon) return;
-      await api.request(`/favorites/${encodeURIComponent(salon.id)}`, {
-        method: this.data.favorites.includes(salon.id) ? 'DELETE' : 'PUT'
-      });
-      await this.loadFavorites();
+      const favorite = !this.data.favorites.includes(salon.id);
+      await favoriteStore.setFavorite(salon.id, favorite);
+      const favorites = this.data.favorites.filter((id) => id !== salon.id);
+      if (favorite) favorites.push(salon.id);
+      this.setData({ favorites });
+      this.updateFavoriteCards();
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     }
@@ -538,14 +478,6 @@ Page({
     if (!salonId) return;
     analytics.track('salon_detail_click', { salonId });
     wx.navigateTo({ url: `/pages/detail/detail?id=${salonId}` });
-  },
-
-  openRecommendedPackage(e) {
-    const { salonId, serviceId } = e.currentTarget.dataset;
-    analytics.track('service_click', { salonId, serviceId });
-    wx.navigateTo({
-      url: `/pages/booking/booking?id=${encodeURIComponent(salonId)}&serviceId=${encodeURIComponent(serviceId)}`
-    });
   },
 
   openSalonCategory(e) {

@@ -11,7 +11,7 @@ const page = {
   setData(values, callback) {
     writes.push(values);
     for (const [key, value] of Object.entries(values)) {
-      const match = key.match(/^(salonCards|recommendedPackages)\[(\d+)\](?:\.(\w+))?$/);
+      const match = key.match(/^(salonCards)\[(\d+)\](?:\.(\w+))?$/);
       if (!match) this.data[key] = value;
       else if (match[3]) this.data[match[1]][Number(match[2])][match[3]] = value;
       else this.data[match[1]][Number(match[2])] = value;
@@ -32,16 +32,14 @@ api.requestPage = async (_path, { page }) => ({ items: Array.from({ length: 10 }
   assert.equal(page.data.salonCards.length, 110);
   assert.ok(page.data.salonCards.every((card) => !('unusedDetails' in card)), '卡片只传模板使用字段');
   writes.length = 0;
-  page.data.recommendedPackages = [{ salonId: 'salon-1-0', isFavorite: false }];
   api.request = async () => ({ salonIds: ['salon-1-0'] });
   await page.loadFavorites();
   assert.equal(page.data.salonCards[0].isFavorite, true);
   assert.ok(writes.some((value) => value['salonCards[0].isFavorite'] === true));
   assert.ok(writes.every((value) => !('salonCards' in value)), '收藏仅更新变化字段');
-  assert.equal(page.data.recommendedPackages[0].isFavorite, true);
   writes.length = 0;
   await page.loadFavorites();
-  assert.ok(writes.every((value) => Object.keys(value).every((key) => !key.startsWith('salonCards') && !key.startsWith('recommendedPackages'))), '未改变的收藏不重传卡片');
+  assert.ok(writes.every((value) => Object.keys(value).every((key) => !key.startsWith('salonCards'))), '未改变的收藏不重传卡片');
   let finishOldPage;
   api.requestPage = (_path, { page: number }) => number > 1
     ? new Promise((resolve) => { finishOldPage = resolve; })

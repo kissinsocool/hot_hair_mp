@@ -4,6 +4,12 @@
   "navigationBarTextStyle": "white",
   "enablePullDownRefresh": true,
   "usingComponents": {
-    "coupon-ticket": "/components/coupon-ticket/coupon-ticket"
-  }
+    "coupon-ticket": "/components/coupon-ticket/coupon-ticket",
+    "review-rating-summary": "/components/review-rating-summary/review-rating-summary",
+    "review-booking-info": "/components/review-booking-info/review-booking-info",
+    "tab-appbar": "/components/tab-appbar/tab-appbar"
+  },
+  "navigationStyle": "custom",
+  "backgroundTextStyle": "light",
+  "backgroundColorTop": "#2B2726"
 }

@@ -102,6 +102,28 @@ button::after {
   color: #8a8a8a;
 }
 
+.page-error {
+  padding: 160rpx 48rpx;
+  text-align: center;
+}
+
+.page-error-title {
+  color: #5a5a5a;
+  font-size: 32rpx;
+  font-weight: 800;
+}
+
+.page-error-sub {
+  margin-top: 12rpx;
+  color: #8a8a8a;
+  font-size: 26rpx;
+}
+
+.page-error .page-error-retry {
+  width: 320rpx !important;
+  margin: 40rpx auto 0;
+}
+
 .section-title {
   margin: 28rpx 0 20rpx;
   color: #5a5a5a;
