@@ -1,11 +1,17 @@
 const app = getApp();
+const logger = require('./logger');
 const LOGIN_PAGE = '/pages/login/login';
 const PENDING_AVATAR_PREVIEW_KEY = 'pendingAvatarPreview';
+const WEBP_FORMAT_SUFFIX = '/format,webp';
+const THUMBNAIL_URL = /^([^?#]+)\?x-oss-process=image\/resize,w_\d+\/quality,q_75(?:\/format,webp)?$/;
 let navigatingToLogin = false;
 const inflightGetRequests = new Map();
+let lastWriteCompletedAt = 0;
 
 function session() {
-  return app.globalData.session || wx.getStorageSync('session') || null;
+  // 启动时已把本地会话读入内存，未登录时不必每次请求都同步读取 storage。
+  if (app.globalData.session || app.globalData.sessionLoaded) return app.globalData.session || null;
+  return wx.getStorageSync('session') || null;
 }
 
 function mediaUrl(value) {
@@ -29,19 +35,29 @@ function mediaUrl(value) {
   return encodeURI(`${origin}${text.startsWith('/') ? text : `/${text}`}`);
 }
 
-function thumbnailUrl(value, width = 720) {
+function thumbnailUrl(value, width = 720, { webp = false } = {}) {
   const url = mediaUrl(value);
   const mediaOrigin = app.globalData.mediaBaseUrl;
   if (!mediaOrigin || !url.startsWith(`${mediaOrigin}/`) || /[?#]/.test(url) || !/\.(jpe?g|png|webp)$/i.test(url)) return url;
-  return `${url}?x-oss-process=image/resize,w_${width}/quality,q_75`;
+  const format = webp && /\.jpe?g$/i.test(url) ? WEBP_FORMAT_SUFFIX : '';
+  return `${url}?x-oss-process=image/resize,w_${width}/quality,q_75${format}`;
 }
 
-function displayImageUrl(value, width) {
-  return Promise.resolve(thumbnailUrl(value, width));
+function displayImageUrl(value, width, options) {
+  return Promise.resolve(thumbnailUrl(value, width, options));
+}
+
+function jpegThumbnailFallback(url) {
+  const origin = app.globalData.mediaBaseUrl;
+  if (origin && url.startsWith(`${origin}/`) && url.endsWith(WEBP_FORMAT_SUFFIX) && THUMBNAIL_URL.test(url)) {
+    return url.slice(0, -WEBP_FORMAT_SUFFIX.length);
+  }
+  return url;
 }
 
 function previewImage({ urls, current }) {
-  const original = (url) => url.replace(/\?x-oss-process=image\/resize,w_\d+\/quality,q_75$/, '');
+  const origin = app.globalData.mediaBaseUrl;
+  const original = (url) => origin && url.startsWith(`${origin}/`) ? url.replace(THUMBNAIL_URL, '$1') : url;
   wx.previewImage({ urls: urls.map(original), current: original(current) });
 }
 
@@ -105,6 +121,14 @@ function salonImage(salon = {}) {
   return salon.coverImage || salon.coverImageUrl || salon.coverUrl || salon.bannerUrl || salon.image || salon.imageUrl || firstPromo || firstImage || '';
 }
 
+// 列表卡片的图片组：封面在前，其后是轮播图和店铺图片，去重后最多取 limit 张。
+function salonImages(salon = {}, limit) {
+  const list = (value) => Array.isArray(value) ? value : [];
+  const urls = [salonImage(salon), ...list(salon.promoImages), ...list(salon.images)]
+    .filter((url) => typeof url === 'string' && url);
+  return [...new Set(urls)].slice(0, limit);
+}
+
 function responseErrorMessage(statusCode, data) {
   const message = data && data.message && String(data.message).trim();
   if (isReadableChineseMessage(message)) return message;
@@ -139,6 +163,10 @@ function request(path, options = {}) {
     ? `${token || 'anonymous'}:${options.withResponse ? 'response' : 'data'}:${path}:${JSON.stringify(options.data || {})}`
     : '';
   if (requestKey && inflightGetRequests.has(requestKey)) return inflightGetRequests.get(requestKey);
+  // 写请求结束后（无论成败，服务端状态都可能已变化），之前读取的页面数据不再视为最新。
+  const markWrite = method !== 'GET' && options.affectsUserData !== false
+    ? () => { lastWriteCompletedAt = Date.now(); }
+    : () => {};
 
   const promise = new Promise((resolve, reject) => {
     wx.request({
@@ -150,9 +178,12 @@ function request(path, options = {}) {
         ...(token ? { Authorization: `Bearer ${token}` } : {})
       },
       success(res) {
+        markWrite();
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(options.withResponse ? { data: res.data, headers: res.header || {} } : res.data);
         } else {
+          // 只记录服务端异常；4xx 是业务上的正常拒绝（未登录、冲突、校验失败等）。
+          if (res.statusCode >= 500) logRequestFailure(method, path, `HTTP ${res.statusCode}`);
           if (res.statusCode === 401 && !options.skipUnauthorized) handleUnauthorized(token);
           const error = new Error(responseErrorMessage(res.statusCode, res.data));
           error.statusCode = res.statusCode;
@@ -162,7 +193,12 @@ function request(path, options = {}) {
         }
       },
       fail(err) {
-        reject(new Error(networkErrorMessage(err)));
+        markWrite();
+        logRequestFailure(method, path, (err && err.errMsg) || 'request:fail');
+        const error = new Error(networkErrorMessage(err));
+        // 超时不代表服务端没有处理：写请求可能已经生效，调用方据此决定是否提示用户先核对结果。
+        error.timeout = /timeout/i.test((err && err.errMsg) || '');
+        reject(error);
       }
     });
   });
@@ -174,6 +210,11 @@ function request(path, options = {}) {
     );
   }
   return promise;
+}
+
+// 路径去掉查询参数（其中可能有位置、搜索词），只保留接口位置。
+function logRequestFailure(method, path, reason) {
+  logger.warn('[api] request failed', method, String(path).split('?')[0], reason);
 }
 
 function uploadFile(url, filePath, formData) {
@@ -192,6 +233,11 @@ function uploadFile(url, filePath, formData) {
       }
     });
   });
+}
+
+// 最近一次写请求结束的时间，供页面判断已加载的数据是否仍然有效。
+function lastWriteAt() {
+  return lastWriteCompletedAt;
 }
 
 async function requestAllPages(path, options = {}) {
@@ -304,11 +350,14 @@ function requireLogin() {
 }
 
 module.exports = {
+  userKey,
   clearPendingAvatarPreview,
   clearSession,
   displayImageUrl,
   formatTime,
   hasMorePages,
+  jpegThumbnailFallback,
+  lastWriteAt,
   mediaUrl,
   logout,
   previewImage,
@@ -319,6 +368,7 @@ module.exports = {
   savePendingAvatarPreview,
   saveSession,
   salonImage,
+  salonImages,
   session,
   statusText,
   thumbnailUrl,

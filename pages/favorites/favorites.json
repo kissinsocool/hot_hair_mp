@@ -1,12 +1,12 @@
 {
   "navigationBarTitleText": "我的收藏",
-  "navigationBarBackgroundColor": "#2B2726",
-  "navigationBarTextStyle": "white",
+  "navigationBarBackgroundColor": "#ffffff",
+  "navigationBarTextStyle": "black",
   "enablePullDownRefresh": true,
-  "navigationStyle": "custom",
-  "backgroundTextStyle": "light",
-  "backgroundColorTop": "#2B2726",
+  "backgroundTextStyle": "dark",
+  "backgroundColorTop": "#ffffff",
+  "backgroundColor": "#f4f3f1",
   "usingComponents": {
-    "tab-appbar": "/components/tab-appbar/tab-appbar"
+    "post-service-card": "/components/post-service-card/post-service-card"
   }
 }

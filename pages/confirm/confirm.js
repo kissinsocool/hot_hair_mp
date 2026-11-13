@@ -1,7 +1,11 @@
 const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const couponUtils = require('../../utils/coupons');
+const couponStore = require('../../utils/couponStore');
 const { formatFen } = require('../../utils/money');
+
+// 后端 POST /bookings 允许 note 最长 500 字；前端收紧到 200 字，便于商家快速阅读。
+const NOTE_MAX_LENGTH = 200;
 
 Page({
   onShareAppMessage,
@@ -13,11 +17,17 @@ Page({
     selectedCouponId: '',
     selectedCoupon: null,
     couponLoading: false,
+    // 优惠券读取失败与「没有可用券」区分开，避免用户误以为自己没有券。
+    couponLoadFailed: false,
     couponText: '请选择优惠券',
     couponDiscountText: '',
     payableText: '¥0.00',
     bookingStatusTemplateIds: [],
+    note: '',
+    noteMaxLength: NOTE_MAX_LENGTH,
     submitting: false,
+    // 预约已创建：本页不再允许提交，避免关闭成功提示或返回后重复下单。
+    submitted: false,
     successVisible: false
   },
 
@@ -77,23 +87,19 @@ Page({
     });
   },
 
-  async loadCoupons() {
-    this.setData({ couponLoading: true });
+  // force：价格或券状态发生变化后重新核对，不使用共享缓存。
+  async loadCoupons({ force = false } = {}) {
+    this.setData({ couponLoading: true, couponLoadFailed: false });
     try {
-      const coupons = await api.request('/auth/coupons');
-      const eligibleCoupons = couponUtils.sortCoupons(
-        coupons.filter((coupon) => (
-          String(coupon.status || '').toLowerCase() === 'available'
-          && Number(coupon.minimumSpendFen || 0) <= this.data.booking.totalFen
-        ))
-      );
+      const coupons = await couponStore.load({ force });
+      const eligibleCoupons = couponUtils.usableCoupons(coupons, this.data.booking.totalFen);
       const selectedStillEligible = eligibleCoupons.some(
         (coupon) => String(coupon.id) === String(this.data.selectedCouponId)
       );
       this.setData({ coupons: eligibleCoupons });
       this.applyCoupon(selectedStillEligible ? this.data.selectedCouponId : '');
     } catch (err) {
-      this.setData({ coupons: [] });
+      this.setData({ coupons: [], couponLoadFailed: true });
       this.applyCoupon('');
     } finally {
       this.setData({ couponLoading: false });
@@ -102,6 +108,7 @@ Page({
 
   chooseCoupon() {
     if (this.data.couponLoading) return;
+    if (this.data.couponLoadFailed) return this.loadCoupons({ force: true });
     wx.navigateTo({
       url: '/pages/coupons/coupons',
       events: {
@@ -132,8 +139,12 @@ Page({
     });
   },
 
+  onNoteInput(e) {
+    this.setData({ note: String(e.detail.value || '').slice(0, NOTE_MAX_LENGTH) });
+  },
+
   async submit() {
-    if (this._submitting) return;
+    if (this._submitting || this.data.submitted) return;
     this._submitting = true;
     this.setData({ submitting: true });
     try {
@@ -148,6 +159,8 @@ Page({
         expectedPayableAmountFen: booking.totalFen - (this.data.selectedCoupon ? nonNegativeFen(this.data.selectedCoupon.discountFen) : 0)
       };
       if (this.data.selectedCouponId) data.couponId = this.data.selectedCouponId;
+      const note = this.data.note.trim();
+      if (note) data.note = note;
       const result = await api.request('/bookings', {
         method: 'POST',
         data
@@ -162,14 +175,23 @@ Page({
           payableAmountFen: actual.payableAmountFen
         });
       }
-      this.setData({ successVisible: true });
+      this.setData({ submitted: true, successVisible: true });
     } catch (err) {
       if (err.code === 'BOOKING_PRICE_CHANGED' && err.data && err.data.quote) {
         this.updatePrice(err.data.quote);
-        await this.loadCoupons();
+        await this.loadCoupons({ force: true });
         wx.showModal({ title: '价格已更新', content: '套餐价格或优惠已变更，请核对新金额后再次提交。', showCancel: false });
+      } else if (err.timeout) {
+        // 请求超时时预约可能已经创建，直接重试可能重复下单，先让用户到订单页核对。
+        wx.showModal({
+          title: '提交结果未确认',
+          content: '网络超时，预约可能已提交成功。请先到「订单」页查看，确认没有这笔预约后再重新提交。',
+          confirmText: '查看订单',
+          cancelText: '稍后再说',
+          success: ({ confirm }) => { if (confirm) wx.switchTab({ url: '/pages/orders/orders' }); }
+        });
       } else {
-        if (err.statusCode === 409) await this.loadCoupons();
+        if (err.statusCode === 409) await this.loadCoupons({ force: true });
         wx.showToast({ title: err.message, icon: 'none' });
       }
     } finally {
@@ -195,9 +217,9 @@ Page({
     });
   },
 
+  // 用消息页替换确认页：预约已提交，返回时回到预约页（会刷新时间段），而不是回到可再次提交的确认页。
   openMessages() {
-    this.setData({ successVisible: false });
-    wx.navigateTo({ url: '/pages/messages/messages' });
+    wx.redirectTo({ url: '/pages/messages/messages' });
   }
 });
 

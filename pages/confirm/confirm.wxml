@@ -3,18 +3,39 @@
   <view class="card panel">
     <view class="row"><text>服务项目</text><text>{{booking.serviceName}}</text></view>
     <view class="row"><text>到店时间</text><text>{{booking.dateText}} {{booking.arrivalTimeText}}</text></view>
-    <view class="row"><text>理发师</text><text>{{booking.staffName}}</text></view>
+    <view class="row"><text>指定理发师</text><text>{{booking.staffName}}</text></view>
     <view class="row compact"><text>基础服务费用</text><text>{{booking.servicePriceText}}</text></view>
-    <view wx:if="{{booking.extraServiceFeeFen > 0}}" class="row"><text>指定理发师附加费用</text><text>{{booking.extraFeeText}}</text></view>
+    <view wx:if="{{booking.extraServiceFeeFen > 0}}" class="row"><text>理发师指定费用</text><text>{{booking.extraFeeText}}</text></view>
     <view class="row coupon-row" bindtap="chooseCoupon">
       <text>优惠券</text>
       <view class="coupon-choice">
-        <text class="{{selectedCoupon ? 'selected-coupon' : ''}}">{{couponLoading ? '加载中...' : couponText}}</text>
+        <text class="{{selectedCoupon ? 'selected-coupon' : ''}}">{{couponLoading ? '加载中...' : couponLoadFailed ? '加载失败，点击重试' : couponText}}</text>
         <text class="arrow">›</text>
       </view>
     </view>
     <view wx:if="{{selectedCoupon}}" class="row compact discount-row"><text>优惠券抵扣</text><text>{{couponDiscountText}}</text></view>
     <view class="row total"><text>到店需支付</text><text>{{payableText}}</text></view>
+  </view>
+  <view class="section-title note-title">
+    <text>备注</text><text class="note-optional">（选填）</text>
+  </view>
+  <view class="card panel note-panel">
+    <textarea
+      wx:if="{{!submitted}}"
+      class="note-textarea"
+      value="{{note}}"
+      maxlength="{{noteMaxLength}}"
+      disabled="{{submitting}}"
+      auto-height="{{false}}"
+      adjust-position="{{true}}"
+      cursor-spacing="24"
+      show-confirm-bar="{{true}}"
+      placeholder="如有特殊需求请告诉店家，例如发质情况、想要的效果等"
+      placeholder-class="note-placeholder"
+      bindinput="onNoteInput"
+    />
+    <view wx:else class="note-textarea note-readonly">{{note}}</view>
+    <view class="note-count">{{note.length}}/{{noteMaxLength}}</view>
   </view>
   <view class="section-title cancellation-rules-title">
     <image class="cancellation-rules-icon" mode="aspectFit" src="/assets/icons/schedule.png" />
@@ -26,7 +47,7 @@
     <view class="rule-line rule-line-warning">如无故取消或未到店累计达到3次，账号将被停用，无法继续预约。</view>
     <view class="rule-line rule-line-muted">商家尚未确认的预约，您可随时取消。</view>
   </view>
-  <button class="primary-btn" loading="{{submitting}}" disabled="{{submitting}}" bindtap="submit">提交预约申请</button>
+  <button class="primary-btn" loading="{{submitting}}" disabled="{{submitting || submitted}}" bindtap="submit">{{submitted ? '预约申请已提交' : '提交预约申请'}}</button>
   <view wx:if="{{successVisible}}" class="sheet-mask"></view>
   <view wx:if="{{successVisible}}" class="success-sheet">
     <image class="success-icon" mode="aspectFit" src="/assets/icons/check_circle_pink.png" />

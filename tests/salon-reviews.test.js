@@ -1,4 +1,6 @@
 const assert = require('node:assert/strict');
+const { registeredPages } = require('./support/appPages');
+const { applyData } = require('./support/setData');
 const fs = require('node:fs');
 const path = require('node:path');
 const { test } = require('node:test');
@@ -13,9 +15,9 @@ test('salon detail shows at most three reviews and only links to all reviews fro
   assert.match(script, /\(source\.reviews \|\| \[\]\)\s*\.slice\(0, this\.data\.reviewCount\)\s*\.map\(\(review\) => this\.normalizeReview\(review\)\)/);
   assert.match(script, /this\.setData\(\{ salon, visibleReviews \}\)/);
   assert.match(script, /pages\/salon-reviews\/salon-reviews\?salonId=/);
-  assert.match(template, /<view class="reviews-heading">\s*<view class="section-title">客户评价（\{\{salon\.reviewTotalText\}\}）<\/view>\s*<view wx:if="\{\{salon\.reviewCount > 0\}\}" class="reviews-all" bindtap="showAllReviews" aria-role="button">\s*<text>查看全部<\/text>\s*<view class="reviews-all-arrow" aria-hidden="true"><\/view>\s*<\/view>\s*<\/view>/);
+  assert.match(template, /<view class="section-heading">\s*<view class="section-title">客户评价（\{\{salon\.reviewTotalText\}\}）<\/view>\s*<view wx:if="\{\{salon\.reviewCount > 0\}\}" class="section-all" bindtap="showAllReviews" aria-role="button">\s*<text>查看全部<\/text>\s*<view class="section-all-arrow" aria-hidden="true"><\/view>\s*<\/view>\s*<\/view>/);
   assert.equal((template.match(/bindtap="showAllReviews"/g) || []).length, 1);
-  assert.ok(app.pages.includes('pages/salon-reviews/salon-reviews'));
+  assert.ok(registeredPages(app).includes('pages/salon-reviews/salon-reviews'));
 });
 
 test('reviews use server pagination and counts without stale requests changing the selected filter', async (t) => {
@@ -31,7 +33,7 @@ test('reviews use server pagination and counts without stale requests changing t
   require('../pages/salon-reviews/salon-reviews');
   const createPage = () => ({
     ...definition, data: { ...definition.data, salonId: 'salon/1' },
-    setData(values) { Object.assign(this.data, values); }
+    setData(values) { applyData(this.data, values); }
   });
   const review = id => ({ id, userName: '顾客', rating: 4.5, imageUrls: [`/${id}.jpg`], createdAt: '2026-09-24T10:00:00Z' });
   const counts = { all: 160, negative: 12, neutral: 23, photos: 41 };

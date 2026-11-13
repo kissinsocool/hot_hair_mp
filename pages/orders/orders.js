@@ -5,7 +5,12 @@ const bookingSocket = require('../../utils/bookingSocket');
 const layout = require('../../utils/layout');
 const orderUtils = require('../../utils/orders');
 const analytics = require('../../utils/analytics');
+const freshness = require('../../utils/freshness');
+const unreadMessages = require('../../utils/unreadMessages');
+const { appendPatch } = require('../../utils/dataPatch');
 const PAGE_SIZE = 20;
+// 刷新时按已加载的页数一次重新读取，最多为分页接口单次上限 100 条。
+const MAX_RELOAD_PAGES = 100 / PAGE_SIZE;
 const ONLINE_CANCEL_LEAD_MS = 24 * 60 * 60 * 1000;
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
@@ -52,10 +57,12 @@ Page({
       }
       return;
     }
-    this.load();
+    // 短时间内返回且期间没有本端写操作和预约推送时，保留已加载的分页和滚动位置。
+    // 连接断开期间可能漏掉的推送，由下面重新鉴权后的刷新补上。
+    if (!freshness.isFresh(this.ordersStamp)) this.load({ keepLoaded: true });
     this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
       if (event.event === 'authenticated' || event.event === 'booking.created' || event.event === 'booking.updated') {
-        this.load();
+        this.load({ keepLoaded: true, forceUnread: true });
       }
     });
   },
@@ -76,25 +83,34 @@ Page({
     this.unsubscribeBookingSocket = null;
   },
 
-  async load() {
+  // keepLoaded：重新读取已加载的全部页，推送、取消订单或返回页面时不把用户翻到的列表截回第一页。
+  // 下拉刷新等主动刷新只读第一页。
+  async load({ keepLoaded = false, forceUnread = false } = {}) {
     if (this.loadingOrders) { this.ordersDirty = true; return; }
     this.loadingOrders = true;
     const requestToken = (api.session() || {}).token;
     const version = (this.ordersVersion || 0) + 1;
     this.ordersVersion = version;
+    const stamp = freshness.stamp();
+    const pages = keepLoaded ? Math.min(Math.max(1, this.data.orderPage), MAX_RELOAD_PAGES) : 1;
     this.setData({ loading: !this.data.orders.length, loadingMoreOrders: false });
     try {
-      const [result, unread] = await Promise.all([
-        api.requestPage('/bookings', { page: 1, limit: PAGE_SIZE }),
-        api.request('/booking-messages/unread-count')
+      const [result, unreadCount] = await Promise.all([
+        api.requestPage('/bookings', { page: 1, limit: PAGE_SIZE * pages }),
+        // 未读数与首页共用短期缓存；只是角标，读取失败时保留当前值，不影响订单列表。
+        unreadMessages.count({ force: forceUnread }).catch(() => this.data.unreadMessageCount)
       ]);
       if (version !== this.ordersVersion || requestToken !== (api.session() || {}).token) return;
+      const orders = result.items.map(orderUtils.formatOrder);
+      // 完整订单只留在逻辑层，视图层只拿卡片显示的字段。
+      this.orderSources = new Map(orders.map((order) => [order.id, order]));
       this.setData({
-        orders: result.items.map(orderUtils.formatOrder),
-        orderPage: 1,
+        orders: orders.map(orderUtils.orderCardView),
+        orderPage: pages,
         hasMoreOrders: result.hasMore,
-        unreadMessageCount: Number(unread.count) || 0
+        unreadMessageCount: unreadCount
       });
+      this.ordersStamp = stamp;
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
@@ -102,7 +118,7 @@ Page({
       this.setData({ loading: false });
       if (this.ordersDirty) {
         this.ordersDirty = false;
-        if ((api.session() || {}).token) this.load();
+        if ((api.session() || {}).token) this.load({ keepLoaded: true, forceUnread: true });
       }
     }
   },
@@ -115,8 +131,10 @@ Page({
     try {
       const result = await api.requestPage('/bookings', { page, limit: PAGE_SIZE });
       if (version !== this.ordersVersion) return;
+      const orders = result.items.map(orderUtils.formatOrder);
+      orders.forEach((order) => this.orderSources.set(order.id, order));
       this.setData({
-        orders: this.data.orders.concat(result.items.map(orderUtils.formatOrder)),
+        ...appendPatch('orders', this.data.orders, orders.map(orderUtils.orderCardView)),
         orderPage: page,
         hasMoreOrders: result.hasMore
       });
@@ -127,8 +145,12 @@ Page({
     }
   },
 
+  orderSource(id) {
+    return (this.orderSources && this.orderSources.get(id)) || null;
+  },
+
   async cancel(e) {
-    const order = this.data.orders.find((item) => item.id === e.currentTarget.dataset.id);
+    const order = this.orderSource(e.currentTarget.dataset.id);
     if (!order) return;
     const canCancelOnline = order.status === 'pending' || order.startTimeMs - Date.now() >= ONLINE_CANCEL_LEAD_MS;
     if (!canCancelOnline) {
@@ -153,7 +175,7 @@ Page({
         try {
           await api.request(`/bookings/${order.id}/cancel`, { method: 'PATCH' });
           wx.showToast({ title: '订单已取消' });
-          this.load();
+          this.load({ keepLoaded: true, forceUnread: true });
         } catch (err) {
           wx.showToast({ title: err.message, icon: 'none' });
         }
@@ -162,7 +184,7 @@ Page({
   },
 
   review(e) {
-    const order = this.data.orders.find((item) => item.id === e.currentTarget.dataset.id);
+    const order = this.orderSource(e.currentTarget.dataset.id);
     if (!order) return;
     const type = e.currentTarget.dataset.type || 'review';
     if ((type === 'review' && order.reviewed) || (type === 'complaint' && order.complained)) return;
@@ -184,7 +206,7 @@ Page({
   },
 
   rebook(e) {
-    const order = this.data.orders.find((item) => item.id === e.currentTarget.dataset.id);
+    const order = this.orderSource(e.currentTarget.dataset.id);
     if (!order) return;
     analytics.track('rebooking_started', {
       salonId: order.salonId,

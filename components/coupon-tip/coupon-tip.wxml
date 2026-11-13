@@ -1,0 +1,5 @@
+<view wx:if="{{visible}}" class="coupon-tip tip-class" hover-class="coupon-tip-hover" bindtap="openCoupons" role="button" aria-label="查看我的优惠券">
+  <view class="coupon-tip-title">您有<text class="coupon-tip-count">{{count}} 张</text>优惠券未使用</view>
+  <view class="coupon-tip-desc">预约时在「确认订单」页选择即可抵扣，最高可省 {{savingText}}！</view>
+  <view class="coupon-tip-close" role="button" aria-label="关闭优惠券提醒" hover-stop-propagation catchtap="dismiss"></view>
+</view>

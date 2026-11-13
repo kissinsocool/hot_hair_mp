@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { applyData } = require('./support/setData');
 const { test } = require('node:test');
 
 test('staff page loads reviews from the paginated staff endpoint instead of the profile payload', async (t) => {
@@ -14,7 +15,7 @@ test('staff page loads reviews from the paginated staff endpoint instead of the 
   require('../pages/staff/staff');
   const createPage = () => ({
     ...definition, data: { ...definition.data },
-    setData(values) { Object.assign(this.data, values); }
+    setData(values) { applyData(this.data, values); }
   });
   const profile = { id: 'staff/1', name: 'Tony', rating: 4.8, reviewCount: 12, salonName: '靓丝', salonServices: [] };
   const review = id => ({ id, userName: '顾客', rating: 5, imageUrls: [`/${id}.jpg`] });

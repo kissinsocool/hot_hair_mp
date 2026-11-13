@@ -54,8 +54,9 @@ async function main() {
   app.globalData.session = { token: 'token' };
   await page.onShow();
 
-  assert.equal(page.data.salon.id, 'salon-1');
+  assert.equal(page.salon.id, 'salon-1');
   assert.equal(page.data.loading, false);
+  assert.equal('salon' in page.data, false, '店铺原始数据不进入视图层');
 }
 
 main().catch((error) => {

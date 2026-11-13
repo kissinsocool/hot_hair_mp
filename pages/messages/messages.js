@@ -4,7 +4,11 @@ const bookingSocket = require('../../utils/bookingSocket');
 const unreadMessages = require('../../utils/unreadMessages');
 const layout = require('../../utils/layout');
 const orderUtils = require('../../utils/orders');
+const freshness = require('../../utils/freshness');
+const { appendPatch } = require('../../utils/dataPatch');
 const PAGE_SIZE = 20;
+// 刷新时按已加载的页数一次重新读取，最多为分页接口单次上限 100 条。
+const MAX_RELOAD_PAGES = 100 / PAGE_SIZE;
 
 Page({
   onShareAppMessage,
@@ -26,10 +30,11 @@ Page({
   onShow() {
     if (!api.requireLogin()) return;
     if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
-    this.load();
+    // 短时间内返回且期间没有本端写操作和预约推送时，保留已加载的分页和滚动位置。
+    if (!freshness.isFresh(this.messagesStamp)) this.load({ keepLoaded: true });
     this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
       if (event.event === 'authenticated' || event.event === 'booking.created' || event.event === 'booking.updated') {
-        this.load();
+        this.load({ keepLoaded: true });
       }
     });
   },
@@ -65,19 +70,21 @@ Page({
     wx.switchTab({ url: '/pages/home/home' });
   },
 
-  async load() {
+  // keepLoaded：重新读取已加载的全部页，推送或返回页面时不把用户翻到的列表截回第一页。
+  async load({ keepLoaded = false } = {}) {
     if (this.loadingMessages) { this.messagesDirty = true; return; }
     this.loadingMessages = true;
     const requestToken = (api.session() || {}).token;
     const version = (this.messagesVersion || 0) + 1;
     this.messagesVersion = version;
+    const pages = keepLoaded ? Math.min(Math.max(1, this.data.messagePage), MAX_RELOAD_PAGES) : 1;
     this.setData({ loading: true, loadingMoreMessages: false });
     try {
-      const result = await api.requestPage('/booking-messages', { page: 1, limit: PAGE_SIZE });
+      const result = await api.requestPage('/booking-messages', { page: 1, limit: PAGE_SIZE * pages });
       if (version !== this.messagesVersion || requestToken !== (api.session() || {}).token) return;
       this.setData({
-        messages: result.items.map(orderUtils.formatMessage),
-        messagePage: 1,
+        messages: result.items.map((item) => orderUtils.messageView(orderUtils.formatMessage(item))),
+        messagePage: pages,
         hasMoreMessages: result.hasMore
       });
       if (result.items.length) {
@@ -87,6 +94,9 @@ Page({
         });
         unreadMessages.invalidate();
       }
+      // 标记已读是本页自己的写操作，所以在它完成之后记录；
+      // 本页可见期间的预约推送由订阅直接触发刷新，不依赖这个时间。
+      this.messagesStamp = freshness.stamp();
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
@@ -94,7 +104,7 @@ Page({
       this.setData({ loading: false });
       if (this.messagesDirty) {
         this.messagesDirty = false;
-        if ((api.session() || {}).token) this.load();
+        if ((api.session() || {}).token) this.load({ keepLoaded: true });
       }
     }
   },
@@ -108,7 +118,7 @@ Page({
       const result = await api.requestPage('/booking-messages', { page, limit: PAGE_SIZE });
       if (version !== this.messagesVersion) return;
       this.setData({
-        messages: this.data.messages.concat(result.items.map(orderUtils.formatMessage)),
+        ...appendPatch('messages', this.data.messages, result.items.map((item) => orderUtils.messageView(orderUtils.formatMessage(item)))),
         messagePage: page,
         hasMoreMessages: result.hasMore
       });

@@ -1,0 +1,26 @@
+<view wx:if="{{service && compact}}" class="post-service-compact" hover-class="post-service-compact--active" bindtap="book" aria-role="button" aria-label="预约关联套餐：{{service.name}}，{{priceText}}">
+  <view class="post-service-compact-main">
+    <view class="post-service-compact-name">{{service.name}}</view>
+    <view wx:if="{{service.noteText}}" class="post-service-compact-note">{{service.noteText}}</view>
+  </view>
+  <view class="post-service-compact-price">
+    <text class="post-service-compact-amount">{{priceText}}</text>
+    <text wx:if="{{originalPriceText}}" class="post-service-compact-original">{{originalPriceText}}</text>
+  </view>
+  <view class="post-service-compact-arrow" aria-hidden="true"></view>
+</view>
+<view wx:elif="{{service}}" class="post-service" bindtap="book" aria-role="button" aria-label="预约关联套餐：{{service.name}}">
+  <view class="post-service-label"><text>关</text><text>联</text><text>套</text><text>餐</text></view>
+  <view class="post-service-main">
+    <view class="post-service-tags">
+      <text wx:for="{{service.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
+    </view>
+    <view class="post-service-name">{{service.name}}</view>
+    <view wx:if="{{service.noteText}}" class="post-service-note">{{service.noteText}}</view>
+    <view class="post-service-bottom">
+      <service-price price-fen="{{service.priceFen}}" discount-tenths="{{service.discountTenths}}" original-price-fen="{{service.originalPriceFen}}" compact />
+    </view>
+  </view>
+  <view class="post-service-arrow" aria-hidden="true"></view>
+</view>
+<view wx:elif="{{serviceName}}" class="post-service-text {{compact ? 'post-service-text--compact' : ''}}">关联套餐：{{serviceName}}{{unavailable ? '（暂不可预约）' : ''}}</view>

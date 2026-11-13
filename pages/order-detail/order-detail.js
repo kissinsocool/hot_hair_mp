@@ -2,6 +2,7 @@ const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const orderUtils = require('../../utils/orders');
 const analytics = require('../../utils/analytics');
+const salonDetail = require('../../utils/salonDetail');
 
 Page({
   onShareAppMessage,
@@ -34,6 +35,11 @@ Page({
     });
   },
 
+  // 网络恢复后重新加载之前失败的内容。
+  onNetworkRestored() {
+    if (this.data.errorMessage && this.bookingId) this.load();
+  },
+
   onPullDownRefresh() {
     this.load().finally(() => wx.stopPullDownRefresh());
   },
@@ -52,7 +58,9 @@ Page({
 
   openSalon() {
     const salonId = this.data.order && this.data.order.salonId;
-    if (salonId) wx.navigateTo({ url: `/pages/detail/detail?id=${encodeURIComponent(salonId)}` });
+    if (!salonId) return;
+    salonDetail.prefetch(salonId);
+    wx.navigateTo({ url: `/pages/detail/detail?id=${encodeURIComponent(salonId)}` });
   },
 
   rebook() {

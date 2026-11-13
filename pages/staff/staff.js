@@ -1,7 +1,10 @@
 const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
+const imageFallback = require('../../utils/imageFallback');
+const { appendPatch } = require('../../utils/dataPatch');
 const { ratingDisplay } = require('../../utils/rating');
 const { staffRoleLabel } = require('../../utils/staffRoles');
+const favoriteStore = require('../../utils/favorites');
 const REVIEW_PAGE_SIZE = 10;
 
 Page({
@@ -12,6 +15,8 @@ Page({
     salonId: '',
     salonName: '',
     staff: null,
+    isFavorite: false,
+    favoriteCount: 0,
     services: [],
     loading: true,
     reviews: [],
@@ -24,6 +29,11 @@ Page({
   onLoad(query) {
     this.setData({ id: query.id || '', salonId: query.salonId || '' });
     return Promise.all([this.load(), this.loadReviews(true)]);
+  },
+
+  // 每次显示都同步收藏状态（缓存期内不发请求），从收藏页取消收藏后返回也能更新。
+  onShow() {
+    this.loadFavoriteState();
   },
 
   onReachBottom() {
@@ -42,7 +52,12 @@ Page({
       data.starIcons = data.hasRating ? starIcons(data.rating) : [];
       data.bioText = data.bio || '暂无简介';
       data.roleText = [staffRoleLabel(data.roleId), data.experience && `${data.experience}经验`].filter(Boolean).join(' · ');
-      this.setData({ staff: data, salonName: data.salonName || '', services: data.salonServices || [] });
+      this.setData({
+        staff: data,
+        salonName: data.salonName || '',
+        services: data.salonServices || [],
+        favoriteCount: Number(data.favoriteCount) || 0
+      });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
@@ -75,7 +90,10 @@ Page({
       const existing = reset ? [] : this.data.reviews;
       const knownIds = new Set(existing.map(review => review.id));
       this.setData({
-        reviews: existing.concat(reviews.filter(review => !knownIds.has(review.id))),
+        // 重新加载时整表替换，加载更多时只追加新增的评价。
+        ...(reset
+          ? { reviews: reviews.filter(review => !knownIds.has(review.id)) }
+          : appendPatch('reviews', existing, reviews.filter(review => !knownIds.has(review.id)))),
         reviewPage: page,
         hasMoreReviews: result.hasMore === true
       });
@@ -85,6 +103,39 @@ Page({
     } finally {
       if (version === this.reviewsVersion) this.setData({ loadingReviews: false });
     }
+  },
+
+  async loadFavoriteState() {
+    const session = api.session();
+    if (!(session && session.token) || !this.data.id) {
+      this.setData({ isFavorite: false });
+      return;
+    }
+    try {
+      const ids = await favoriteStore.staff.loadIds();
+      this.setData({ isFavorite: ids.includes(this.data.id) });
+    } catch (_) {}
+  },
+
+  async toggleFavorite() {
+    if (!api.requireLogin() || !this.data.id) return;
+    const isFavorite = !this.data.isFavorite;
+    const count = Number(this.data.favoriteCount) || 0;
+    try {
+      // 被收藏数先按本次操作估算，成功后以服务端返回的数为准；失败回滚时恢复原值。
+      const done = await favoriteStore.staff.toggle(this.data.id, isFavorite, (value) => this.setData({
+        isFavorite: value,
+        favoriteCount: value === isFavorite ? Math.max(0, count + (isFavorite ? 1 : -1)) : count
+      }));
+      if (done) this.setData({ favoriteCount: Number(done.result && done.result.favoriteCount) || 0 });
+    } catch (err) {
+      wx.showToast({ title: err.message, icon: 'none' });
+    }
+  },
+
+  // WebP 缩略图加载失败时换回 JPEG。
+  onImageError(e) {
+    imageFallback.retryAsJpeg(this, e);
   },
 
   book() {
@@ -108,7 +159,7 @@ async function normalizeReview(review) {
   return {
     ...review,
     userText: review.user || review.userName || '用户',
-    imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
+    imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360, { webp: true })))
   };
 }
 

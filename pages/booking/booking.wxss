@@ -426,3 +426,28 @@
 .staff-option.disabled {
   opacity: 0.4;
 }
+
+/* 加载占位：与真实内容的位置和大小一致（服务数量、理发师姓名 / 职位 / 简介）。 */
+.booking-skeleton-count {
+  width: 140rpx;
+  height: 24rpx;
+  margin: 4rpx 0;
+}
+
+.booking-skeleton-staff-name {
+  width: 36%;
+  height: 40rpx;
+  margin: 6rpx 0 4rpx;
+}
+
+.booking-skeleton-staff-role {
+  width: 44%;
+  height: 30rpx;
+  margin: 18rpx 0 6rpx;
+}
+
+.booking-skeleton-staff-bio {
+  width: 72%;
+  height: 28rpx;
+  margin: 18rpx 0 0;
+}

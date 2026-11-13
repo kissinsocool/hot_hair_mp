@@ -125,9 +125,18 @@ function reset() {
   connect();
 }
 
+// 网络恢复时立即重连：断网期间的自动重连可能已用完次数，或正处在较长的退避等待中。
+function resume() {
+  if (!listeners.length || socket) return;
+  clearTimeout(reconnectTimer);
+  reconnectTimer = null;
+  reconnectAttempts = 0;
+  connect();
+}
+
 // 最近一次收到预约事件的时间，供依赖预约状态的短期缓存判断是否失效。
 function lastEventAt() {
   return lastBookingEventAt;
 }
 
-module.exports = { subscribe, reset, lastEventAt, IDLE_CLOSE_MS, MAX_RECONNECT_ATTEMPTS };
+module.exports = { subscribe, reset, resume, lastEventAt, IDLE_CLOSE_MS, MAX_RECONNECT_ATTEMPTS };

@@ -21,6 +21,52 @@ test('public OSS images use small variants and previews use originals', async ()
   });
 });
 
+test('WebP is opt-in for public JPEG thumbnails and previews still open originals', async () => {
+  const source = 'https://media.hothaircc.cn/uploads/photo.jpg';
+  const jpeg = api.thumbnailUrl(source, 480);
+  const webp = await api.displayImageUrl(source, 480, { webp: true });
+  assert.equal(webp, `${jpeg}/format,webp`);
+  assert.equal(api.jpegThumbnailFallback(webp), jpeg);
+
+  const png = source.replace('.jpg', '.png');
+  assert.equal(api.thumbnailUrl(png, 480, { webp: true }), api.thumbnailUrl(png, 480));
+  const external = webp.replace('media.hothaircc.cn', 'example.com');
+  assert.equal(api.jpegThumbnailFallback(external), external);
+  const signed = `${webp}&Signature=opaque`;
+  assert.equal(api.thumbnailUrl(signed, 480, { webp: true }), signed);
+  assert.equal(api.jpegThumbnailFallback(signed), signed);
+  api.previewImage({ urls: [jpeg, webp, signed, external], current: webp });
+  assert.deepEqual(previews.pop(), { urls: [source, source, signed, external], current: source });
+});
+
+test('home requests WebP covers and retries the matching card once with its JPEG thumbnail', async () => {
+  let home;
+  global.Page = (page) => { home = page; };
+  require('../pages/home/home');
+  const source = 'https://media.hothaircc.cn/uploads/home.jpg';
+  const [salon] = await home.normalizeSalonPage.call({ ...home, data: home.data }, [{ id: 'home-salon', image: source }]);
+  const jpeg = api.thumbnailUrl(source, 480);
+  const [image] = salon.cardImages;
+  assert.equal(image, `${jpeg}/format,webp`);
+  assert.equal(salon.cardImages.length, 1);
+
+  const page = {
+    data: { salonCards: [{ images: ['other', image] }] },
+    setData(updates) {
+      assert.deepEqual(updates, { 'salonCards[0].images[1]': jpeg });
+      this.data.salonCards[0].images[1] = jpeg;
+      this.retries = (this.retries || 0) + 1;
+    }
+  };
+  const error = (src) => home.onSalonImageError.call(page, { currentTarget: { dataset: { cardIndex: 0, imageIndex: 1, src } } });
+  error(image.replace('home.jpg', 'previous.jpg'));
+  assert.equal(page.retries, undefined);
+  error(image);
+  error(image);
+  error(jpeg);
+  assert.equal(page.retries, 1);
+});
+
 test('signed, animated, external and local images keep their URLs', () => {
   assert.equal(api.thumbnailUrl('https://media.hothaircc.cn/uploads/photo.jpg?token=abc', 480),
     'https://media.hothaircc.cn/uploads/photo.jpg?token=abc');

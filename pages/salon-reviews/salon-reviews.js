@@ -1,7 +1,9 @@
 const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
+const { appendPatch } = require('../../utils/dataPatch');
 const { markReviewHelpful } = require('../../utils/reviewHelpful');
 const { formatReviewDate } = require('../../utils/reviewDate');
+const imageFallback = require('../../utils/imageFallback');
 const PAGE_SIZE = 10;
 
 Page({
@@ -24,6 +26,12 @@ Page({
   onLoad(query) {
     this.setData({ salonId: String(query.salonId || '') });
     return this.load();
+  },
+
+  // 网络恢复后重新加载之前失败的内容。
+  onNetworkRestored() {
+    if (this.data.errorMessage) this.load();
+    else if (this.data.loadMoreError) this.loadMore();
   },
 
   onPullDownRefresh() {
@@ -68,7 +76,10 @@ Page({
       const existing = reset ? [] : this.data.reviews;
       const knownIds = new Set(existing.map(review => review.id));
       this.setData({
-        reviews: existing.concat(reviews.filter(review => !knownIds.has(review.id))),
+        // 重新加载时整表替换，加载更多时只追加新增的评价。
+        ...(reset
+          ? { reviews: reviews.filter(review => !knownIds.has(review.id)) }
+          : appendPatch('reviews', existing, reviews.filter(review => !knownIds.has(review.id)))),
         page,
         hasMore: result.hasMore,
         counts: result.counts,
@@ -95,8 +106,13 @@ Page({
       serviceText: review.serviceName || review.service || '',
       staffText: review.staffName || review.staff || '',
       dateText: formatReviewDate(review.createdAt || review.date),
-      imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
+      imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360, { webp: true })))
     };
+  },
+
+  // WebP 缩略图加载失败时换回 JPEG。
+  onImageError(e) {
+    imageFallback.retryAsJpeg(this, e);
   },
 
   markReviewHelpful(e) {

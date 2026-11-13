@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { registeredPages } = require('./support/appPages');
 const fs = require('node:fs');
 const test = require('node:test');
 const path = require('node:path');
@@ -6,7 +7,7 @@ const root = path.join(__dirname, '..');
 
 test('review editing uses native page scrolling and keyboard positioning without sheet height feedback', () => {
   const app = JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'));
-  assert(app.pages.includes('pages/review-editor/review-editor'));
+  assert(registeredPages(app).includes('pages/review-editor/review-editor'));
   const template = fs.readFileSync(path.join(root, 'pages/review-editor/review-editor.wxml'), 'utf8');
   const styles = fs.readFileSync(path.join(root, 'pages/review-editor/review-editor.wxss'), 'utf8');
   const config = JSON.parse(fs.readFileSync(path.join(root, 'pages/review-editor/review-editor.json'), 'utf8'));

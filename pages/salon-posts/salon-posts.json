@@ -1,5 +1,8 @@
 {
   "navigationBarTitleText": "店铺动态",
   "enablePullDownRefresh": true,
-  "onReachBottomDistance": 120
+  "onReachBottomDistance": 120,
+  "usingComponents": {
+    "salon-post-card": "/components/salon-post-card/salon-post-card"
+  }
 }

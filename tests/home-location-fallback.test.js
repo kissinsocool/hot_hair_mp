@@ -8,6 +8,7 @@ global.getApp = () => ({
 });
 global.wx = {
   getStorageSync: () => null,
+  setStorage() {},
   getFuzzyLocation(options) { locationCallbacks = options; }
 };
 global.Page = (options) => { pageDefinition = options; };

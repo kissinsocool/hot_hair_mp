@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "post-service-card": "/components/post-service-card/post-service-card"
+  }
+}

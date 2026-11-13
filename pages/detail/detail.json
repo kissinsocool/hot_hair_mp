@@ -4,6 +4,7 @@
     "review-content": "/components/review-content/review-content",
     "service-price": "/components/service-price/service-price",
     "review-rating-summary": "/components/review-rating-summary/review-rating-summary",
-    "review-booking-info": "/components/review-booking-info/review-booking-info"
+    "review-booking-info": "/components/review-booking-info/review-booking-info",
+    "salon-post-card": "/components/salon-post-card/salon-post-card"
   }
 }

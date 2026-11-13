@@ -10,6 +10,9 @@ const { ratingDisplay } = require('../../utils/rating');
 const { serviceTagLabels } = require('../../utils/serviceTags');
 const { staffRoleLabel } = require('../../utils/staffRoles');
 const { afterSalesPolicyLabels } = require('../../utils/afterSalesPolicies');
+const { postServiceView } = require('../../utils/postService');
+const navigation = require('../../utils/navigation');
+const imageFallback = require('../../utils/imageFallback');
 
 Page({
   onShareAppMessage,
@@ -18,6 +21,7 @@ Page({
     id: '',
     salon: null,
     isFavorite: false,
+    favoritePostIds: {},
     currentPromoIndex: 0,
     reviewCount: 3,
     visibleReviews: [],
@@ -28,7 +32,10 @@ Page({
   },
 
   onLoad(query) {
-    this.setData({ id: query.id || '' });
+    const id = query.id || '';
+    // 从列表进入时，先用列表里已有的店铺信息展示头部，不必整页等待详情接口。
+    const summary = salonDetail.summary(id);
+    this.setData(summary ? { id, salon: this.buildSalonPreview(summary) } : { id });
     ad.load().then((config) => this.setData({ ad: config }));
     this.load();
   },
@@ -73,16 +80,36 @@ Page({
     }
   },
 
+  // 详情返回前的头部预览，只包含列表数据里已有的字段。
+  buildSalonPreview(source) {
+    const preview = {
+      name: source.name,
+      description: source.description,
+      isFeatured: source.isFeatured,
+      businessDistrict: typeof source.businessDistrict === 'string' ? source.businessDistrict.trim() : '',
+      image: api.thumbnailUrl(api.salonImage(source), 960)
+    };
+    if (source.reviewCount === undefined || source.reviewCount === null) return preview;
+    const rating = ratingDisplay(source.rating, source.reviewCount);
+    return {
+      ...preview,
+      ...rating,
+      starIcons: starIcons(rating.hasRating ? rating.ratingText : 5),
+      reviewTotalText: source.reviewCount
+    };
+  },
+
   // 只保留模板使用的字段。
   async buildSalonView(source) {
     const image = await api.displayImageUrl(api.salonImage(source), 960);
-    const promoImages = await Promise.all((source.promoImages || source.images || []).map((item) => api.displayImageUrl(item, 960)));
+    const promoImages = await Promise.all((source.promoImages || source.images || []).map((item) => api.displayImageUrl(item, 960, { webp: true })));
     const rating = ratingDisplay(source.rating, source.reviewCount);
     const services = await Promise.all((source.services || []).map((service) => this.normalizeService(service)));
     return {
       name: source.name,
       description: source.description,
       isFeatured: source.isFeatured,
+      businessDistrict: typeof source.businessDistrict === 'string' ? source.businessDistrict.trim() : '',
       image,
       promoImages: promoImages.length || !image ? promoImages : [image],
       descriptionText: source.fullDescription || source.description || '暂无详细描述',
@@ -108,7 +135,7 @@ Page({
         experienceText: staff.experience || '',
         bioText: staff.bio || staff.description || '暂无简介'
       }))),
-      latestPosts: await Promise.all((source.latestPosts || []).map((post) => this.normalizePost(post, services))),
+      latestPosts: await Promise.all((source.latestPosts || []).map((post) => this.normalizePost(post, source.services || []))),
       hasMorePosts: source.hasMorePosts === true
     };
   },
@@ -118,7 +145,7 @@ Page({
     return {
       id: service.id,
       name: service.name,
-      imageUrl: await api.displayImageUrl(imageUrls[0] || '', 480),
+      imageUrl: await api.displayImageUrl(imageUrls[0] || '', 480, { webp: true }),
       hasGallery: imageUrls.length > 1,
       tags: serviceTagLabels(service.tagIds),
       noteText: service.note || service.description || '',
@@ -127,6 +154,16 @@ Page({
       discountTenths: service.discountTenths,
       originalPriceFen: service.originalPriceFen
     };
+  },
+
+  // WebP 缩略图加载失败时换回 JPEG。
+  onImageError(e) {
+    imageFallback.retryAsJpeg(this, e);
+  },
+
+  // 网络恢复后重新加载之前失败的内容。
+  onNetworkRestored() {
+    if (this.data.errorMessage) this.load();
   },
 
   retryLoad() {
@@ -139,14 +176,15 @@ Page({
     try {
       const { latitude, longitude } = coordinates;
       const result = await api.requestPage(`/salons?latitude=${latitude}&longitude=${longitude}`, { page: 1, limit: 10 });
-      const relatedSalons = await Promise.all(result.items
-        .filter((item) => item.id !== this.data.id)
-        .slice(0, 9)
+      const sources = result.items.filter((item) => item.id !== this.data.id).slice(0, 9);
+      // 列表摘要留在逻辑层，打开相关店铺时交给详情页先展示头部。
+      this.relatedSalonSources = Object.fromEntries(sources.map((item) => [item.id, item]));
+      const relatedSalons = await Promise.all(sources
         .map(async (item) => ({
           id: item.id,
           name: item.name,
           description: item.description || '',
-          image: await api.displayImageUrl(api.salonImage(item), 480),
+          image: await api.displayImageUrl(api.salonImage(item), 480, { webp: true }),
           detailUrl: `/pages/detail/detail?id=${encodeURIComponent(item.id)}`
         })));
       if (!this.reviewFeedbackDisposed) this.setData({ relatedSalons });
@@ -171,28 +209,19 @@ Page({
       serviceText: review.serviceName || review.service || '',
       staffText: review.staffName || review.staff || '',
       dateText: formatReviewDate(review.createdAt || review.date),
-      imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360)))
+      imageUrls: await Promise.all(images.map((image) => api.displayImageUrl(image, 360, { webp: true })))
     };
   },
 
   async normalizePost(post, services) {
-    const service = post.serviceId ? (services || []).find((item) => item.id === post.serviceId) : null;
     return {
       id: post.id,
+      salonId: this.data.id,
       content: post.content,
       authorName: post.authorName,
       authorStaffId: post.authorStaffId,
-      serviceName: post.serviceName,
-      relatedService: service ? {
-        id: service.id,
-        name: service.name,
-        tags: service.tags,
-        noteText: service.noteText.trim().replace(/\s*[\r\n]+\s*/g, '，'),
-        priceFen: service.priceFen,
-        discountTenths: service.discountTenths,
-        originalPriceFen: service.originalPriceFen
-      } : null,
-      imageUrls: await Promise.all((post.imageUrls || []).map((image) => api.displayImageUrl(image, 480))),
+      ...postServiceView(post, services),
+      imageUrls: await Promise.all((post.imageUrls || []).map((image) => api.displayImageUrl(image, 480, { webp: true }))),
       dateText: this.formatDate(post.createdAt)
     };
   },
@@ -228,18 +257,34 @@ Page({
   async loadFavoriteState() {
     const session = api.session();
     if (!(session && session.token)) return;
-    try {
-      const ids = await favoriteStore.loadIds();
-      this.setData({ isFavorite: ids.includes(this.data.id) });
-    } catch (_) {}
+    const hasPosts = Boolean(this.data.salon && this.data.salon.latestPosts && this.data.salon.latestPosts.length);
+    const [salonIds, postIds] = await Promise.all([
+      favoriteStore.loadIds().catch(() => null),
+      hasPosts ? favoriteStore.posts.loadIds().catch(() => null) : null
+    ]);
+    const updates = {};
+    if (salonIds) updates.isFavorite = salonIds.includes(this.data.id);
+    if (postIds) updates.favoritePostIds = favoriteStore.idSet(postIds);
+    if (Object.keys(updates).length) this.setData(updates);
   },
 
   async toggleFavorite() {
     if (!api.requireLogin()) return;
     try {
-      const isFavorite = !this.data.isFavorite;
-      await favoriteStore.setFavorite(this.data.id, isFavorite);
-      this.setData({ isFavorite });
+      await favoriteStore.toggle(this.data.id, !this.data.isFavorite, (isFavorite) => this.setData({ isFavorite }));
+    } catch (err) {
+      wx.showToast({ title: err.message, icon: 'none' });
+    }
+  },
+
+  async togglePostFavorite(e) {
+    if (!api.requireLogin()) return;
+    const { id, favorite } = e.detail;
+    try {
+      const done = await favoriteStore.posts.toggle(id, favorite, (value) => this.setData({
+        favoritePostIds: { ...this.data.favoritePostIds, [id]: value }
+      }));
+      if (done) wx.showToast({ title: favorite ? '已收藏' : '已取消收藏', icon: 'none' });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     }
@@ -271,11 +316,6 @@ Page({
     api.previewImage({ urls: this.data.salon.promoImages, current: e.currentTarget.dataset.url });
   },
 
-  previewHeroImage() {
-    const current = this.data.salon.image;
-    if (current) api.previewImage({ urls: [current], current });
-  },
-
   onPromoChange(e) {
     this.setData({ currentPromoIndex: e.detail.current || 0 });
   },
@@ -285,15 +325,12 @@ Page({
     api.previewImage({ urls: review.imageUrls || [], current: e.currentTarget.dataset.url });
   },
 
-  previewPostImage(e) {
-    const post = this.data.salon.latestPosts[Number(e.currentTarget.dataset.postIndex)] || {};
-    api.previewImage({ urls: post.imageUrls || [], current: e.currentTarget.dataset.url });
-  },
-
-  bookPostService(e) {
-    const serviceId = e.currentTarget.dataset.id;
-    if (!serviceId || !api.requireLogin()) return;
-    wx.navigateTo({ url: `/pages/booking/booking?id=${encodeURIComponent(this.data.id)}&serviceId=${encodeURIComponent(serviceId)}` });
+  // 详情页之间可以连续跳转，栈满时由 navigation 改为替换当前页。
+  openRelatedSalon(e) {
+    const salon = this.data.relatedSalons.find((item) => item.id === e.currentTarget.dataset.id);
+    if (!salon) return;
+    salonDetail.prefetch(salon.id, this.relatedSalonSources && this.relatedSalonSources[salon.id]);
+    navigation.navigateTo(salon.detailUrl);
   },
 
   showAllPosts() {
@@ -314,10 +351,18 @@ Page({
     api.previewImage({ urls: [service.imageUrl, ...remainingImages], current: service.imageUrl });
   },
 
+  bookService(e) {
+    const serviceId = e.currentTarget.dataset.id;
+    const salonId = this.data.id;
+    if (!salonId || !serviceId) return;
+    analytics.track('service_click', { salonId, serviceId });
+    wx.navigateTo({ url: `/pages/booking/booking?id=${encodeURIComponent(salonId)}&serviceId=${encodeURIComponent(serviceId)}` });
+  },
+
   openStaff(e) {
     const id = e.currentTarget.dataset.id;
     if (!id) return;
-    wx.navigateTo({ url: `/pages/staff/staff?id=${encodeURIComponent(id)}&salonId=${encodeURIComponent(this.data.id)}` });
+    navigation.navigateTo(`/pages/staff/staff?id=${encodeURIComponent(id)}&salonId=${encodeURIComponent(this.data.id)}`);
   },
 
   book() {

@@ -1,4 +1,4 @@
-const { REVIEW_RATING_FIELDS } = require('../../utils/reviewRatings.js');
+const { REVIEW_RATING_FIELDS } = require('../../../../utils/reviewRatings.js');
 
 Component({
   properties: { value: { type: Object, value: {} } },

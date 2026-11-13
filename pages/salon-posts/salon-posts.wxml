@@ -6,17 +6,7 @@
   </view>
   <view wx:elif="{{!posts.length}}" class="state">暂无动态</view>
   <view wx:else class="post-list">
-    <view wx:for="{{posts}}" wx:for-index="postIndex" wx:key="id" class="post-card">
-      <view class="post-content">{{item.content}}</view>
-      <view wx:if="{{item.serviceName}}" class="post-service">关联套餐：{{item.serviceName}}</view>
-      <view wx:if="{{item.imageUrls.length}}" class="post-images">
-        <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="post-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewImage" data-url="{{image}}" data-post-index="{{postIndex}}" />
-      </view>
-      <view class="post-head">
-        <text bindtap="openStaff" data-id="{{item.authorStaffId}}" aria-role="button">{{item.authorName}}</text>
-        <text> · 投稿时间：{{item.dateText}}</text>
-      </view>
-    </view>
+    <salon-post-card wx:for="{{posts}}" wx:key="id" post="{{item}}" favorite="{{favoritePostIds[item.id]}}" bind:favoritechange="onFavoriteChange" />
     <view wx:if="{{loadingMore}}" class="footer-state">正在加载...</view>
     <view wx:elif="{{!hasMore}}" class="footer-state">没有更多动态了</view>
   </view>

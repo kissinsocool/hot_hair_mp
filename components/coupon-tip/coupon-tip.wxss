@@ -1,0 +1,58 @@
+/* 按 iPhone 14 Pro（393pt 宽）设计稿换算为 rpx（1pt ≈ 1.908rpx），随屏宽等比缩放。
+   外边距由使用方通过 tip-class 指定，未显示时不占位。 */
+.coupon-tip {
+  position: relative;
+  padding: 14rpx 80rpx 13rpx 25rpx;
+  border: 1px solid #e2e2e2;
+  border-radius: 15rpx;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.coupon-tip-title {
+  color: #6a6a6a;
+  font-size: 25rpx;
+  line-height: 34rpx;
+}
+
+.coupon-tip-count {
+  margin: 0 8rpx;
+  color: #333;
+  font-weight: 600;
+}
+
+.coupon-tip-desc {
+  margin-top: 10rpx;
+  color: #b73d54;
+  font-size: 26rpx;
+  font-weight: 500;
+  line-height: 36rpx;
+}
+
+.coupon-tip-close {
+  position: absolute;
+  top: 2rpx;
+  right: 2rpx;
+  width: 78rpx;
+  height: 78rpx;
+}
+
+.coupon-tip-close::before,
+.coupon-tip-close::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 44rpx;
+  height: 5rpx;
+  margin: -2.5rpx 0 0 -22rpx;
+  background: #b2b2b2;
+  content: '';
+  transform: rotate(45deg);
+}
+
+.coupon-tip-close::after {
+  transform: rotate(-45deg);
+}
+
+.coupon-tip-hover {
+  opacity: 0.7;
+}

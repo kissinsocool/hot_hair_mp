@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { applyData } = require('./support/setData');
 
 let bookingPage;
 let confirmPage;
@@ -28,13 +29,13 @@ global.Page = options => { bookingPage = options; };
 require('../pages/booking/booking');
 
 const optionsPage = {
+  salon: {
+    staff: [{ id: 'staff-1', name: 'Tony', extraServiceFeeFen: 39900 }],
+    services: [{ id: 'service-1', name: '剪发', durationMinutes: 90, priceFen: 19900 }]
+  },
+  slots: [],
   data: {
-    salon: {
-      staff: [{ id: 'staff-1', name: 'Tony', extraServiceFeeFen: 39900 }],
-      services: [{ id: 'service-1', name: '剪发', durationMinutes: 90, priceFen: 19900 }]
-    },
     dates: [],
-    slots: [],
     slotsLoading: false,
     selectedStaffId: 'staff-1',
     selectedServiceId: 'service-1',
@@ -42,12 +43,12 @@ const optionsPage = {
     selectedTime: '',
     activeServiceCategory: 'cut'
   },
-  setData(values) { Object.assign(this.data, values); }
+  setData(values) { applyData(this.data, values); }
 };
 bookingPage.refreshOptions.call(optionsPage);
 assert.equal(optionsPage.data.staffOptions[1].extraServiceFeeText, '¥399');
 assert.equal(optionsPage.data.serviceOptions[0].durationText, '90分钟');
-Object.assign(optionsPage.data.salon.services[0], {
+Object.assign(optionsPage.salon.services[0], {
   priceFen: 25200, originalPriceFen: 28000, discountTenths: 90,
   imageUrls: ['/cover.jpg', '/second.jpg']
 });
@@ -62,17 +63,17 @@ assert.match(discountedService.imageUrl, /cover\.jpg/);
 
 bookingPage.submit.call({
   salonId: 'salon-1',
+  salon: {
+    name: '靓丝造型',
+    services: [{ id: 'service-1', name: '剪发', priceFen: 19900 }],
+    staff: [{ id: 'staff-1', name: '小靓', extraServiceFeeFen: 2000 }]
+  },
   data: {
     canSubmit: true,
     selectedServiceId: 'service-1',
     selectedStaffId: 'staff-1',
     selectedDate: '2030-01-02',
-    selectedTime: '10:30',
-    salon: {
-      name: '靓丝造型',
-      services: [{ id: 'service-1', name: '剪发', priceFen: 19900 }],
-      staff: [{ id: 'staff-1', name: '小靓', extraServiceFeeFen: 2000 }]
-    }
+    selectedTime: '10:30'
   }
 });
 
@@ -109,12 +110,12 @@ async function checkServicePricing() {
   const booking = {
     ...bookingPage,
     salonId: 'salon-1',
+    salon: { name: 'Salon', services, staff: [{ id: 'staff-1', extraServiceFeeFen: 2000 }] },
     data: {
       ...bookingPage.data,
-      salon: { name: 'Salon', services, staff: [{ id: 'staff-1', extraServiceFeeFen: 2000 }] },
       selectedStaffId: 'staff-1'
     },
-    setData(values) { Object.assign(this.data, values); }
+    setData(values) { applyData(this.data, values); }
   };
   for (const [id, category] of [
     ['cut', 'cut'], ['color', 'colorPerm'], ['perm', 'colorPerm'],
@@ -137,10 +138,8 @@ async function checkServicePricing() {
   }
 
   // A tab change must not retain a bookable service hidden in another category.
-  Object.assign(booking.data, {
-    selectedDate: '2030-01-02', selectedTime: '10:30',
-    slots: [{ time: '10:30', isAvailable: true }]
-  });
+  Object.assign(booking.data, { selectedDate: '2030-01-02', selectedTime: '10:30' });
+  booking.slots = [{ time: '10:30', isAvailable: true }];
   booking.refreshOptions();
   assert.equal(booking.data.canSubmit, true);
   booking.selectServiceCategory({ currentTarget: { dataset: { category: 'colorPerm' } } });
@@ -158,7 +157,7 @@ async function checkServicePricing() {
 
   const template = fs.readFileSync(path.join(__dirname, '../pages/confirm/confirm.wxml'), 'utf8');
   assert.match(template, /<text>基础服务费用<\/text><text>\{\{booking\.servicePriceText\}\}/);
-  assert.match(template, /wx:if="\{\{booking\.extraServiceFeeFen > 0\}\}"[^>]*><text>指定理发师附加费用/);
+  assert.match(template, /wx:if="\{\{booking\.extraServiceFeeFen > 0\}\}"[^>]*><text>理发师指定费用/);
 }
 
 checkServicePricing().catch(error => { console.error(error); process.exitCode = 1; });

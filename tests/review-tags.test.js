@@ -1,11 +1,12 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { buildReviewTags, selectedReviewTags, toggleReviewTag } = require('../utils/reviewTags');
+const { buildReviewTags, selectedReviewTags, toggleReviewTag } = require('../pages/review-editor/reviewTags');
 
 for (const file of ['pages/review-editor/review-editor.js']) {
   const source = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
-  assert.match(source, /require\(['"]\.\.\/\.\.\/utils\/reviewTags\.js['"]\)/);
+  // 只有评价编辑页使用，放在它的分包内，避免主包里出现主包未使用的 JS。
+  assert.match(source, /require\(['"]\.\/reviewTags\.js['"]\)/);
 }
 
 let tags = buildReviewTags(['环境舒适']);

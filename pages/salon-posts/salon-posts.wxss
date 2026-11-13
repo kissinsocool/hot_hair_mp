@@ -9,49 +9,6 @@ page,
   box-sizing: border-box;
 }
 
-.post-card {
-  margin-bottom: 20rpx;
-  padding: 28rpx;
-  border: 1rpx solid #eadbd2;
-  border-radius: 16rpx;
-  background: #fff;
-}
-
-.post-head {
-  margin-top: 18rpx;
-  color: #999;
-  font-size: 26rpx;
-  text-align: right;
-}
-
-.post-content {
-  color: #000;
-  font-size: 30rpx;
-  font-weight: 600;
-  line-height: 46rpx;
-  white-space: pre-wrap;
-}
-
-.post-service {
-  margin-top: 12rpx;
-  color: #a64e68;
-  font-size: 26rpx;
-}
-
-.post-images {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8rpx;
-  margin-top: 18rpx;
-}
-
-.post-image {
-  width: 100%;
-  height: 210rpx;
-  border-radius: 8rpx;
-  background: #f3ebe6;
-}
-
 .state,
 .footer-state {
   padding: 96rpx 24rpx;

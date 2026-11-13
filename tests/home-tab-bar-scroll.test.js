@@ -62,9 +62,19 @@ assert.deepEqual(actions, ['hide', 'show'], 'an actual upward scroll should reve
 page.onListScroll({ detail: { scrollTop: 120 } });
 dataUpdates.length = 0;
 page.scrollToTop();
-assert.deepEqual(scrollCalls, [{ top: 0, animated: true, duration: 500 }]);
+assert.deepEqual(scrollCalls, [{ top: 0, animated: false, duration: 0 }], 'back to top jumps instantly');
 assert.deepEqual(dataUpdates, []);
 
 const template = fs.readFileSync(path.join(__dirname, '../pages/home/home.wxml'), 'utf8');
 assert.match(template, /<scroll-view[^>]*id="home-list"[^>]*enhanced/);
 assert.doesNotMatch(template, /scroll-into-view|id="list-top"/);
+
+// 返回顶部按钮只在滚动超过一屏后出现。
+page.backToTopThreshold = 600;
+page.onListScroll({ detail: { scrollTop: 300 } });
+assert.equal(page.data.showBackToTop, false);
+page.onListScroll({ detail: { scrollTop: 900 } });
+assert.equal(page.data.showBackToTop, true);
+page.scrollToTop();
+assert.equal(page.data.showBackToTop, false);
+assert.match(template, /wx:if="\{\{showBackToTop\}\}" class="back-to-top/);

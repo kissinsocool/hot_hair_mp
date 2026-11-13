@@ -1,5 +1,9 @@
 const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
+const { appendPatch } = require('../../utils/dataPatch');
+const salonDetail = require('../../utils/salonDetail');
+const favoriteStore = require('../../utils/favorites');
+const { postCardView } = require('../../utils/postCard');
 const PAGE_SIZE = 10;
 
 Page({
@@ -12,12 +16,18 @@ Page({
     hasMore: false,
     loading: true,
     loadingMore: false,
-    errorMessage: ''
+    errorMessage: '',
+    favoritePostIds: {}
   },
 
   onLoad(query) {
     this.setData({ salonId: String(query.salonId || '') });
     return this.load();
+  },
+
+  // 每次显示都同步收藏状态（缓存期内不发请求），从收藏页取消收藏后返回也能更新。
+  onShow() {
+    this.loadFavoriteIds();
   },
 
   onPullDownRefresh() {
@@ -35,7 +45,13 @@ Page({
     }
     this.setData({ loading: true, errorMessage: '' });
     try {
-      const result = await api.requestPage(this.postsPath(), { page: 1, limit: PAGE_SIZE });
+      // 关联套餐的价格和标签来自店铺详情；从详情页进入时直接命中详情缓存，不会多发请求。
+      // 套餐取不到时动态照常展示，关联套餐只显示名称。
+      const [result, services] = await Promise.all([
+        api.requestPage(this.postsPath(), { page: 1, limit: PAGE_SIZE }),
+        salonDetail.load(this.data.salonId).then((salon) => salon.services || [], () => null)
+      ]);
+      this.services = services;
       this.setData({
         posts: await Promise.all(result.items.map((post) => this.normalizePost(post))),
         page: 1,
@@ -57,7 +73,7 @@ Page({
       const posts = await Promise.all(result.items.map((post) => this.normalizePost(post)));
       const knownIds = new Set(this.data.posts.map((post) => post.id));
       this.setData({
-        posts: this.data.posts.concat(posts.filter((post) => !knownIds.has(post.id))),
+        ...appendPatch('posts', this.data.posts, posts.filter((post) => !knownIds.has(post.id))),
         page,
         hasMore: result.hasMore
       });
@@ -72,30 +88,32 @@ Page({
     return `/salons/${encodeURIComponent(this.data.salonId)}/posts`;
   },
 
-  async normalizePost(post) {
-    return {
-      ...post,
-      authorImageUrl: await api.displayImageUrl(post.authorImageUrl, 160),
-      imageUrls: await Promise.all((post.imageUrls || []).map((image) => api.displayImageUrl(image, 480))),
-      dateText: this.formatDate(post.createdAt)
-    };
+  // 全部动态都属于当前店铺。
+  normalizePost(post) {
+    return postCardView({ ...post, salonId: this.data.salonId }, this.services);
   },
 
-  formatDate(value) {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return '';
-    const pad = (number) => String(number).padStart(2, '0');
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  async loadFavoriteIds() {
+    const session = api.session();
+    if (!(session && session.token)) {
+      this.setData({ favoritePostIds: {} });
+      return;
+    }
+    try {
+      this.setData({ favoritePostIds: favoriteStore.idSet(await favoriteStore.posts.loadIds()) });
+    } catch (_) {}
   },
 
-  previewImage(e) {
-    const post = this.data.posts[Number(e.currentTarget.dataset.postIndex)] || {};
-    api.previewImage({ urls: post.imageUrls || [], current: e.currentTarget.dataset.url });
-  },
-
-  openStaff(e) {
-    const id = e.currentTarget.dataset.id;
-    if (!id) return;
-    wx.navigateTo({ url: `/pages/staff/staff?id=${encodeURIComponent(id)}&salonId=${encodeURIComponent(this.data.salonId)}` });
+  async onFavoriteChange(e) {
+    if (!api.requireLogin()) return;
+    const { id, favorite } = e.detail;
+    try {
+      const done = await favoriteStore.posts.toggle(id, favorite, (value) => this.setData({
+        favoritePostIds: { ...this.data.favoritePostIds, [id]: value }
+      }));
+      if (done) wx.showToast({ title: favorite ? '已收藏' : '已取消收藏', icon: 'none' });
+    } catch (err) {
+      wx.showToast({ title: err.message, icon: 'none' });
+    }
   }
 });

@@ -22,7 +22,7 @@ const template = fs.readFileSync(path.join(pageDir, 'booking.wxml'), 'utf8');
 const styles = fs.readFileSync(path.join(pageDir, 'booking.wxss'), 'utf8');
 
 assert.match(script, /serviceCategory\(selectedService\)/);
-assert.match(script, /filter\(\(service\) => serviceMatchesCategory\(service, this\.data\.activeServiceCategory\)\)/);
+assert.match(script, /filter\(\(service\) => serviceMatchesCategory\(service, state\.activeServiceCategory\)\)/);
 assert.match(template, /role="tablist"/);
 assert.match(template, /bindtap="selectServiceCategory"/);
 assert.match(template, /service-tab-slider \{\{activeServiceCategory\}\}/);

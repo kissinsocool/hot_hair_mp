@@ -1,0 +1,141 @@
+.post-card {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  margin-bottom: 20rpx;
+  padding: 28rpx;
+  border: 1rpx solid #eadbd2;
+  border-radius: 16rpx;
+  background: #fff;
+}
+
+/* 收藏按钮在卡片右上角，正文右侧留出按钮的位置。 */
+.post-favorite {
+  position: absolute;
+  top: 14rpx;
+  right: 14rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72rpx;
+  height: 72rpx;
+}
+
+.post-favorite image {
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.post-salon {
+  margin-bottom: 12rpx;
+  padding-right: 64rpx;
+  color: #a84860;
+  font-size: 26rpx;
+  font-weight: 600;
+  line-height: 36rpx;
+}
+
+.post-content {
+  padding-right: 64rpx;
+  color: #000;
+  font-size: 30rpx;
+  font-weight: 600;
+  line-height: 46rpx;
+  white-space: pre-wrap;
+}
+
+.post-salon + .post-content {
+  padding-right: 0;
+}
+
+.post-images {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8rpx;
+  margin-top: 18rpx;
+}
+
+.post-image {
+  display: block;
+  width: 100%;
+  height: 210rpx;
+  border-radius: 8rpx;
+  background: #f3ebe6;
+}
+
+.post-head {
+  margin-top: 18rpx;
+  color: #999;
+  font-size: 26rpx;
+  text-align: right;
+}
+
+.post-card--compact {
+  margin-bottom: 0;
+  padding: 34rpx 36rpx;
+  box-shadow: 0 8rpx 24rpx rgba(91, 67, 56, 0.12);
+  white-space: normal;
+}
+
+.post-card--compact .post-head {
+  margin-top: 12rpx;
+  overflow: hidden;
+  font-size: 23rpx;
+  line-height: 32rpx;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.post-card--compact .post-favorite {
+  top: 12rpx;
+  right: 12rpx;
+  width: 76rpx;
+  height: 76rpx;
+}
+
+.post-card--compact .post-favorite image {
+  width: 50rpx;
+  height: 50rpx;
+}
+
+.post-card--compact .post-content {
+  display: -webkit-box;
+  padding-right: 60rpx;
+  overflow: hidden;
+  font-size: 27rpx;
+  line-height: 40rpx;
+  white-space: normal;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.post-card--compact .post-images {
+  margin-top: 22rpx;
+}
+
+.post-image-cell {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8rpx;
+}
+
+/* 超过三张时，第三张上显示剩余张数，点开可看全部。 */
+.post-image-more {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.post-card--compact .post-image {
+  height: 132rpx;
+}

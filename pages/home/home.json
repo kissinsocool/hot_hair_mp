@@ -3,5 +3,7 @@
   "navigationBarBackgroundColor": "#f3dce7",
   "navigationBarTextStyle": "black",
   "navigationStyle": "custom",
-  "usingComponents": {}
+  "usingComponents": {
+    "coupon-tip": "/components/coupon-tip/coupon-tip"
+  }
 }

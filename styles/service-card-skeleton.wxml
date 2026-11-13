@@ -1,0 +1,17 @@
+<!-- 套餐卡片的加载占位：沿用 service-card.wxss 中真实卡片的类名和尺寸。店铺详情页和预约页共用。 -->
+<template name="service-card-skeleton">
+  <view class="service-card">
+    <view class="service-image-wrap skeleton-block skeleton-flat"></view>
+    <view class="service-main">
+      <view class="service-copy">
+        <view class="service-tags"><view wx:for="{{[0, 1, 2]}}" wx:key="*this" class="skeleton-block service-skeleton-tag"></view></view>
+        <view class="skeleton-line service-skeleton-name"></view>
+        <view class="skeleton-line service-skeleton-note"></view>
+      </view>
+      <view class="service-meta">
+        <view class="skeleton-block service-skeleton-price"></view>
+        <view class="skeleton-block service-skeleton-duration"></view>
+      </view>
+    </view>
+  </view>
+</template>

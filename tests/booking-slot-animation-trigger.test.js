@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { applyData } = require('./support/setData');
 
 let pageDefinition;
 const requests = [];
@@ -22,25 +23,25 @@ require('../pages/booking/booking');
 const page = {
   ...pageDefinition,
   salonId: 'salon-1',
+  salon: {
+    services: [
+      { id: 'service-1', tags: [] },
+      { id: 'service-2', tags: [] }
+    ],
+    staff: [
+      { id: 'staff-a', name: 'A' },
+      { id: 'staff-b', name: 'B' }
+    ]
+  },
+  slots: [{ time: '10:00', startTime: '2030-01-02T10:00:00+08:00', isAvailable: true }],
   data: {
     ...pageDefinition.data,
-    salon: {
-      services: [
-        { id: 'service-1', tags: [] },
-        { id: 'service-2', tags: [] }
-      ],
-      staff: [
-        { id: 'staff-a', name: 'A' },
-        { id: 'staff-b', name: 'B' }
-      ]
-    },
     selectedServiceId: 'service-1',
     selectedStaffId: 'staff-a',
     selectedDate: '2030-01-02',
-    slots: [{ time: '10:00', startTime: '2030-01-02T10:00:00+08:00', isAvailable: true }],
     slotOptions: [{ time: '10:00', startTime: '2030-01-02T10:00:00+08:00', isAvailable: true }]
   },
-  setData(values) { Object.assign(this.data, values); }
+  setData(values) { applyData(this.data, values); }
 };
 
 async function respond(promise, time) {

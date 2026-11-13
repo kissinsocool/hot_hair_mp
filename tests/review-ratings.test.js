@@ -35,7 +35,7 @@ test('the shared editor preserves create, edit, complaint and image request cont
   };
   api.uploadFile = async () => {};
   try {
-    require('../components/review-rating-picker/review-rating-picker');
+    require('../pages/review-editor/components/review-rating-picker/review-rating-picker');
     require('../pages/review-editor/review-editor');
     for (const mode of ['review', 'edit', 'complaint']) {
       const booking = { id: 'booking-1', bookingId: 'booking-1', rating: 5, comment: '原评价', tags: ['善于沟通'],

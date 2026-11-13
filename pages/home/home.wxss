@@ -1,3 +1,5 @@
+@import '../../styles/featured-badge.wxss';
+
 .home {
   min-height: 100vh;
   background: #fffdfb;
@@ -282,6 +284,10 @@
   font-weight: 700;
 }
 
+.home-coupon-tip {
+  margin: 0 20rpx;
+}
+
 .category-finder-title,
 .salon-list-title {
   margin: 0 30rpx 18rpx;
@@ -421,16 +427,19 @@
   font-weight: 700;
 }
 
+/* 店铺卡片按 393pt 宽设计稿（iPhone 14 Pro）还原：1pt ≈ 1.9084rpx。 */
 .salon-card {
   position: relative;
-  display: flex;
-  height: calc(220rpx + 10px);
-  margin: 0 22rpx 20rpx;
+  margin: 0 30.5rpx 30.5rpx;
+  padding: 21rpx 30.5rpx 0;
   overflow: hidden;
-  border: 1rpx solid #f0e4db;
-  border-radius: 20rpx;
+  border-radius: 15.3rpx;
   background: #fff;
-  box-shadow: 0 3.2rpx 24rpx rgba(0, 0, 0, 0.124);
+  box-shadow: 0 1rpx 8rpx rgba(0, 0, 0, 0.1);
+}
+
+.salon-card--loading {
+  height: 660rpx;
 }
 
 .salon-card-border-light {
@@ -488,23 +497,89 @@
   .salon-card-border-light::before { animation: none; }
 }
 
+.salon-head {
+  display: flex;
+  align-items: flex-start;
+  min-height: 44rpx;
+}
+
+.salon-name {
+  flex: 1;
+  min-width: 0;
+  color: #333;
+  font-size: 30rpx;
+  font-weight: 700;
+  line-height: 44rpx;
+  word-break: break-all;
+  /* app.wxss 的全局 .salon-name 限高并裁剪溢出；店名在这里完整换行，不裁剪才能露出标签四周的阴影。 */
+  max-height: none;
+  overflow: visible;
+}
+
+.salon-rating {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin-left: 16rpx;
+  color: #d06884;
+  font-size: 34rpx;
+  font-weight: 800;
+  line-height: 44rpx;
+  white-space: nowrap;
+}
+
+.star-icon {
+  width: 32rpx;
+  height: 32rpx;
+  margin-right: 6rpx;
+}
+
+/* 收藏按钮在卡片右下角（底部栏右端），垂直居中；点击区域比图标向外扩出 19rpx。 */
+.favorite {
+  position: absolute;
+  top: 50%;
+  right: -19rpx;
+  margin-top: -40rpx;
+  padding: 19rpx;
+  font-size: 0;
+}
+
+.favorite image {
+  display: block;
+  width: 48rpx;
+  height: 42rpx;
+}
+
+.salon-gallery {
+  width: auto;
+  height: 229.6rpx;
+  margin: 26rpx -30.5rpx 0 0;
+  white-space: nowrap;
+}
+
 .salon-image-wrap {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: calc(291.2rpx + 12.6px);
-  height: calc(220rpx + 10px);
-  flex: 0 0 calc(291.2rpx + 12.6px);
+  width: 306.6rpx;
+  height: 229.6rpx;
+  margin-right: 15.3rpx;
   overflow: hidden;
-  border-right: 1rpx solid #f7f4f2;
-  background: #fff;
+  border: 2rpx solid #e0e1e1;
+  border-radius: 6rpx;
+  background: #f7f4f2;
+  vertical-align: top;
+}
+
+.salon-image-wrap:last-child {
+  margin-right: 30.5rpx;
 }
 
 .salon-image-placeholder {
   color: #c8bbb4;
-  font-size: 28rpx;
+  font-size: 24.8rpx;
   font-weight: 600;
   letter-spacing: 4rpx;
 }
@@ -515,35 +590,73 @@
   top: 0;
   left: 0;
   width: 100%;
+  min-width: 0;
+  max-width: none;
   height: 100%;
   background: transparent;
 }
 
-.salon-tags {
-  position: absolute;
-  z-index: 1;
-  top: 10rpx;
-  left: 10rpx;
-  display: flex;
-  align-items: flex-start;
-  flex-direction: column;
-  gap: 6rpx;
-  width: 250rpx;
+/* 首页简介，最多两行。 */
+.salon-desc {
+  display: -webkit-box;
+  margin-top: 22.3rpx;
   overflow: hidden;
+  color: #333;
+  font-size: 28rpx;
+  line-height: 42rpx;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.salon-info {
+  margin-top: 18rpx;
+  color: #333;
+  font-size: 26rpx;
+  line-height: 44rpx;
+}
+
+.salon-desc + .salon-info {
+  margin-top: 22rpx;
+}
+
+.salon-info-row,
+.salon-info-item {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.salon-info-item {
+  flex: 0 0 auto;
+}
+
+.salon-info-item + .salon-info-item {
+  margin-left: 23rpx;
+}
+
+/* 高光标签：紧跟在店名后面，随店名换行，只显示店铺的第一个标签。 */
+.salon-name .salon-tag {
+  display: inline-block;
+  margin-left: 12rpx;
+  /* 标签裁剪溢出，基线在盒子底边：下移 8rpx 后盒子中线与店名汉字的中线重合。 */
+  vertical-align: -8rpx;
+}
+
+.salon-name .featured-badge {
+  margin-left: 12rpx;
+  vertical-align: middle;
 }
 
 .salon-tag {
   position: relative;
   box-sizing: border-box;
-  max-width: 100%;
+  max-width: calc(100% - 12rpx);
   padding: 2rpx 18rpx;
   overflow: hidden;
   border-radius: 999rpx;
   font-size: 22rpx;
   font-weight: 600;
   line-height: 34rpx;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .salon-tag::after {
@@ -619,94 +732,31 @@
   }
 }
 
-.salon-body {
-  position: relative;
-  flex: 1;
-  min-width: 0;
-  padding: 14rpx 8rpx 8rpx 12rpx;
-}
-
-.salon-head {
-  display: flex;
-  align-items: flex-start;
-  gap: 10rpx;
-}
-
-.salon-name {
-  flex: 1;
-  min-width: 0;
-  max-height: 88rpx;
-  overflow: hidden;
-  color: #5a5a5a;
-  font-size: 36rpx;
-  font-weight: 700;
-  line-height: 44rpx;
-}
-
-.salon-rating {
-  display: flex;
-  align-items: center;
-  gap: 6rpx;
-  flex: 0 0 auto;
-  overflow: hidden;
-  color: #d06884;
-  font-size: 24rpx;
-  font-weight: 800;
-  line-height: 30rpx;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.star-icon {
-  width: 21rpx;
-  height: 21rpx;
-}
-
-.salon-desc {
-  display: -webkit-box;
-  height: 61rpx;
-  margin-top: 6rpx;
-  overflow: hidden;
-  color: #777;
-  font-size: 30rpx;
-  line-height: 32rpx;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.salon-foot {
-  position: absolute;
-  right: 8rpx;
-  bottom: 8px;
-  left: 12rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.salon-info-icon {
+  width: 42rpx;
+  height: 38rpx;
+  flex: 0 0 42rpx;
+  margin-right: 8.3rpx;
 }
 
 .distance {
-  min-width: 0;
-  max-width: none;
   flex: 1;
-  margin-right: 8rpx;
+  min-width: 0;
   overflow: hidden;
-  color: #d06884;
-  font-size: 28rpx;
-  font-weight: 500;
-  line-height: 46rpx;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.favorite {
-  width: 46rpx;
-  height: 46rpx;
-  flex: 0 0 46rpx;
-}
-
-.favorite image {
-  width: 46rpx;
-  height: 46rpx;
+.salon-cta {
+  position: relative;
+  height: 86.5rpx;
+  margin-top: 19rpx;
+  border-top: 2rpx solid #e0e1e1;
+  color: #b43f58;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 84.6rpx;
+  text-align: center;
 }
 
 .load-more {
@@ -834,6 +884,11 @@
   width: 54rpx;
   height: 54rpx;
   transform: rotate(180deg);
+}
+
+.back-to-top-pressed {
+  transform: scale(0.9);
+  transition-duration: 120ms;
 }
 
 .support-fab-hidden {

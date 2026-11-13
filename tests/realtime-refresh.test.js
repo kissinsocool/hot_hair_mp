@@ -10,6 +10,7 @@ for (const name of ['orders', 'messages']) {
     let resolveFirst;
     let subscription;
     let calls = 0;
+    let fresh = false;
     const api = {
       session: () => ({ token: 'A' }), requireLogin: () => true,
       async request() { return { count: 0 }; },
@@ -20,8 +21,10 @@ for (const name of ['orders', 'messages']) {
     };
     const context = {
       Page: value => { definition = value; }, getApp: () => ({ globalData: {} }),
-      require: module => module.endsWith('/api') ? api : module.endsWith('/orders') ? { formatOrder: row => row, formatMessage: row => row }
+      require: module => module.endsWith('/api') ? api : module.endsWith('/orders') ? { formatOrder: row => row, formatMessage: row => row, orderCardView: row => row, messageView: row => row }
         : module.includes('bookingSocket') ? { subscribe(fn) { subscription = fn; return () => {}; } }
+        : module.includes('unreadMessages') ? { count: async () => 0, invalidate() {} }
+        : module.includes('freshness') ? { stamp: () => ({}), isFresh: () => fresh }
         : module.includes('layout') ? { appBarSize: () => ({}) } : module.includes('reviewTags') ? { buildReviewTags: () => [] } : {},
       wx: { showToast() {} },
     };
@@ -41,5 +44,12 @@ for (const name of ['orders', 'messages']) {
     subscription({ event: 'authenticated' });
     await new Promise(resolve => setImmediate(resolve));
     assert.equal(calls, previous + 2, 'initial load and a fresh authentication both synchronize state');
+    fresh = true;
+    page.onShow();
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(calls, previous + 2, 'returning while the loaded data is still fresh keeps the list as is');
+    subscription({ event: 'authenticated' });
+    await new Promise(resolve => setImmediate(resolve));
+    assert.equal(calls, previous + 3, 'a re-authentication still catches up on events missed while disconnected');
   });
 }

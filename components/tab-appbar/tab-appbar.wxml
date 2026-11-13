@@ -1,5 +1,0 @@
-<view class="tab-appbar" style="padding-top: {{statusBarHeight}}px; height: {{appBarHeight}}px;">
-  <view class="tab-appbar-title">{{title}}</view>
-  <slot></slot>
-</view>
-<view class="tab-appbar-spacer" style="height: {{appBarHeight}}px;"></view>

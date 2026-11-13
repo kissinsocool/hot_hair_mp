@@ -7,5 +7,6 @@ const home = fs.readFileSync(path.join(__dirname, '../pages/home/home.js'), 'utf
 const store = fs.readFileSync(path.join(__dirname, '../utils/favorites.js'), 'utf8');
 
 assert.match(home, /favoriteStore\.loadIds\(\)/);
-assert.match(store, /api\.request\('\/favorites\/ids'\)/);
+assert.match(store, /idsPath: '\/favorites\/ids'/);
+assert.match(store, /api\.request\(idsPath\)/);
 assert.doesNotMatch(home, /favorites\.map\(\(salon\) => salon\.id\)/);

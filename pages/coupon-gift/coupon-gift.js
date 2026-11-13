@@ -1,6 +1,8 @@
 const api = require('../../utils/api');
 const couponCampaign = require('../../utils/couponCampaign');
 const { onShareAppMessage } = require('../../utils/share');
+const couponUtils = require('../../utils/coupons');
+const couponStore = require('../../utils/couponStore');
 
 Page({
   onShareAppMessage,
@@ -24,7 +26,8 @@ Page({
     this.claimAttempted = true;
     this.setData({ claiming: true, errorMessage: '' });
     try {
-      const coupons = await api.request('/auth/coupons');
+      // 是否需要领取以服务端最新状态为准。
+      const coupons = await couponStore.load({ force: true });
       const giftCoupons = coupons.filter((coupon) => (
         ['99-20', '199-30'].includes(coupon.couponType)
       ));
@@ -44,15 +47,6 @@ Page({
   },
 
   viewCoupons() {
-    wx.switchTab({
-      url: '/pages/profile/profile',
-      success() {
-        const pages = getCurrentPages();
-        const profile = pages[pages.length - 1];
-        if (profile && profile.route === 'pages/profile/profile') {
-          profile.setData({ activeTab: 'coupons' });
-        }
-      }
-    });
+    couponUtils.openMyCoupons();
   }
 });

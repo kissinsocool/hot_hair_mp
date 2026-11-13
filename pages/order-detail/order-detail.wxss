@@ -93,6 +93,10 @@
   word-break: break-all;
 }
 
+.note-row > text:last-child {
+  font-weight: 400;
+}
+
 .salon-link {
   flex: 1;
   color: #d06884;
@@ -115,6 +119,12 @@
   margin-bottom: 0;
   padding-bottom: 0;
   border-bottom: 0;
+}
+
+/* 去掉「费用合计」后，由「到店需支付」上方的分隔线把明细和应付金额分开。 */
+.fee-panel .total {
+  padding-top: 30rpx;
+  border-top: 1rpx solid #f4e7df;
 }
 
 .total text:last-child {
@@ -150,4 +160,34 @@
 .retry-btn {
   width: 260rpx !important;
   margin: 32rpx auto 0;
+}
+
+
+/* 加载占位：位置和大小与状态文字、订单编号、各行右侧数值一致。 */
+.order-skeleton-status {
+  width: 160rpx;
+  height: 44rpx;
+  margin: 6rpx 0 4rpx;
+}
+
+.order-skeleton-meta {
+  width: 52%;
+  height: 26rpx;
+  margin: 18rpx 0 0;
+}
+
+.order-skeleton-value {
+  flex: none;
+  width: 240rpx;
+  height: 32rpx;
+  margin: 4rpx 0 0;
+}
+
+.order-skeleton-value--short {
+  width: 120rpx;
+}
+
+.total .order-skeleton-value {
+  height: 40rpx;
+  margin-top: 0;
 }

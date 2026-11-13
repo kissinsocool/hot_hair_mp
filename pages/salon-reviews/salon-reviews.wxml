@@ -33,7 +33,7 @@
       </view>
       <review-content class="review-comment-content" content="{{item.comment}}" />
       <view wx:if="{{item.imageUrls.length}}" class="review-images">
-        <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+        <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="reviews[{{reviewIndex}}].imageUrls[{{index}}]" data-src="{{image}}" bindtap="previewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
       </view>
       <view wx:if="{{item.helpfulCount > 0}}" class="review-helpful-count">{{item.helpfulCount}}位用户认为这个有帮助</view>
     </view>

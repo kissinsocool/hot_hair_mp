@@ -59,14 +59,15 @@ function cardStartTime(value) {
 function formatOrder(order) {
   const date = new Date(order.startTime);
   const startTimeText = api.formatTime(order.startTime);
+  const noShowReversed = order.status === 'no_show' && order.complaint?.decision === 'approved';
   const createdTimeText = api.formatTime(order.createdAt || order.createTime || order.createdTime);
   return {
     ...order,
     orderNo: order.orderNo || order.id,
     salonImageUrl: order.salonImageUrl ? api.thumbnailUrl(order.salonImageUrl, 360) : '',
     staffName: displayStaffName(order),
-    statusLabel: order.statusLabel || api.statusText(order.status),
-    cardStatusLabel: cardStatusLabel(order.status, order.statusLabel),
+    statusLabel: noShowReversed ? '爽约已撤销' : order.statusLabel || api.statusText(order.status),
+    cardStatusLabel: noShowReversed ? '爽约已撤销' : cardStatusLabel(order.status, order.statusLabel),
     statusClass: statusClass(order.status),
     startTimeMs: Number.isNaN(date.getTime()) ? 0 : date.getTime(),
     startTimeText,
@@ -108,13 +109,19 @@ function formatOrderDetail(order) {
     reasonText: ['rejected', 'canceled', 'cancelled', 'no_show'].includes(order.status)
       ? order.rejectReason || ''
       : '',
-    canReportIssue: order.status === 'completed' && !order.complained && !complaint,
+    canReportIssue: ['completed', 'no_show'].includes(order.status) && !order.complained && !complaint,
     complaint: complaint && {
       ...complaint,
-      reasonText: { not_arrived: '未到店', service_incomplete: '服务未完成', other: '其他问题' }[complaint.reason] || '其他问题',
+      reasonText: {
+        not_arrived: '未到店',
+        service_incomplete: '服务未完成',
+        no_show_dispute: '对未到店判定有异议',
+        other: '其他问题'
+      }[complaint.reason] || '其他问题',
       response: complaint.response || '',
       handledTimeText: complaint.handledAt ? api.formatTime(complaint.handledAt) : '',
-      statusText: complaint.status === 'handled' ? '已处理' : '待平台处理',
+      statusText: { approved: '爽约已撤销', rejected: '维持爽约判定' }[complaint.decision]
+        || (complaint.status === 'handled' ? '已处理' : '待平台处理'),
       createdTimeText: api.formatTime(complaint.createdAt)
     }
   };
@@ -136,8 +143,42 @@ function formatMessage(order) {
   };
 }
 
+// 列表模板实际使用的字段。setData 只传这些，完整数据留在页面逻辑层
+// （订单的取消、评价、再次预约都从完整数据读取），减少视图层传输量。
+const ORDER_CARD_FIELDS = [
+  'id', 'status', 'statusClass', 'cardStatusLabel', 'cardStartTimeText',
+  'salonImageUrl', 'salonName', 'salonDescription', 'serviceName', 'serviceDescription',
+  'hasCouponDiscount', 'couponText', 'canReview', 'canRebook', 'canCancel',
+  'reviewed', 'reviewButtonText', 'reviewButtonClass'
+];
+const MESSAGE_FIELDS = [
+  'id', 'bookingId', 'status', 'statusLabel', 'userMessageText', 'serviceName', 'staffName',
+  'salonName', 'startTimeText', 'hasCouponDiscount', 'couponText'
+];
+
+// setData 不接受 undefined，缺失的字段直接不传。
+function pickFields(source, fields) {
+  return fields.reduce((view, field) => {
+    if (source[field] !== undefined) view[field] = source[field];
+    return view;
+  }, {});
+}
+
+function orderCardView(order) {
+  return pickFields(order, ORDER_CARD_FIELDS);
+}
+
+function messageView(message) {
+  return pickFields(message, MESSAGE_FIELDS);
+}
+
 module.exports = {
   formatMessage,
   formatOrder,
-  formatOrderDetail
+  formatOrderDetail,
+  orderCardView,
+  messageView,
+  pickFields,
+  ORDER_CARD_FIELDS,
+  MESSAGE_FIELDS
 };

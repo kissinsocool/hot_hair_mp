@@ -1,0 +1,20 @@
+<view class="post-card {{compact ? 'post-card--compact' : ''}}">
+  <view class="post-favorite" catchtap="toggleFavorite" aria-role="button" aria-label="{{favorite ? '取消收藏' : '收藏动态'}}">
+    <image mode="aspectFit" src="{{favorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" aria-hidden="true" />
+  </view>
+  <view wx:if="{{showSalon && post.salonName}}" class="post-salon" bindtap="openSalon" aria-role="button">{{post.salonName}}</view>
+  <view class="post-content">{{post.content}}</view>
+  <view wx:if="{{post.imageUrls.length}}" class="post-images">
+    <block wx:for="{{post.imageUrls}}" wx:for-item="image" wx:for-index="imageIndex" wx:key="*this">
+      <view wx:if="{{!compact || imageIndex < 3}}" class="post-image-cell" bindtap="previewImage" data-url="{{image}}">
+        <image class="post-image" mode="aspectFill" src="{{image}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="post.imageUrls[{{imageIndex}}]" data-src="{{image}}" />
+        <view wx:if="{{compact && imageIndex === 2 && post.imageUrls.length > 3}}" class="post-image-more">+{{post.imageUrls.length - 3}}</view>
+      </view>
+    </block>
+  </view>
+  <post-service-card salon-id="{{post.salonId}}" service="{{post.relatedService}}" service-name="{{post.serviceName}}" unavailable="{{post.serviceUnavailable}}" compact="{{compact}}" />
+  <view class="post-head">
+    <text bindtap="openStaff" data-id="{{post.authorStaffId}}" aria-role="button">{{post.authorName}}</text>
+    <text> · 投稿时间：{{post.dateText}}</text>
+  </view>
+</view>

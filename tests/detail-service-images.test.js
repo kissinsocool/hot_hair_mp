@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
 
-test('service cards load only the cover, then preview the ordered gallery without navigating', async () => {
+test('service cards preview galleries from images and open booking with the selected service', async () => {
   let definition;
   const resolved = [];
   const previews = [];
@@ -70,6 +70,7 @@ test('service cards load only the cover, then preview the ordered gallery withou
     assert.equal(page.data.salon.services[0].noteText, '洗护\r\n造型\n护理');
     assert.equal(page.data.salon.services[0].durationText, '60分钟');
     assert.equal(page.data.salon.latestPosts[1].relatedService, null);
+    assert.equal(page.data.salon.latestPosts[1].serviceUnavailable, true);
 
     await page.openService({ currentTarget: { dataset: { id: 'multi' } } });
     assert.deepEqual(resolved.filter(Boolean), ['/first.jpg', '/legacy.jpg', '/second.jpg', '/third.jpg']);
@@ -88,8 +89,15 @@ test('service cards load only the cover, then preview the ordered gallery withou
     }
     assert.equal(previews.length, 0);
     assert.equal(navigations.length, 0);
-    page.bookPostService({ currentTarget: { dataset: { id: 'multi' } } });
-    assert.deepEqual(navigations, [{ url: '/pages/booking/booking?id=salon-1&serviceId=multi' }]);
+
+    for (const id of ['multi', 'missing']) {
+      page.bookService({ currentTarget: { dataset: { id } } });
+    }
+    assert.deepEqual(navigations, [
+      { url: '/pages/booking/booking?id=salon-1&serviceId=multi' },
+      { url: '/pages/booking/booking?id=salon-1&serviceId=missing' }
+    ]);
+    assert.equal(previews.length, 0);
   } finally {
     api.request = original.request;
     api.displayImageUrl = original.displayImageUrl;

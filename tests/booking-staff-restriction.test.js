@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 const fs = require('node:fs');
 const path = require('node:path');
+const { applyData } = require('./support/setData');
 global.getApp = () => ({ globalData: {} });
 global.wx = { getStorageSync: () => null };
 let definition;
@@ -25,7 +26,7 @@ function page() {
     ...definition,
     salonId: 'salon-1',
     data: structuredClone(definition.data),
-    setData(values) { Object.assign(this.data, values); },
+    setData(values) { applyData(this.data, values); },
     loadSlots() { this.slotStaffId = this.data.selectedStaffId; this.slotLoads = (this.slotLoads || 0) + 1; }
   };
 }
@@ -78,8 +79,8 @@ test('disabled staff styling and accessible disabled state are rendered', () => 
 test('restricted packages allow multiple selected staff while blocking the rest', async () => {
   const p = page();
   await p.load();
-  p.data.salon.staff.push({ id: 'staff-2', name: 'Lee' }, { id: 'staff-3', name: 'Sam' });
-  p.data.salon.services[0].selectableStaffIds = ['staff-1', 'staff-2'];
+  p.salon.staff.push({ id: 'staff-2', name: 'Lee' }, { id: 'staff-3', name: 'Sam' });
+  p.salon.services[0].selectableStaffIds = ['staff-1', 'staff-2'];
   p.selectService(event('restricted'));
   assert.equal(p.data.selectedStaffId, '__no_preference__');
   assert.equal(p.data.staffOptions[1].disabled, false);
@@ -96,7 +97,7 @@ test('restricted packages allow multiple selected staff while blocking the rest'
   p.selectStaff(event('staff-3'));
   assert.equal(p.data.selectedStaffId, 'staff-2');
   assert.equal(p.slotLoads, loads);
-  p.data.salon.services[0].selectableStaffIds = ['staff-1'];
+  p.salon.services[0].selectableStaffIds = ['staff-1'];
   p.refreshOptions();
   assert.equal(p.data.selectedStaffId, '__no_preference__');
   p.selectService(event('normal'));

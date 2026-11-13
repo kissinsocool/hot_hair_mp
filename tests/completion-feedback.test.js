@@ -56,3 +56,51 @@ test('message opens the referenced order and feedback returns to the existing co
     assert.equal(initialized.value.booking.id, 'B1');
   } finally { delete global.Page; delete global.wx; }
 });
+
+test('no-show orders accept one dispute and display the platform decision', () => {
+  const order = { ...base, status: 'no_show', statusLabel: '爽约' };
+  assert.equal(formatOrderDetail(order).canReportIssue, true);
+  const complaint = { reason: 'no_show_dispute', description: '我已到店' };
+  assert.equal(formatOrderDetail({ ...order, complaint }).canReportIssue, false);
+  const resolved = formatOrderDetail({ ...order, complaint: { ...complaint, status: 'handled', decision: 'approved' } });
+  assert.equal(resolved.statusLabel, '爽约已撤销');
+  assert.equal(resolved.cardStatusLabel, '爽约已撤销');
+  assert.equal(resolved.complaint.statusText, '爽约已撤销');
+  assert.equal(resolved.complaint.reasonText, '对未到店判定有异议');
+  assert.equal(resolved.canReview, false);
+});
+
+test('the existing feedback editor submits a no-show dispute with its fixed reason', async () => {
+  const api = require('../utils/api');
+  const { requireLogin, request } = api;
+  let definition;
+  let submitted;
+  global.Page = page => { definition = page; };
+  global.wx = { setNavigationBarTitle() {}, navigateBack() {}, showToast() {} };
+  api.requireLogin = () => true;
+  api.request = async (path, options) => { submitted = { path, ...options }; };
+  try {
+    require('../pages/review-editor/review-editor');
+    const page = {
+      ...definition,
+      data: { ...definition.data },
+      getOpenerEventChannel() {
+        return { on: (_, init) => init({ mode: 'complaint', booking: { ...base, status: 'no_show' } }) };
+      },
+      setData(patch) { Object.assign(this.data, patch); }
+    };
+    page.onLoad();
+    page.onContent({ detail: { value: '我已到店，请核实' } });
+    await page.submit();
+    assert.deepEqual(submitted, {
+      path: '/bookings/B1/complaint',
+      method: 'POST',
+      data: { reason: 'no_show_dispute', description: '我已到店，请核实', imageObjects: [] }
+    });
+  } finally {
+    api.requireLogin = requireLogin;
+    api.request = request;
+    delete global.Page;
+    delete global.wx;
+  }
+});

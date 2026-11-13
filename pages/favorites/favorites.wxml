@@ -1,20 +1,60 @@
-<tab-appbar title="我的收藏" />
+<view class="native-tab-header-extension" aria-hidden="true"></view>
+<view wx:if="{{loggedIn}}" class="fav-header">
+  <view class="fav-tabs" aria-role="tablist">
+    <view wx:for="{{tabs}}" wx:key="key" class="fav-tab {{activeTab === item.key ? 'fav-tab--active' : ''}}" bindtap="switchTab" data-key="{{item.key}}" aria-role="tab" aria-selected="{{activeTab === item.key}}">{{item.label}}</view>
+  </view>
+  <view class="fav-count-bar"><text class="fav-count-num">{{activeTab === 'salons' ? salons.length : (activeTab === 'staff' ? staff.length : posts.length)}}</text><text class="fav-count-unit">{{activeUnit}}</text></view>
+</view>
 <view class="page">
   <view wx:if="{{!loggedIn}}"></view>
-  <view wx:elif="{{loading && !salons.length}}" class="empty">正在加载...</view>
-  <view wx:elif="{{!salons.length}}" class="empty">还没有收藏的沙龙</view>
-  <view wx:for="{{salons}}" wx:key="id" class="salon-card" bindtap="openDetail" data-id="{{item.id}}">
-    <image class="salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
-    <view class="salon-body">
-      <view class="salon-head">
-        <view class="salon-name">{{item.nameText}}</view>
-        <view class="salon-rating"><image wx:if="{{item.hasRating}}" class="icon-img rating-star" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.ratingText}}</view>
+  <view wx:elif="{{loading}}" class="empty">正在加载...</view>
+  <block wx:elif="{{activeTab === 'salons'}}">
+    <view wx:if="{{!salons.length}}" class="empty">{{emptyText}}</view>
+    <view wx:for="{{salons}}" wx:key="id" class="fav-card" bindtap="openDetail" data-id="{{item.id}}">
+      <image class="fav-image" mode="aspectFill" src="{{item.image}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="salons[{{index}}].image" data-src="{{item.image}}" />
+      <view class="fav-body">
+        <view class="fav-tag">美发沙龙</view>
+        <view class="fav-name">{{item.nameText}}</view>
+        <view class="fav-desc">{{item.descriptionText}}</view>
+        <view class="fav-book" hover-class="fav-book--active" catchtap="openDetail" data-id="{{item.id}}">立即预约</view>
       </view>
-      <view class="salon-desc">{{item.descriptionText}}</view>
-      <view class="salon-foot">
-        <view class="distance">{{item.distanceText}}</view>
-        <view class="favorite" catchtap="toggle" data-id="{{item.id}}"><image mode="aspectFit" src="/assets/icons/favorite_pink.png" /></view>
+      <view class="fav-heart" catchtap="toggle" data-id="{{item.id}}" aria-label="取消收藏">
+        <image mode="aspectFit" src="/assets/icons/favorite_rose.png" />
       </view>
+    </view>
+  </block>
+  <block wx:elif="{{activeTab === 'staff'}}">
+    <view wx:if="{{!staff.length}}" class="empty">{{emptyText}}</view>
+    <view wx:for="{{staff}}" wx:key="id" class="fav-card" bindtap="openStaff" data-id="{{item.id}}">
+      <image class="fav-image fav-image--portrait" mode="aspectFill" src="{{item.image}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="staff[{{index}}].image" data-src="{{item.image}}" />
+      <view class="fav-body">
+        <view class="fav-name fav-name--staff">{{item.nameText}}</view>
+        <view wx:if="{{item.subText}}" class="fav-sub">{{item.subText}}</view>
+        <view class="fav-desc">{{item.bioText}}</view>
+        <view class="fav-book" hover-class="fav-book--active" catchtap="bookStaff" data-id="{{item.id}}">指名预约</view>
+      </view>
+      <view class="fav-heart" catchtap="toggleStaff" data-id="{{item.id}}" aria-label="取消收藏">
+        <image mode="aspectFit" src="/assets/icons/favorite_rose.png" />
+      </view>
+    </view>
+  </block>
+  <view wx:else class="fav-posts">
+    <view wx:if="{{!posts.length}}" class="empty">{{emptyText}}</view>
+    <view wx:for="{{posts}}" wx:key="id" class="fav-pkg-card">
+      <view class="fav-pkg-top" bindtap="openPostSalon" data-id="{{item.id}}">
+        <image class="fav-pkg-image" mode="aspectFill" src="{{item.salonImage}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="posts[{{index}}].salonImage" data-src="{{item.salonImage}}" />
+        <view class="fav-pkg-body">
+          <view class="fav-pkg-name">{{item.salonNameText}}</view>
+          <view class="fav-pkg-desc">{{item.salonDescriptionText}}</view>
+        </view>
+      </view>
+      <view class="fav-pkg-heart" catchtap="togglePost" data-id="{{item.id}}" aria-role="button" aria-label="取消收藏">
+        <image mode="aspectFit" src="/assets/icons/favorite_rose.png" />
+      </view>
+      <view wx:if="{{item.salonTags.length}}" class="fav-pkg-tags">
+        <text wx:for="{{item.salonTags}}" wx:for-item="tag" wx:key="*this" class="fav-pkg-tag">{{tag}}</text>
+      </view>
+      <post-service-card salon-id="{{item.salonId}}" service="{{item.relatedService}}" service-name="{{item.serviceName}}" unavailable="{{item.serviceUnavailable}}" compact />
     </view>
   </view>
 </view>

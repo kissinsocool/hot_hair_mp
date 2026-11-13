@@ -19,16 +19,12 @@ assert.deepEqual(previews.pop(), {
 
 delete require.cache[require.resolve('../pages/detail/detail')];
 require('../pages/detail/detail');
-pageDefinition.previewHeroImage.call({ data: { salon: { image: 'https://example.com/salon.jpg' } } });
-assert.deepEqual(previews.pop(), {
-  urls: ['https://example.com/salon.jpg'],
-  current: 'https://example.com/salon.jpg'
-});
+assert.equal(pageDefinition.previewHeroImage, undefined, '封面大图已隐藏，不再保留预览入口');
 
 const staffTemplate = fs.readFileSync(path.join(root, 'pages/staff/staff.wxml'), 'utf8');
 const detailTemplate = fs.readFileSync(path.join(root, 'pages/detail/detail.wxml'), 'utf8');
 assert.match(staffTemplate, /class="avatar"[^>]*bindtap="previewAvatar"/);
-assert.match(detailTemplate, /class="hero"[^>]*bindtap="previewHeroImage"/);
+assert.doesNotMatch(detailTemplate, /previewHeroImage/);
 assert.match(detailTemplate, /wx:for="\{\{salon\.afterSalesPolicies\}\}"/);
 assert.match(detailTemplate, /wx:if="\{\{salon\.afterSalesPolicies\.length \|\| salon\.acceptsSameDayBooking === true\}\}" class="after-sales"/);
 assert.match(detailTemplate, /class="after-sales-icon"[^>]*src="\/assets\/icons\/right_gray\.svg"/);

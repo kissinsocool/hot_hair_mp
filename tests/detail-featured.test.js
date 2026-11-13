@@ -5,6 +5,7 @@ const path = require('node:path');
 const root = path.join(__dirname, '..');
 const template = fs.readFileSync(path.join(root, 'pages/detail/detail.wxml'), 'utf8');
 const styles = fs.readFileSync(path.join(root, 'pages/detail/detail.wxss'), 'utf8');
+const badgeStyles = fs.readFileSync(path.join(root, 'styles/featured-badge.wxss'), 'utf8');
 
 global.getApp = () => ({ globalData: {} });
 global.wx = { getStorageSync: () => null };
@@ -36,10 +37,10 @@ test('detail retains featured on/off and accepts released response without the f
   }
 });
 
-test('featured badge is conditional and sits below hero above salon heading', () => {
+test('featured badge is conditional and sits above salon heading', () => {
   const badge = template.indexOf('class="featured-badge"');
-  assert.ok(template.indexOf('class="hero"') < badge);
   assert.ok(badge < template.indexOf('class="detail-heading"'));
   assert.match(template, /wx:if="\{\{salon\.isFeatured === true\}\}" class="featured-badge"><text>靓丝精选<\/text>/);
-  assert.match(styles, /\.featured-badge\s*\{[^}]*border-radius:\s*10rpx;[^}]*background:\s*#151d25;[^}]*color:\s*#fff;/s);
+  assert.match(styles, /@import '\.\.\/\.\.\/styles\/featured-badge\.wxss';/);
+  assert.match(badgeStyles, /\.featured-badge\s*\{[^}]*border-radius:\s*10rpx;[^}]*background:\s*#151d25;[^}]*color:\s*#fff;/s);
 });

@@ -2,7 +2,16 @@ const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const app = getApp();
 const couponUtils = require('../../utils/coupons');
+const freshness = require('../../utils/freshness');
+const couponStore = require('../../utils/couponStore');
+const { appendPatch } = require('../../utils/dataPatch');
+const { pickFields } = require('../../utils/orders');
 const PAGE_SIZE = 20;
+// 「我的评价」卡片模板使用的字段；完整评价（标签、图片原始 key 等）留在逻辑层，编辑时传给评价编辑页。
+const REVIEW_CARD_FIELDS = [
+  'bookingId', 'salonName', 'date', 'serviceName', 'staffName', 'rating', 'ratings',
+  'comment', 'imageUrls', 'replyText', 'isAwaitingReview', 'editButtonText'
+];
 const initialSession = api.session();
 const initiallyLoggedIn = Boolean(initialSession && initialSession.token);
 const initialUser = initialSession && initialSession.user || {};
@@ -47,9 +56,10 @@ Page({
     }
     const user = session.user || {};
     this.applyUser(user);
-    this.refreshUser();
-    this.loadCoupons();
-    if (this.data.activeTab === 'reviews') this.loadReviews();
+    // 短时间内返回且期间没有本端写操作和预约推送时，沿用已加载的数据。
+    if (!freshness.isFresh(this.userStamp)) this.refreshUser();
+    if (!freshness.isFresh(this.couponsStamp)) this.loadCoupons();
+    if (this.data.activeTab === 'reviews' && !freshness.isFresh(this.reviewsStamp)) this.loadReviews();
   },
 
   applyUser(user) {
@@ -62,10 +72,14 @@ Page({
   },
 
   async refreshUser() {
+    const stamp = freshness.stamp();
     try {
       const response = await api.request('/auth/me');
       const current = api.session();
       if (!current || !response.user) return;
+      this.userStamp = stamp;
+      // 资料没有变化时不重复写入本地存储和刷新视图。
+      if (JSON.stringify(current.user) === JSON.stringify(response.user)) return;
       const session = { ...current, user: response.user };
       api.saveSession(session);
       this.applyUser(session.user);
@@ -73,7 +87,7 @@ Page({
   },
 
   onPullDownRefresh() {
-    const refresh = this.data.activeTab === 'reviews' ? this.loadReviews() : this.loadCoupons();
+    const refresh = this.data.activeTab === 'reviews' ? this.loadReviews() : this.loadCoupons({ force: true });
     Promise.resolve(refresh).finally(() => wx.stopPullDownRefresh());
   },
 
@@ -91,12 +105,14 @@ Page({
     if (activeTab === 'reviews' && !this.data.reviews.length) this.loadReviews();
   },
 
-  async loadCoupons() {
+  async loadCoupons({ force = false } = {}) {
     if (!this.data.loggedIn) return;
     this.setData({ loadingCoupons: true, couponsLoadFailed: false });
+    const stamp = freshness.stamp();
     try {
-      const coupons = await api.request('/auth/coupons');
+      const coupons = await couponStore.load({ force });
       this.setData({ coupons: couponUtils.sortCoupons(coupons) });
+      this.couponsStamp = stamp;
     } catch (err) {
       this.setData({ couponsLoadFailed: true });
     } finally {
@@ -105,7 +121,7 @@ Page({
   },
 
   retryCoupons() {
-    this.loadCoupons();
+    this.loadCoupons({ force: true });
   },
 
   async loadReviews() {
@@ -114,14 +130,17 @@ Page({
     const version = (this.reviewsVersion || 0) + 1;
     this.reviewsVersion = version;
     this.setData({ loadingReviews: true, loadingMoreReviews: false });
+    const stamp = freshness.stamp();
     try {
       const result = await api.requestPage('/auth/reviews', { page: 1, limit: PAGE_SIZE });
       if (version !== this.reviewsVersion) return;
+      this.reviewSources = result.items.map(normalizeReview);
       this.setData({
-        reviews: result.items.map(normalizeReview),
+        reviews: this.reviewSources.map((review) => pickFields(review, REVIEW_CARD_FIELDS)),
         reviewPage: 1,
         hasMoreReviews: result.hasMore
       });
+      this.reviewsStamp = stamp;
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
@@ -138,8 +157,10 @@ Page({
     try {
       const result = await api.requestPage('/auth/reviews', { page, limit: PAGE_SIZE });
       if (version !== this.reviewsVersion) return;
+      const reviews = result.items.map(normalizeReview);
+      this.reviewSources = (this.reviewSources || []).concat(reviews);
       this.setData({
-        reviews: this.data.reviews.concat(result.items.map(normalizeReview)),
+        ...appendPatch('reviews', this.data.reviews, reviews.map((review) => pickFields(review, REVIEW_CARD_FIELDS))),
         reviewPage: page,
         hasMoreReviews: result.hasMore
       });
@@ -156,7 +177,7 @@ Page({
   },
 
   editReview(e) {
-    const review = this.data.reviews[Number(e.currentTarget.dataset.index)];
+    const review = (this.reviewSources || [])[Number(e.currentTarget.dataset.index)];
     if (!review || review.isAwaitingReview) return;
     wx.navigateTo({
       url: '/pages/review-editor/review-editor',
@@ -165,7 +186,7 @@ Page({
   },
 
   deleteReview(e) {
-    const review = this.data.reviews[Number(e.currentTarget.dataset.index)];
+    const review = (this.reviewSources || [])[Number(e.currentTarget.dataset.index)];
     if (!review || this.data.deletingReviewId) return;
     wx.showModal({
       title: '删除评价',

@@ -9,7 +9,7 @@ global.wx = {
 };
 require('../pages/orders/orders');
 const order = { id: 'booking-1', reviewed: false, complained: false };
-const page = { ...definition, data: { ...definition.data, orders: [order] },
+const page = { ...definition, data: { ...definition.data, orders: [{ id: order.id }] }, orderSources: new Map([[order.id, order]]),
   setData(values) { Object.assign(this.data, values); },
   getTabBar: () => ({ show() {}, hide() { assert.fail('a separate editor must not hide the source tab bar'); } }) };
 for (const mode of ['review', 'complaint']) {

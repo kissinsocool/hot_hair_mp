@@ -6,8 +6,11 @@ const ad = require('../../utils/ad');
 const couponCampaign = require('../../utils/couponCampaign');
 const analytics = require('../../utils/analytics');
 const favoriteStore = require('../../utils/favorites');
+const salonDetail = require('../../utils/salonDetail');
 const unreadMessages = require('../../utils/unreadMessages');
+const salonListCache = require('../../utils/salonListCache');
 const { ratingDisplay } = require('../../utils/rating');
+const { formatFen } = require('../../utils/money');
 const { PROMOTION_CATEGORIES, promotionCategory } = require('../../utils/promotionCategories');
 const TAB_BAR_SCROLL_TRIGGER = 8;
 const DEFAULT_SERVICE_LOCATION = {
@@ -15,13 +18,17 @@ const DEFAULT_SERVICE_LOCATION = {
   longitude: 116.4074,
   locationText: '选择定位'
 };
+const LAST_LOCATION_KEY = 'homeLastLocation';
+// 模糊定位本身只有公里级精度；移动不足这个距离时，附近店铺列表不会有实质变化。
+const LOCATION_REFRESH_DISTANCE_M = 500;
 const INITIAL_SALON_CARD_COUNT = 10;
 const SALON_PAGE_SIZE = 10;
+const SALON_VISIBILITY_BATCH_MS = 16;
+const SALON_CARD_IMAGE_LIMIT = 5;
 const SALON_TAG_CLASSES = ['salon-tag-neon', 'salon-tag-nature'];
 const loadingSalonCards = () => Array.from({ length: INITIAL_SALON_CARD_COUNT }, (_, index) => ({
   cardKey: `salon-card-${index}`,
-  isPlaceholder: true,
-  lightActive: false
+  isPlaceholder: true
 }));
 
 Page({
@@ -30,6 +37,7 @@ Page({
   data: {
     salonCount: 0,
     salonCards: loadingSalonCards(),
+    visibleSalonCards: Array(INITIAL_SALON_CARD_COUNT).fill(false),
     salonCategories: PROMOTION_CATEGORIES,
     favorites: [],
     suggestions: [],
@@ -41,7 +49,9 @@ Page({
     latitude: DEFAULT_SERVICE_LOCATION.latitude,
     longitude: DEFAULT_SERVICE_LOCATION.longitude,
     locationText: DEFAULT_SERVICE_LOCATION.locationText,
+    // keyword 是输入框里的草稿；searchKeyword 是已提交、列表请求与分页实际使用的关键词。
     keyword: '',
+    searchKeyword: '',
     salonSort: 'distance',
     salonPage: 0,
     hasMoreSalons: false,
@@ -53,6 +63,8 @@ Page({
     locationIsFuzzy: true,
     unreadMessageCount: 0,
     supportHidden: false,
+    // 列表滚动超过一屏后才显示返回顶部按钮。
+    showBackToTop: false,
     newUserGiftVisible: false,
     newUserGiftImage: '',
     newUserGiftDismissed: false,
@@ -62,7 +74,32 @@ Page({
 
   onLoad() {
     this.setNavSize();
+    const lastLocation = readLastLocation();
+    if (lastLocation) {
+      // 首屏先按上次定位加载，不等待本次定位；定位返回后位置变化明显才重新加载。
+      this.restoredLocation = lastLocation;
+      this.setData({
+        latitude: lastLocation.latitude,
+        longitude: lastLocation.longitude,
+        locatedOnce: true,
+        locationFailed: false,
+        locationIsFuzzy: true
+      });
+      this.showCachedSalons(lastLocation);
+      this.loadSalons();
+    }
     this.locate();
+  },
+
+  // 冷启动时先展示上次在同一位置读取的第一页，实时结果返回后整体替换。
+  // 展示缓存期间 hasMoreSalons 保持 false，避免把实时的第二页拼到缓存的第一页后面。
+  async showCachedSalons(location) {
+    const items = salonListCache.read(location);
+    if (!items) return;
+    const salons = await this.normalizeSalonPage(items);
+    if (this.salonListLoaded || this.data.searchKeyword || this.data.salonSort !== 'distance') return;
+    this.salons = salons;
+    this.renderSalons(salons);
   },
 
   onReady() {
@@ -71,6 +108,7 @@ Page({
 
   setNavSize() {
     const info = wx.getWindowInfo ? wx.getWindowInfo() : wx.getSystemInfoSync();
+    this.backToTopThreshold = info.windowHeight || 600;
     const searchHeight = 103 * ((info.windowWidth || 375) / 750);
     this.setData(layout.appBarSize(searchHeight));
   },
@@ -87,7 +125,7 @@ Page({
     if (this.locationChanged) {
       this.locationChanged = false;
       // 新定位使用新列表，返回可见后先清除旧列表的滚动位置。
-      this.scrollToTop(false, () => this.loadSalons());
+      this.scrollToTop(() => this.loadSalons());
     }
     ad.load().then((config) => this.setData({ ad: config }));
     this.loadNewUserGift();
@@ -111,9 +149,16 @@ Page({
 
   onUnload() {
     clearTimeout(this.supportTimer);
-    if (this.salonCardObserver) this.salonCardObserver.disconnect();
+    this.salonListVersion = (this.salonListVersion || 0) + 1;
+    this.salonCardRender = null;
+    this.stopSalonCardObserver();
     if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
     this.unsubscribeBookingSocket = null;
+  },
+
+  // 网络恢复后重新加载之前失败的内容。
+  onNetworkRestored() {
+    if (this.data.errorMessage) this.loadSalons();
   },
 
   refresh() {
@@ -127,6 +172,11 @@ Page({
     wx.getFuzzyLocation({
       type: 'gcj02',
       success: (res) => {
+        const restored = this.takeRestoredLocation();
+        wx.setStorage({ key: LAST_LOCATION_KEY, data: { latitude: res.latitude, longitude: res.longitude } });
+        // 等待定位期间用户已手动选点时，以用户的选择为准。
+        if (restored && !this.data.locationIsFuzzy) return;
+        if (restored && distanceMeters(restored, res) < LOCATION_REFRESH_DISTANCE_M) return;
         this.setData({
           latitude: res.latitude,
           longitude: res.longitude,
@@ -134,18 +184,34 @@ Page({
           locationFailed: false,
           locationIsFuzzy: true
         });
-        this.loadSalons();
+        this.reloadSalonsForLocation(Boolean(restored));
       },
       fail: () => {
+        const restored = this.takeRestoredLocation();
+        // 定位不可用时不再沿用上次位置，与未缓存时一样回到默认城市。
+        if (restored) wx.removeStorage({ key: LAST_LOCATION_KEY });
+        if (restored && !this.data.locationIsFuzzy) return;
         this.setData({
           ...DEFAULT_SERVICE_LOCATION,
           locatedOnce: false,
           locationFailed: true
         });
-        this.loadSalons();
+        this.reloadSalonsForLocation(Boolean(restored));
       },
       complete: () => this.setData({ locating: false })
     });
+  },
+
+  takeRestoredLocation() {
+    const restored = this.restoredLocation || null;
+    this.restoredLocation = null;
+    return restored;
+  },
+
+  reloadSalonsForLocation(listAlreadyShown) {
+    // 已按上次定位展示过列表时，先清除旧列表的滚动位置再替换。
+    if (listAlreadyShown) this.scrollToTop(() => this.loadSalons());
+    else this.loadSalons();
   },
 
   async loadSalons() {
@@ -156,17 +222,21 @@ Page({
       const result = await api.requestPage(this.salonListPath(), { page: 1, limit: SALON_PAGE_SIZE });
       const normalizedSalons = await this.normalizeSalonPage(result.items);
       if (version !== this.salonListVersion) return;
+      this.salonListLoaded = true;
       this.salons = normalizedSalons;
       this.setData({
         salonPage: 1,
         hasMoreSalons: result.hasMore
       });
       this.renderSalons(normalizedSalons);
+      if (!this.data.searchKeyword && this.data.salonSort === 'distance') {
+        salonListCache.save({ latitude: this.data.latitude, longitude: this.data.longitude }, result.items);
+      }
     } catch (err) {
       if (version !== this.salonListVersion) return;
       const updates = { errorMessage: err.message || '网络请求失败' };
-      if (!(this.salons || []).length) updates.salonCards = [];
-      this.setData(updates, () => this.observeSalonCards());
+      if ((this.salons || []).length) this.setData(updates);
+      else this.setSalonCardData({ ...updates, salonCards: [] }, 0);
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {
       if (version === this.salonListVersion) this.setData({ loading: false });
@@ -175,7 +245,7 @@ Page({
 
   salonListPath() {
     const { latitude, longitude } = this.data;
-    const keyword = this.data.keyword.trim();
+    const keyword = this.data.searchKeyword;
     return `/salons?latitude=${latitude}&longitude=${longitude}${keyword ? `&keyword=${encodeURIComponent(keyword)}` : ''}${this.data.salonSort === 'rating' ? '&sort=rating' : ''}`;
   },
 
@@ -190,26 +260,43 @@ Page({
     return Promise.all(salons.map(async (source) => {
       const salon = this.normalizeSalon(source);
       try {
-        return { ...salon, image: await api.displayImageUrl(api.salonImage(source), 480) };
+        const cardImages = await Promise.all(api.salonImages(source, SALON_CARD_IMAGE_LIMIT)
+          .map((image) => api.displayImageUrl(image, 480, { webp: true })));
+        return { ...salon, cardImages };
       } catch (_) {
         return salon;
       }
     }));
   },
 
+  onSalonImageError(e) {
+    const { cardIndex, imageIndex, src } = e.currentTarget.dataset;
+    if (typeof src !== 'string' || this.data.salonCards[cardIndex]?.images?.[imageIndex] !== src) return;
+    const fallback = api.jpegThumbnailFallback(src);
+    if (fallback !== src) this.setData({ [`salonCards[${cardIndex}].images[${imageIndex}]`]: fallback });
+  },
+
   normalizeSalon(salon) {
+    const reviewCount = Math.max(0, Math.floor(Number(salon.reviewCount)) || 0);
     return {
       ...salon,
       image: '',
+      cardImages: [],
       nameText: salon.name || '未知沙龙',
       addressText: salon.address || '',
       businessDistrict: typeof salon.businessDistrict === 'string' ? salon.businessDistrict.trim() : '',
-      descriptionText: salon.description || '暂无描述',
+      // 店铺的首页简介，卡片上紧跟在店名之后。
+      introText: typeof salon.description === 'string' ? salon.description.trim() : '',
       tags: (Array.isArray(salon.tags) ? salon.tags.filter(Boolean) : []).map((text, index) => ({
         text,
         colorClass: SALON_TAG_CLASSES[index % SALON_TAG_CLASSES.length]
       })),
       ...ratingDisplay(salon.rating, salon.reviewCount),
+      reviewCountText: reviewCount ? `评价 ${reviewCount}条` : '暂无评价',
+      // 列表接口的可选字段：该店剪发类套餐的最低价（分），没有剪发套餐时不返回。
+      cutPriceText: Number.isSafeInteger(salon.cutPriceFromFen) && salon.cutPriceFromFen > 0
+        ? `剪发${formatFen(salon.cutPriceFromFen)}起`
+        : '',
       distanceText: this.formatDistance(salon.distanceKm)
     };
   },
@@ -283,12 +370,14 @@ Page({
   onKeyword(e) {
     const keyword = e.detail.value;
     this.setData({ keyword });
+    clearTimeout(this.searchTimer);
     if (!keyword.trim()) {
-      this.setData({ suggestions: [] });
-      this.loadSalons();
+      // 清空输入等同于清除搜索；未提交过关键词时列表本来就是全部店铺，不必重新请求。
+      const hadSearch = Boolean(this.data.searchKeyword);
+      this.setData({ suggestions: [], searchKeyword: '' });
+      if (hadSearch) this.loadSalons();
       return;
     }
-    clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => this.loadSuggestions(keyword), 250);
   },
 
@@ -297,7 +386,8 @@ Page({
       const { latitude, longitude } = this.data;
       const suggestions = await api.request(`/salons/suggestions?keyword=${encodeURIComponent(keyword)}&latitude=${latitude}&longitude=${longitude}`);
       const normalizedSuggestions = await Promise.all(suggestions.slice(0, 5).map((salon) => this.normalizeSalon(salon)));
-      if (keyword !== this.data.keyword) return;
+      // 输入已变化或已按这个关键词提交搜索时，联想结果不再展示。
+      if (keyword !== this.data.keyword || keyword.trim() === this.data.searchKeyword) return;
       this.setData({ suggestions: normalizedSuggestions });
     } catch (_) {
       if (keyword === this.data.keyword) this.setData({ suggestions: [] });
@@ -307,7 +397,7 @@ Page({
   clearSearch() {
     clearTimeout(this.searchTimer);
     this.searchTimer = null;
-    this.setData({ keyword: '', suggestions: [] });
+    this.setData({ keyword: '', searchKeyword: '', suggestions: [] });
     return this.loadSalons();
   },
 
@@ -317,42 +407,65 @@ Page({
   },
 
   submitSearch() {
-    this.setData({ suggestions: [] });
+    clearTimeout(this.searchTimer);
+    this.searchTimer = null;
+    this.setData({ suggestions: [], searchKeyword: this.data.keyword.trim() });
     return this.loadSalons();
   },
 
   renderSalons(salons, append = false, onRendered) {
-    const keyword = this.data.keyword.trim().toLowerCase();
+    const keyword = this.data.searchKeyword.toLowerCase();
     const favoriteSet = new Set(this.data.favorites);
     const offset = append ? this.data.salonCards.length : 0;
     const cards = salons
       .filter((salon) => !keyword || String(salon.name || '').toLowerCase().includes(keyword))
-      .map((salon, index) => {
-        const previous = this.data.salonCards[offset + index];
-        return {
-          id: salon.id,
-          image: salon.image,
-          nameText: salon.nameText,
-          descriptionText: salon.descriptionText,
-          tags: salon.tags,
-          hasRating: salon.hasRating,
-          ratingText: salon.ratingText,
-          distanceText: salon.distanceText,
-          businessDistrict: salon.businessDistrict,
-          isFavorite: favoriteSet.has(salon.id),
-          cardKey: `salon-card-${offset + index}`,
-          isPlaceholder: false,
-          lightActive: Boolean(previous && previous.id === salon.id && previous.lightActive)
-        };
-      });
+      .map((salon, index) => ({
+        id: salon.id,
+        // 没有图片时保留一个占位格，卡片高度不随图片有无变化。
+        images: salon.cardImages && salon.cardImages.length ? salon.cardImages : [''],
+        nameText: salon.nameText,
+        introText: salon.introText,
+        // 卡片只显示第一个普通标签。
+        tags: (salon.tags || []).slice(0, 1),
+        isFeatured: salon.isFeatured === true,
+        hasRating: salon.hasRating,
+        ratingText: salon.ratingText,
+        reviewCountText: salon.reviewCountText,
+        cutPriceText: salon.cutPriceText,
+        distanceText: salon.distanceText,
+        businessDistrict: salon.businessDistrict,
+        addressText: salon.addressText,
+        isFavorite: favoriteSet.has(salon.id),
+        cardKey: `salon-card-${offset + index}`,
+        isPlaceholder: false
+      }));
     const updates = { salonCount: offset + cards.length };
     if (append) {
       cards.forEach((card, index) => { updates[`salonCards[${offset + index}]`] = card; });
     } else {
       updates.salonCards = cards;
     }
+    this.setSalonCardData(updates, updates.salonCount, onRendered);
+  },
+
+  setSalonCardData(updates, cardCount, onRendered) {
+    if (cardCount === this.data.salonCards.length) {
+      this.setData(updates, onRendered);
+      return;
+    }
+
+    const pending = this.stopSalonCardObserver();
+    // 节点按位置复用。保留仍存在的位置，新增位置等待重新观测。
+    updates.visibleSalonCards = Array.from({ length: cardCount }, (_, index) => (
+      pending?.get(index) ?? this.data.visibleSalonCards[index] ?? false
+    ));
+    const render = {};
+    this.salonCardRender = render;
     this.setData(updates, () => {
-      this.observeSalonCards();
+      if (this.salonCardRender === render) {
+        this.salonCardRender = null;
+        this.observeSalonCards();
+      }
       if (onRendered) onRendered();
     });
   },
@@ -369,24 +482,40 @@ Page({
   },
 
   observeSalonCards() {
-    const cardCount = this.data.salonCards.length;
-    if (!this.createIntersectionObserver || cardCount === this.observedSalonCardCount) return;
-    if (this.salonCardObserver) this.salonCardObserver.disconnect();
-    this.observedSalonCardCount = cardCount;
-    if (!cardCount) {
-      this.salonCardObserver = null;
-      return;
-    }
-    this.salonCardObserver = this.createIntersectionObserver({ observeAll: true, thresholds: [0, 0.01] });
-    this.salonCardObserver
+    if (!this.createIntersectionObserver || this.salonCardObserver || this.salonCardRender || !this.data.salonCards.length) return;
+    const observer = this.createIntersectionObserver({ observeAll: true, thresholds: [0, 0.01] });
+    const pending = new Map();
+    this.salonCardObserver = observer;
+    this.pendingSalonVisibility = pending;
+    observer
       .relativeTo('.list')
       .observe('.salon-card', (entry) => {
+        if (this.salonCardObserver !== observer) return;
         const index = Number(entry.dataset.cardIndex);
-        const card = this.data.salonCards[index];
-        const lightActive = entry.intersectionRatio > 0;
-        if (!card || card.lightActive === lightActive) return;
-        this.setData({ [`salonCards[${index}].lightActive`]: lightActive });
+        if (!this.data.salonCards[index]) return;
+        const visible = entry.intersectionRatio > 0;
+        if (visible === this.data.visibleSalonCards[index]) pending.delete(index);
+        else pending.set(index, visible);
+        if (!pending.size || this.salonVisibilityTimer != null) return;
+        this.salonVisibilityTimer = setTimeout(() => {
+          this.salonVisibilityTimer = null;
+          const updates = {};
+          pending.forEach((visible, index) => { updates[`visibleSalonCards[${index}]`] = visible; });
+          pending.clear();
+          if (Object.keys(updates).length) this.setData(updates);
+        }, SALON_VISIBILITY_BATCH_MS);
       });
+  },
+
+  stopSalonCardObserver() {
+    const observer = this.salonCardObserver;
+    const pending = this.pendingSalonVisibility;
+    this.salonCardObserver = null;
+    this.pendingSalonVisibility = null;
+    clearTimeout(this.salonVisibilityTimer);
+    this.salonVisibilityTimer = null;
+    if (observer) observer.disconnect();
+    return pending;
   },
 
   async loadMore() {
@@ -438,6 +567,8 @@ Page({
         else if (distance > 0) tabBar.hide();
       }
     }
+    const showBackToTop = scrollTop > (this.backToTopThreshold || 600);
+    if (showBackToTop !== this.data.showBackToTop) this.setData({ showBackToTop });
     clearTimeout(this.supportTimer);
     if (!this.data.supportHidden) this.setData({ supportHidden: true });
     this.supportTimer = setTimeout(() => {
@@ -445,38 +576,42 @@ Page({
     }, 180);
   },
 
-  scrollToTop(animated = true, onScrolled) {
-    const shouldAnimate = animated !== false;
+  scrollToTop(onScrolled) {
     this.createSelectorQuery()
       .select('#home-list')
       .node()
       .exec((result) => {
         const scrollView = result[0] && result[0].node;
-        if (scrollView) scrollView.scrollTo({ top: 0, animated: shouldAnimate, duration: shouldAnimate ? 500 : 0 });
-        if (onScrolled) onScrolled();
+        if (scrollView) scrollView.scrollTo({ top: 0, animated: false, duration: 0 });
+        if (this.data.showBackToTop) this.setData({ showBackToTop: false });
+        if (typeof onScrolled === 'function') onScrolled();
       });
   },
 
   async toggleFavorite(e) {
     if (!api.requireLogin()) return;
+    const id = e.currentTarget.dataset.id;
+    if (!(this.salons || []).some((item) => item.id === id)) return;
     try {
-      const salon = (this.salons || []).find((item) => item.id === e.currentTarget.dataset.id);
-      if (!salon) return;
-      const favorite = !this.data.favorites.includes(salon.id);
-      await favoriteStore.setFavorite(salon.id, favorite);
-      const favorites = this.data.favorites.filter((id) => id !== salon.id);
-      if (favorite) favorites.push(salon.id);
-      this.setData({ favorites });
-      this.updateFavoriteCards();
+      await favoriteStore.toggle(id, !this.data.favorites.includes(id), (favorite) => this.applyFavorite(id, favorite));
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     }
+  },
+
+  applyFavorite(id, favorite) {
+    const favorites = this.data.favorites.filter((item) => item !== id);
+    if (favorite) favorites.push(id);
+    this.setData({ favorites });
+    this.updateFavoriteCards();
   },
 
   openDetail(e) {
     const salonId = e.currentTarget.dataset.id;
     if (!salonId) return;
     analytics.track('salon_detail_click', { salonId });
+    // 详情请求与页面切换同时进行，并把列表里已有的信息交给详情页先展示头部。
+    salonDetail.prefetch(salonId, (this.salons || []).find((item) => item.id === salonId));
     wx.navigateTo({ url: `/pages/detail/detail?id=${salonId}` });
   },
 
@@ -506,3 +641,19 @@ Page({
     });
   }
 });
+
+function readLastLocation() {
+  const stored = wx.getStorageSync(LAST_LOCATION_KEY);
+  const latitude = stored && stored.latitude;
+  const longitude = stored && stored.longitude;
+  if (typeof latitude !== 'number' || typeof longitude !== 'number') return null;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  return { latitude, longitude };
+}
+
+function distanceMeters(from, to) {
+  const toRadians = (degrees) => degrees * Math.PI / 180;
+  const x = toRadians(to.longitude - from.longitude) * Math.cos(toRadians((from.latitude + to.latitude) / 2));
+  const y = toRadians(to.latitude - from.latitude);
+  return Math.sqrt(x * x + y * y) * 6371000;
+}

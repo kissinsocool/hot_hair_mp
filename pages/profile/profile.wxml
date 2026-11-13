@@ -1,4 +1,4 @@
-<tab-appbar title="我的" />
+<view class="native-tab-header-extension" aria-hidden="true"></view>
 <view class="profile-page">
   <view wx:if="{{loggedIn}}">
     <view class="profile-card">

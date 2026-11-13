@@ -9,7 +9,7 @@ const styles = fs.readFileSync(path.join(pageDir, 'orders.wxss'), 'utf8');
 const config = JSON.parse(fs.readFileSync(path.join(pageDir, 'orders.json'), 'utf8'));
 
 assert.ok(template.indexOf('class="orders-appbar"') < template.indexOf('<scroll-view'));
-assert.match(template, /class="orders-appbar-spacer" style="height: \{\{appBarHeight\}\}px;"/);
+assert.match(template, /class="orders-appbar-spacer" style="height: calc\(\{\{appBarHeight\}\}px \+ 25rpx\);"/);
 assert.match(template, /class="orders-list"/);
 assert.match(template, /bindrefresherrefresh="refresh"/);
 assert.match(homeTemplate, /class="location" style="max-width: calc\(100% - \{\{menuButtonOffset\}\}px - 62rpx\);"/);

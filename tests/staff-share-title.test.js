@@ -22,7 +22,8 @@ test('staff shares get the salon name from one staff request and tolerate old se
           assert.equal(url, '/staff/staff-1');
           return { name: 'Tony', salonId: 'salon/1', ...(salonName === undefined ? {} : { salonName }), imageUrl: 'https://example.com/tony.jpg' };
         }
-      } : localRequire(name)
+      } : name === '../../utils/favorites' ? { staff: {} }
+        : name === '../../utils/imageFallback' ? { retryAsJpeg() {} } : localRequire(name)
     }, { filename });
     const page = {
       ...definition, route: 'pages/staff/staff',
@@ -33,6 +34,7 @@ test('staff shares get the salon name from one staff request and tolerate old se
     assert.deepEqual(requests, ['/staff/staff-1']);
     assert.equal(page.data.loading, false);
     assert.equal(page.data.staff.name, 'Tony');
+    assert.equal(page.data.favoriteCount, 0, '旧接口没有被收藏数时显示 0');
     const shared = page.onShareAppMessage();
     assert.equal(shared.title, salonName ? '靓丝造型  Tony' : 'Tony');
     assert.equal(shared.imageUrl, 'https://example.com/tony.jpg');

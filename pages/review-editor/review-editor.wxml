@@ -8,11 +8,12 @@
         <view wx:for="{{tags}}" wx:key="name" class="review-tag {{item.selected ? 'active' : ''}}" data-name="{{item.name}}" bindtap="chooseReviewTag">{{item.name}}</view>
       </view>
     </block>
-    <radio-group class="issue-reasons" wx:if="{{mode == 'complaint'}}" bindchange="chooseIssueReason">
+    <radio-group class="issue-reasons" wx:if="{{mode == 'complaint' && !noShowDispute}}" bindchange="chooseIssueReason">
       <label wx:for="{{issueReasons}}" wx:key="value" class="issue-reason">
         <radio color="#d06884" value="{{item.value}}" checked="{{reason == item.value}}" disabled="{{submitting || submitted}}" />{{item.label}}
       </label>
     </radio-group>
+    <view wx:if="{{noShowDispute}}" class="issue-reasons">对未到店判定有异议</view>
     <view class="textarea-wrap">
       <textarea class="review-textarea" adjust-position="{{true}}" cursor-spacing="24" show-confirm-bar="{{true}}" disabled="{{submitting || submitted}}" placeholder-class="review-placeholder" value="{{content}}" bindinput="onContent" maxlength="{{mode == 'complaint' ? 300 : 200}}" placeholder="{{mode == 'complaint' ? '请描述遇到的问题...' : '分享这次服务体验...'}}" />
       <view class="textarea-count">{{content.length}}/{{mode == 'complaint' ? 300 : 200}}</view>
@@ -29,7 +30,7 @@
     </view>
   </view>
   <view class="bar">
-    <button class="primary-btn" loading="{{submitting}}" disabled="{{submitting || submitted}}" bindtap="submit">{{submitting ? '提交中...' : submitted ? '已提交' : mode == 'edit' ? '提交修改' : mode == 'complaint' ? '提交投诉' : '提交评价'}}</button>
+    <button class="primary-btn" loading="{{submitting}}" disabled="{{submitting || submitted}}" bindtap="submit">{{submitting ? '提交中...' : submitted ? '已提交' : mode == 'edit' ? '提交修改' : noShowDispute ? '提交异议' : mode == 'complaint' ? '提交投诉' : '提交评价'}}</button>
   </view>
 </view>
 <view wx:else class="empty">请从订单或我的评价进入</view>

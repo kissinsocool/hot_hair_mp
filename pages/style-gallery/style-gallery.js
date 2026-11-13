@@ -1,6 +1,9 @@
 const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
 const { promotionCategory } = require('../../utils/promotionCategories');
+const salonDetail = require('../../utils/salonDetail');
+const imageFallback = require('../../utils/imageFallback');
+const { appendPatch } = require('../../utils/dataPatch');
 const PAGE_SIZE = 30;
 
 Page({
@@ -34,6 +37,11 @@ Page({
     });
     wx.setNavigationBarTitle({ title: category.label });
     return this.load();
+  },
+
+  // 网络恢复后重新加载之前失败的内容。
+  onNetworkRestored() {
+    if (this.data.errorMessage) this.load();
   },
 
   onPullDownRefresh() {
@@ -108,7 +116,7 @@ Page({
       if (version !== this.listVersion) return;
       const knownIds = new Set(this.data.images.map((item) => item.id));
       this.setData({
-        images: this.data.images.concat(images.filter((item) => !knownIds.has(item.id))),
+        ...appendPatch('images', this.data.images, images.filter((item) => !knownIds.has(item.id))),
         page,
         hasMore: result.hasMore
       });
@@ -124,12 +132,18 @@ Page({
   },
 
   async normalizeImage(item) {
-    return { ...item, imageUrl: await api.displayImageUrl(item.imageUrl, 480) };
+    return { ...item, imageUrl: await api.displayImageUrl(item.imageUrl, 480, { webp: true }) };
+  },
+
+  // WebP 缩略图加载失败时换回 JPEG。
+  onImageError(e) {
+    imageFallback.retryAsJpeg(this, e);
   },
 
   openSalon(e) {
     const salonId = String(e.currentTarget.dataset.salonId || '');
     if (!salonId) return;
+    salonDetail.prefetch(salonId);
     wx.navigateTo({ url: `/pages/detail/detail?id=${encodeURIComponent(salonId)}` });
   }
 });

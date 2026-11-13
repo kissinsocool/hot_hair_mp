@@ -1,8 +1,8 @@
 const { onShareAppMessage } = require('../../utils/share');
 const api = require('../../utils/api');
-const { buildReviewTags, selectedReviewTags, toggleReviewTag } = require('../../utils/reviewTags.js');
+const { buildReviewTags, selectedReviewTags, toggleReviewTag } = require('./reviewTags.js');
 const { reviewRatingAverage } = require('../../utils/reviewRatings.js');
-const MAX_IMAGE_BYTES = 800 * 1024;
+const { shrinkImage } = require('./reviewImages.js');
 
 Page({
   onShareAppMessage,
@@ -17,6 +17,7 @@ Page({
     tags: buildReviewTags(),
     content: '',
     reason: 'other',
+    noShowDispute: false,
     issueReasons: [
       { value: 'not_arrived', label: '未到店' },
       { value: 'service_incomplete', label: '服务未完成' },
@@ -32,6 +33,7 @@ Page({
     this.getOpenerEventChannel().on('init', ({ mode, booking }) => {
       if (!booking || !['review', 'edit', 'complaint'].includes(mode)) return;
       const editing = mode === 'edit';
+      const noShowDispute = mode === 'complaint' && booking.status === 'no_show';
       const bookingId = editing ? booking.bookingId : booking.id;
       if (!bookingId) return;
       const imageKeys = booking.imageKeys || [];
@@ -39,6 +41,8 @@ Page({
         ready: true,
         mode,
         bookingId,
+        noShowDispute,
+        reason: noShowDispute ? 'no_show_dispute' : 'other',
         salonName: booking.salonName || '',
         serviceName: booking.serviceName || '',
         ratings: editing ? { ...booking.ratings } : {},
@@ -48,7 +52,8 @@ Page({
           tempPath, retainedUrl: imageKeys[index] || tempPath, existing: true
         })) : []
       });
-      wx.setNavigationBarTitle({ title: editing ? '编辑评价' : mode === 'complaint' ? '投诉' : '评价晒单' });
+      const title = { edit: '编辑评价', complaint: noShowDispute ? '未到店异议' : '投诉', review: '评价晒单' };
+      wx.setNavigationBarTitle({ title: title[mode] });
     });
   },
 
@@ -109,7 +114,8 @@ Page({
       });
       this.setData({ submitted: true });
       wx.navigateBack({ delta: 1 });
-      wx.showToast({ title: mode === 'edit' ? '评价修改已提交审核' : isReview ? '评价晒单已提交' : '投诉已提交' });
+      const title = { edit: '评价修改已提交审核', review: '评价晒单已提交', complaint: this.data.noShowDispute ? '异议已提交' : '投诉已提交' };
+      wx.showToast({ title: title[mode] });
     } catch (err) {
       wx.showToast({ title: err.message || '提交失败，请稍后重试', icon: 'none' });
     } finally {
@@ -118,31 +124,18 @@ Page({
   }
 });
 
-function compressImage(src) {
-  return new Promise((resolve) => {
-    if (!wx.compressImage) return resolve(src);
-    wx.compressImage({
-      src,
-      quality: 35,
-      success: (res) => resolve(res.tempFilePath || src),
-      fail: () => resolve(src)
-    });
-  });
-}
-
 async function prepareImages(files) {
   const fs = wx.getFileSystemManager();
   const images = [];
   for (const file of files) {
     try {
-      const tempPath = await compressImage(file.tempFilePath);
-      const size = fs.statSync(tempPath).size;
-      if (!size || size > MAX_IMAGE_BYTES) {
+      const shrunk = await shrinkImage(file.tempFilePath, fs);
+      if (!shrunk) {
         wx.showToast({ title: '图片过大，请换一张', icon: 'none' });
         continue;
       }
-      const fileName = tempPath.split('/').pop() || 'image.jpg';
-      images.push({ tempPath, fileName, contentType: imageContentType(fileName), size, existing: false });
+      const fileName = shrunk.path.split('/').pop() || 'image.jpg';
+      images.push({ tempPath: shrunk.path, fileName, contentType: imageContentType(fileName), size: shrunk.size, existing: false });
     } catch (_) {}
   }
   return images;

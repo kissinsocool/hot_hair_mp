@@ -3,7 +3,8 @@
 }
 
 .profile {
-  padding: 30rpx 20rpx;
+  position: relative;
+  padding: 30rpx 20rpx 64rpx;
   background: #fff;
   text-align: center;
 }
@@ -40,6 +41,34 @@
   font-size: 44rpx;
   font-weight: 700;
   line-height: 1;
+}
+
+.favorite {
+  position: absolute;
+  right: 24rpx;
+  bottom: 8rpx;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rpx;
+  width: 80rpx;
+  padding: 8rpx;
+}
+
+.favorite image {
+  position: relative;
+  top: 5rpx;
+  width: 56rpx;
+  height: 56rpx;
+}
+
+.favorite-count {
+  height: 30rpx;
+  color: #8a8a8a;
+  font-size: 22rpx;
+  font-weight: 500;
+  line-height: 30rpx;
+  white-space: nowrap;
 }
 
 .stars {

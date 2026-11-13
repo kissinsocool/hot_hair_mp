@@ -10,13 +10,17 @@
         <view wx:if="{{staff.hasRating}}" class="stars"><image wx:for="{{staff.starIcons}}" wx:key="*this" class="rating-star" mode="aspectFit" src="{{item}}" /></view>
       </view>
     </view>
+    <view class="favorite" bindtap="toggleFavorite" aria-role="button" aria-label="{{isFavorite ? '取消收藏' : '收藏理发师'}}{{favoriteCount > 0 ? '，已被收藏' + favoriteCount + '次' : ''}}">
+      <image mode="aspectFit" src="{{isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" aria-hidden="true" />
+      <text class="favorite-count">{{favoriteCount > 0 ? favoriteCount : ''}}</text>
+    </view>
   </view>
   <view class="page">
     <view class="card section">
       <view class="desc">{{staff.bioText}}</view>
     </view>
     <view class="card section">
-      <view class="section-title">客户评价（{{staff.reviewCount}}）</view>
+      <view class="section-title">客户评价<text wx:if="{{staff.reviewCount > 0}}">（{{staff.reviewCount}}）</text></view>
       <view wx:if="{{!reviews.length && !loadingReviews && !reviewsError}}" class="muted">暂无评价</view>
       <view wx:for="{{reviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
         <view class="review-head">
@@ -26,7 +30,7 @@
         <review-rating-summary rating="{{item.rating}}" ratings="{{item.ratings}}" />
         <view class="desc">{{item.comment}}</view>
         <view wx:if="{{item.imageUrls.length}}" class="review-images">
-          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="reviews[{{reviewIndex}}].imageUrls[{{index}}]" data-src="{{image}}" bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
         </view>
       </view>
       <view wx:if="{{reviews.length || loadingReviews || reviewsError}}" class="pagination-state">

@@ -73,6 +73,18 @@
       {
         "type": "file",
         "value": "styles/service-card.wxss"
+      },
+      {
+        "type": "file",
+        "value": "styles/featured-badge.wxss"
+      },
+      {
+        "type": "file",
+        "value": "styles/service-card-skeleton.wxml"
+      },
+      {
+        "type": "file",
+        "value": "utils/freshness.js"
       }
     ]
   },

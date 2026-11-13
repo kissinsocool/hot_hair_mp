@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { applyData } = require('./support/setData');
 
 let pageDefinition;
 const requests = [];
@@ -24,17 +25,17 @@ require('../pages/booking/booking');
 const page = {
   ...pageDefinition,
   salonId: 'salon-1',
+  salon: { services: [{ id: 'service-1', tags: [] }], staff: [] },
+  slots: [{ time: '10:00', isAvailable: true }],
   data: {
     ...pageDefinition.data,
-    salon: { services: [{ id: 'service-1', tags: [] }], staff: [] },
     dates: [],
     selectedServiceId: 'service-1',
     selectedStaffId: 'staff-a',
     selectedDate: '2030-01-02',
-    selectedTime: '10:00',
-    slots: [{ time: '10:00', isAvailable: true }]
+    selectedTime: '10:00'
   },
-  setData(values) { Object.assign(this.data, values); }
+  setData(values) { applyData(this.data, values); }
 };
 
 async function main() {
@@ -52,7 +53,7 @@ async function main() {
   assert.equal(page.data.selectedTime, '');
   assert.equal(page.data.canSubmit, false);
   assert.equal(page.data.slotsLoading, true);
-  assert.deepEqual(page.data.slots.map((slot) => slot.time), ['10:00']);
+  assert.deepEqual(page.slots.map((slot) => slot.time), ['10:00']);
 
   const second = page.selectStaff({ currentTarget: { dataset: { id: 'staff-b' } } });
   requests[1].success({
@@ -67,7 +68,7 @@ async function main() {
   });
   await first;
 
-  assert.deepEqual(page.data.slots.map((slot) => slot.time), ['11:00']);
+  assert.deepEqual(page.slots.map((slot) => slot.time), ['11:00']);
   assert.deepEqual(page.data.previousSlotOptions.map((slot) => slot.time), ['10:00']);
   assert.deepEqual(page.data.slotOptions.map((slot) => slot.time), ['11:00']);
   assert.equal(page.data.slotsAnimating, true);
@@ -80,7 +81,8 @@ async function main() {
   const failed = page.loadSlots();
   requests[2].fail({ errMsg: 'network unavailable' });
   await failed;
-  assert.deepEqual(page.data.slots, []);
+  assert.deepEqual(page.slots, []);
+  assert.deepEqual(page.data.slotOptions, []);
   assert.equal(page.data.selectedTime, '');
   assert.equal(page.data.slotsLoading, false);
   assert.equal(page.data.slotErrorMessage, '网络连接失败，请检查网络后重试');

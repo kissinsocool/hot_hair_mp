@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const { registeredPages } = require('./support/appPages');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -75,7 +76,7 @@ page.load().then(() => {
   const ordersTemplate = fs.readFileSync(path.join(root, 'pages/orders/orders.wxml'), 'utf8');
   const detailTemplate = fs.readFileSync(path.join(root, 'pages/order-detail/order-detail.wxml'), 'utf8');
   const detailStyles = fs.readFileSync(path.join(root, 'pages/order-detail/order-detail.wxss'), 'utf8');
-  assert.ok(appConfig.pages.includes('pages/order-detail/order-detail'));
+  assert.ok(registeredPages(appConfig).includes('pages/order-detail/order-detail'));
   assert.match(ordersTemplate, /bindtap="openOrderDetail" data-id="\{\{item\.id\}\}"/);
   assert.match(detailTemplate, /费用明细/);
   assert.match(detailTemplate, /问题处理进度/);

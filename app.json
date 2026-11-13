@@ -3,21 +3,13 @@
     "pages/home/home",
     "pages/login/login",
     "pages/detail/detail",
-    "pages/salon-posts/salon-posts",
-    "pages/salon-reviews/salon-reviews",
-    "pages/style-gallery/style-gallery",
     "pages/staff/staff",
     "pages/booking/booking",
     "pages/confirm/confirm",
     "pages/coupons/coupons",
     "pages/orders/orders",
-    "pages/order-detail/order-detail",
-    "pages/review-editor/review-editor",
     "pages/favorites/favorites",
     "pages/profile/profile",
-    "pages/account/account",
-    "pages/support/support",
-    "pages/location/location",
     "pages/messages/messages"
   ],
   "subPackages": [
@@ -32,8 +24,58 @@
     {
       "root": "pages/rules",
       "pages": ["user-agreement", "privacy-policy"]
+    },
+    {
+      "root": "pages/salon-posts",
+      "pages": ["salon-posts"]
+    },
+    {
+      "root": "pages/salon-reviews",
+      "pages": ["salon-reviews"]
+    },
+    {
+      "root": "pages/style-gallery",
+      "pages": ["style-gallery"]
+    },
+    {
+      "root": "pages/order-detail",
+      "pages": ["order-detail"]
+    },
+    {
+      "root": "pages/review-editor",
+      "pages": ["review-editor"]
+    },
+    {
+      "root": "pages/account",
+      "pages": ["account"]
+    },
+    {
+      "root": "pages/support",
+      "pages": ["support"]
+    },
+    {
+      "root": "pages/location",
+      "pages": ["location"]
     }
   ],
+  "preloadRule": {
+    "pages/home/home": {
+      "network": "all",
+      "packages": ["pages/style-gallery", "pages/location", "pages/support"]
+    },
+    "pages/detail/detail": {
+      "network": "all",
+      "packages": ["pages/salon-reviews", "pages/salon-posts"]
+    },
+    "pages/orders/orders": {
+      "network": "all",
+      "packages": ["pages/order-detail", "pages/review-editor"]
+    },
+    "pages/profile/profile": {
+      "network": "all",
+      "packages": ["pages/account", "pages/review-editor"]
+    }
+  },
   "window": {
     "navigationBarTitleText": "靓丝美约",
     "navigationBarBackgroundColor": "#ffffff",
@@ -86,6 +128,12 @@
         "selectedIconPath": "assets/icons/person.png"
       }
     ]
+  },
+  "networkTimeout": {
+    "request": 15000,
+    "connectSocket": 15000,
+    "uploadFile": 30000,
+    "downloadFile": 30000
   },
   "style": "v2",
   "lazyCodeLoading": "requiredComponents",

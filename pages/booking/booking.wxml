@@ -1,4 +1,33 @@
-<view wx:if="{{loading}}" class="empty">正在加载...</view>
+<import src="/styles/service-card-skeleton.wxml" />
+<!-- 加载占位：沿用预约页真实区块的类名和尺寸，标题和分类名直接显示真实文字。 -->
+<view wx:if="{{loading}}" class="page booking" role="status" aria-label="正在加载预约选项">
+  <view class="hint">请完成以下预约选项</view>
+  <view class="block-title">选择服务项目</view>
+  <view class="service-tabs">
+    <view wx:for="{{serviceTabs}}" wx:key="id" class="service-tab">{{item.label}}</view>
+  </view>
+  <view class="service-count"><view class="skeleton-line booking-skeleton-count"></view></view>
+  <block wx:for="{{[0, 1]}}" wx:key="*this"><template is="service-card-skeleton" /></block>
+  <view class="block-title">选择理发师</view>
+  <view class="staff-list">
+    <view wx:for="{{[0, 1]}}" wx:key="*this" class="staff-option">
+      <view class="staff-img skeleton-block skeleton-flat"></view>
+      <view class="staff-copy">
+        <view class="skeleton-line booking-skeleton-staff-name"></view>
+        <view class="skeleton-line booking-skeleton-staff-role"></view>
+        <view class="skeleton-line booking-skeleton-staff-bio"></view>
+      </view>
+    </view>
+  </view>
+  <view class="block-title">选择预约日期</view>
+  <view class="dates">
+    <view wx:for="{{[0, 1, 2, 3, 4, 5, 6]}}" wx:key="*this" class="date skeleton-block"></view>
+  </view>
+  <view class="block-title">可用时间段</view>
+  <view class="chips">
+    <view wx:for="{{[0, 1, 2, 3, 4, 5, 6, 7]}}" wx:key="*this" class="chip skeleton-block"></view>
+  </view>
+</view>
 <view wx:elif="{{errorMessage}}" class="page-error" role="alert">
   <view class="page-error-title">店铺加载失败</view>
   <view class="page-error-sub">{{errorMessage}}</view>

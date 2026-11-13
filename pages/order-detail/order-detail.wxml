@@ -1,5 +1,25 @@
 <view class="page order-detail-page">
-  <view wx:if="{{loading && !order}}" class="empty">正在加载...</view>
+  <!-- 加载占位：只画每个订单都有的状态、预约信息和费用明细，左侧标签显示真实文字，右侧数值用占位块。
+       「订单问题」和「再次预约」只有部分状态的订单才有，不画占位，避免对其他订单显示不存在的内容。 -->
+  <view wx:if="{{loading && !order}}" role="status" aria-label="正在加载订单详情">
+    <view class="status-card card">
+      <view class="skeleton-line order-skeleton-status"></view>
+      <view class="skeleton-line order-skeleton-meta"></view>
+      <view class="skeleton-line order-skeleton-meta"></view>
+    </view>
+    <view class="section-title">预约信息</view>
+    <view class="card panel">
+      <view class="row"><text>服务项目</text><view class="skeleton-line order-skeleton-value"></view></view>
+      <view class="row compact"><text>到店时间</text><view class="skeleton-line order-skeleton-value"></view></view>
+      <view class="row compact"><text>商家名称</text><view class="skeleton-line order-skeleton-value"></view></view>
+      <view class="row compact"><text>指定理发师</text><view class="skeleton-line order-skeleton-value order-skeleton-value--short"></view></view>
+    </view>
+    <view class="section-title">费用明细</view>
+    <view class="card panel fee-panel">
+      <view class="row compact"><text>基础服务费用</text><view class="skeleton-line order-skeleton-value order-skeleton-value--short"></view></view>
+      <view class="row total"><text>到店需支付</text><view class="skeleton-line order-skeleton-value order-skeleton-value--short"></view></view>
+    </view>
+  </view>
   <view wx:elif="{{errorMessage && !order}}" class="empty error-state">
     <view class="empty-title">订单加载失败</view>
     <view class="empty-sub">{{errorMessage}}</view>
@@ -23,15 +43,14 @@
       <view class="row"><text>服务项目</text><text>{{order.serviceName}}</text></view>
       <view class="row compact"><text>到店时间</text><text>{{order.startTimeText}}</text></view>
       <view class="row compact"><text>商家名称</text><view class="salon-link" bindtap="openSalon"><text>{{order.salonName}}</text></view></view>
-      <view class="row compact"><text>理发师</text><text>{{order.staffName}}</text></view>
-      <view wx:if="{{order.note}}" class="row compact"><text>预约备注</text><text>{{order.note}}</text></view>
+      <view class="row compact"><text>指定理发师</text><text>{{order.staffName}}</text></view>
+      <view wx:if="{{order.note}}" class="row compact note-row"><text>备注</text><text>{{order.note}}</text></view>
     </view>
 
     <view class="section-title">费用明细</view>
     <view class="card panel fee-panel">
-      <view class="row compact"><text>服务费用</text><text>{{order.servicePriceText}}</text></view>
-      <view wx:if="{{order.hasStaffExtraServiceFee}}" class="row compact"><text>理发师额外服务费</text><text>{{order.staffExtraServiceFeeText}}</text></view>
-      <view class="row"><text>费用合计</text><text>{{order.originalAmountText}}</text></view>
+      <view class="row compact"><text>基础服务费用</text><text>{{order.servicePriceText}}</text></view>
+      <view wx:if="{{order.hasStaffExtraServiceFee}}" class="row compact"><text>理发师指定费用</text><text>{{order.staffExtraServiceFeeText}}</text></view>
       <view wx:if="{{order.hasCouponDiscount}}" class="row compact discount-row"><text>{{order.couponTitle || '优惠券'}}</text><text>{{order.couponDiscountText}}</text></view>
       <view class="row total"><text>到店需支付</text><text>{{order.payableAmountText}}</text></view>
     </view>
@@ -53,8 +72,8 @@
     <block wx:if="{{order.canReportIssue}}">
       <view class="section-title">订单问题</view>
       <view class="card panel">
-        <view class="complaint-description issue-notice">如未到店、服务未完成或订单有问题，请向平台反馈。</view>
-        <button class="ghost-btn issue-feedback-btn" bindtap="reportIssue">反馈订单问题</button>
+        <view class="complaint-description issue-notice">{{order.status === 'no_show' ? '如果商家误将本次预约标记为未到店，可提交说明，由平台核实。' : '如未到店、服务未完成或订单有问题，请向平台反馈。'}}</view>
+        <button class="ghost-btn issue-feedback-btn" bindtap="reportIssue">{{order.status === 'no_show' ? '对未到店判定有异议' : '反馈订单问题'}}</button>
       </view>
     </block>
 

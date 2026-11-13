@@ -1,77 +1,276 @@
+/* 尺寸按 iPhone 14 Pro 设计稿换算：1pt ≈ 1.908rpx。 */
+page {
+  background: #f4f3f1;
+}
+
 .page {
-  padding-top: 20rpx;
-  padding-bottom: calc(54px + env(safe-area-inset-bottom) + 20rpx);
+  padding: 30rpx 0 calc(54px + env(safe-area-inset-bottom) + 20rpx);
 }
 
-.salon-card {
-  position: relative;
-  height: 220rpx;
-  margin: 0 18rpx 14rpx;
-  border-color: #f0e4db;
-  border-radius: 24rpx;
-  box-shadow: 0 4rpx 12rpx rgba(156, 114, 91, 0.12);
+/* 分类 tab 与下方的数量栏组成一个吸顶块，紧贴顶部白条；分隔线由 tab 行自己画。 */
+.native-tab-header-extension {
+  border-bottom: none;
 }
 
-.salon-image {
-  width: 270rpx;
-  height: 220rpx;
-  flex: 0 0 270rpx;
+.fav-header {
+  position: sticky;
+  top: 25rpx;
+  z-index: 9;
+  background: #ffffff;
 }
 
-.salon-body {
-  padding: 14rpx 8rpx 8rpx 12rpx;
-}
-
-.salon-head {
-  gap: 10rpx;
-}
-
-.salon-name {
-  max-height: 70rpx;
-  font-size: 30rpx;
-  line-height: 35rpx;
-}
-
-.salon-rating {
+.fav-tabs {
   display: flex;
-  align-items: center;
-  gap: 6rpx;
-  color: #d06884;
-  line-height: 30rpx;
+  border-bottom: 2rpx solid #e1e1e1;
 }
 
-.salon-rating .icon-img {
-  width: 21rpx;
-  height: 21rpx;
-  margin-right: 0;
-}
-
-.salon-desc {
-  height: 58rpx;
-  margin-top: 6rpx;
+.fav-tab {
+  position: relative;
+  flex: 1;
+  height: 84rpx;
+  color: #999999;
   font-size: 30rpx;
-  line-height: 32rpx;
+  line-height: 84rpx;
+  text-align: center;
 }
 
-.salon-foot {
-  margin-top: 34rpx;
+.fav-tab--active {
+  color: #5e4f4f;
+  font-weight: 700;
 }
 
-.distance {
-  max-width: 280rpx;
-  font-size: 26rpx;
-  font-weight: 800;
-}
-
-.favorite {
+.fav-tab--active::after {
   position: absolute;
-  right: 12rpx;
-  bottom: 8rpx;
-  width: 46rpx;
-  height: 46rpx;
+  right: 0;
+  bottom: -2rpx;
+  left: 0;
+  height: 6rpx;
+  border-radius: 6rpx;
+  background: #5e4f4f;
+  content: '';
 }
 
-.favorite image {
-  width: 46rpx;
-  height: 46rpx;
+.fav-count-bar {
+  display: flex;
+  align-items: baseline;
+  height: 62rpx;
+  padding: 0 30rpx;
+  border-bottom: 2rpx solid #e1e1e1;
+  background: #ffffff;
+  line-height: 60rpx;
+}
+
+.fav-count-num {
+  color: #a84860;
+  font-size: 26rpx;
+  font-weight: 500;
+}
+
+.fav-count-unit {
+  margin-left: 3rpx;
+  color: #333333;
+  font-size: 21rpx;
+}
+
+.fav-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  margin: 0 30rpx 30rpx;
+  padding: 30rpx;
+  border-radius: 23rpx;
+  background: #ffffff;
+  box-shadow: 0 0 24rpx rgba(0, 0, 0, 0.14);
+}
+
+.fav-image {
+  flex: 0 0 225rpx;
+  width: 225rpx;
+  height: 169rpx;
+  border: 2rpx solid #e1e1e1;
+  border-radius: 8rpx;
+  background: #eeeeee;
+}
+
+.fav-body {
+  flex: 1;
+  min-width: 0;
+  margin-left: 23rpx;
+}
+
+.fav-tag {
+  display: inline-block;
+  height: 34rpx;
+  padding: 0 11rpx;
+  background: #f6dde1;
+  color: #a84860;
+  font-size: 22rpx;
+  line-height: 34rpx;
+  vertical-align: top;
+}
+
+.fav-name {
+  display: -webkit-box;
+  margin-top: 12rpx;
+  overflow: hidden;
+  color: #333333;
+  font-size: 27rpx;
+  font-weight: 600;
+  line-height: 40rpx;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.fav-desc {
+  display: -webkit-box;
+  margin-top: 4rpx;
+  overflow: hidden;
+  color: #666666;
+  font-size: 23rpx;
+  line-height: 35rpx;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.fav-book {
+  height: 84rpx;
+  margin-top: 36rpx;
+  border-radius: 14rpx;
+  background: #c46f84;
+  color: #ffffff;
+  font-size: 29rpx;
+  font-weight: 600;
+  line-height: 84rpx;
+  text-align: center;
+}
+
+.fav-book--active {
+  opacity: 0.85;
+}
+
+.fav-heart {
+  position: absolute;
+  top: 26rpx;
+  right: 26rpx;
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.fav-heart image {
+  display: block;
+  width: 48rpx;
+  height: 48rpx;
+}
+
+/* 理发师卡片：竖版照片，名字下方是所在店铺与职级。 */
+.fav-image--portrait {
+  height: 300rpx;
+}
+
+.fav-name--staff {
+  margin-top: 0;
+  padding-right: 52rpx;
+  font-size: 30rpx;
+}
+
+.fav-sub {
+  margin-top: 6rpx;
+  color: #333333;
+  font-size: 24rpx;
+  line-height: 34rpx;
+}
+
+.fav-posts {
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+  padding: 0 30rpx;
+}
+
+/* 套餐卡片：左图右文（店铺名称、简介），右上角收藏，下方是店铺标签和关联套餐。 */
+.fav-pkg-card {
+  position: relative;
+  margin-bottom: 30rpx;
+  padding: 30rpx;
+  border-radius: 23rpx;
+  background: #ffffff;
+  box-shadow: 0 0 24rpx rgba(0, 0, 0, 0.14);
+}
+
+.fav-pkg-top {
+  display: flex;
+  align-items: flex-start;
+}
+
+.fav-pkg-image {
+  flex: 0 0 200rpx;
+  width: 200rpx;
+  height: 150rpx;
+  border: 2rpx solid #e1e1e1;
+  border-radius: 8rpx;
+  background: #eeeeee;
+}
+
+/* 右侧留出收藏按钮的位置。 */
+.fav-pkg-body {
+  flex: 1;
+  min-width: 0;
+  margin-left: 24rpx;
+  padding-right: 52rpx;
+}
+
+.fav-pkg-name {
+  display: -webkit-box;
+  overflow: hidden;
+  color: #333333;
+  font-size: 29rpx;
+  font-weight: 600;
+  line-height: 40rpx;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.fav-pkg-desc {
+  display: -webkit-box;
+  margin-top: 8rpx;
+  overflow: hidden;
+  color: #777777;
+  font-size: 24rpx;
+  line-height: 40rpx;
+  word-break: break-all;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.fav-pkg-heart {
+  position: absolute;
+  top: 26rpx;
+  right: 26rpx;
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.fav-pkg-heart image {
+  display: block;
+  width: 48rpx;
+  height: 48rpx;
+}
+
+.fav-pkg-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+  margin-top: 18rpx;
+}
+
+.fav-pkg-tag {
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: #f0eeec;
+  color: #555555;
+  font-size: 21rpx;
+  line-height: 34rpx;
 }

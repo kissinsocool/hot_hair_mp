@@ -1,0 +1,6 @@
+{
+  "component": true,
+  "usingComponents": {
+    "service-price": "/components/service-price/service-price"
+  }
+}

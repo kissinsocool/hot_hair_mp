@@ -62,12 +62,12 @@ test('leaving detail before the list responds prevents a stale update', async ()
 test('horizontal image-and-name cards sit directly before customer reviews', () => {
   const template = fs.readFileSync(path.join(__dirname, '../pages/detail/detail.wxml'), 'utf8');
   const start = template.indexOf('class="related-salons"');
-  const end = template.indexOf('class="reviews-heading"');
+  const end = template.indexOf('<view class="section-title">客户评价');
   assert.ok(start > template.indexOf('店铺动态') && start < end);
   const section = template.slice(start, end);
   assert.match(section, /看了这个店铺的用户还看了/);
   assert.match(section, /scroll-x enhanced show-scrollbar="\{\{false\}\}"/);
-  assert.match(section, /<navigator[^>]*url="\{\{item.detailUrl\}\}"/);
+  assert.match(section, /class="related-salon-card" bindtap="openRelatedSalon" data-id="\{\{item.id\}\}"/);
   assert.match(section, /class="related-salon-image" mode="aspectFill"/);
   assert.ok(section.includes(`{{item.name}}{{item.description ? ' 「' + item.description + '」' : ''}}`));
   assert.doesNotMatch(section, /更多|查看全部|もっと見る/);

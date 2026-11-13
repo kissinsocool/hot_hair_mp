@@ -16,6 +16,7 @@ test('detail setData carries only template fields and the first three reviews', 
   api.request = async () => ({
     id: 'salon-1',
     name: '店铺',
+    businessDistrict: ' 陆家嘴 ',
     phone: '13800000000',
     address: '上海市浦东新区张江路88号',
     location: { latitude: 31.2, longitude: 121.6 },
@@ -41,6 +42,7 @@ test('detail setData carries only template fields and the first three reviews', 
       assert.ok(!(key in salon), `${key} 不进入视图数据`);
     }
     assert.equal(salon.phoneText, '13800000000');
+    assert.equal(salon.businessDistrict, '陆家嘴');
     assert.ok(!('internal' in salon.services[0]) && !('imageUrls' in salon.services[0]));
     assert.ok(!('schedule' in salon.staff[0]));
     assert.ok(!('authorImageUrl' in salon.latestPosts[0]));

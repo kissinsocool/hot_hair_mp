@@ -1,3 +1,8 @@
+.page {
+  /* 与预约时间页底部按钮一致：按钮下方留 18rpx，并避开 iPhone 底部手势条。 */
+  padding-bottom: calc(18rpx + env(safe-area-inset-bottom));
+}
+
 .title {
   margin: 24rpx 4rpx 40rpx;
   color: #5a5a5a;
@@ -84,6 +89,49 @@
 .total text:last-child {
   color: #d06884;
   font-size: 36rpx;
+}
+
+.note-title {
+  display: flex;
+  align-items: baseline;
+  margin: 40rpx 4rpx 18rpx;
+  font-size: 32rpx;
+}
+
+.note-optional {
+  color: #a09a97;
+  font-size: 26rpx;
+  font-weight: 400;
+}
+
+.note-panel {
+  padding: 24rpx 28rpx 18rpx;
+  border-radius: 32rpx;
+}
+
+.note-textarea {
+  width: 100%;
+  height: 180rpx;
+  color: #5a5a5a;
+  font-size: 28rpx;
+  line-height: 40rpx;
+  word-break: break-all;
+}
+
+.note-readonly {
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.note-placeholder {
+  color: #b5aeaa;
+}
+
+.note-count {
+  margin-top: 8rpx;
+  color: #a09a97;
+  font-size: 24rpx;
+  text-align: right;
 }
 
 .cancellation-rules-title {

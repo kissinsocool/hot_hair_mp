@@ -108,3 +108,35 @@
   font-size: 28rpx;
   line-height: 40rpx;
 }
+
+/* 套餐卡片加载占位（service-card-skeleton.wxml），尺寸与上面真实卡片的标签、名称、说明、价格、时长一致。 */
+.service-skeleton-tag {
+  width: 96rpx;
+  height: 38rpx;
+  border-radius: 0;
+}
+
+.service-skeleton-name {
+  width: 48%;
+  height: 33rpx;
+  margin: 6rpx 0 5rpx;
+}
+
+.service-skeleton-note {
+  width: 34%;
+  height: 27rpx;
+  margin: 16rpx 0 0;
+}
+
+.service-skeleton-price {
+  width: 100rpx;
+  height: 48rpx;
+  border-radius: 6rpx;
+}
+
+.service-skeleton-duration {
+  width: 100rpx;
+  height: 28rpx;
+  margin-bottom: 6rpx;
+  border-radius: 6rpx;
+}

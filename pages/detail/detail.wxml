@@ -1,4 +1,40 @@
-<view wx:if="{{loading}}" class="empty">正在加载...</view>
+<import src="/styles/service-card-skeleton.wxml" />
+<view class="native-tab-header-extension" aria-hidden="true"></view>
+<!-- 加载占位：沿用真实区块的类名和尺寸（轮播图、介绍、电话地址、热门套餐），套餐卡片用共用模板，只把内容换成占位块，数据返回时布局不跳动。 -->
+<template name="detail-body-skeleton">
+  <view class="promo">
+    <view class="skeleton-block promo-swiper skeleton-flat"></view>
+    <view class="promo-dots"><view wx:for="{{[0, 1, 2, 3, 4]}}" wx:key="*this" class="promo-dot"></view></view>
+  </view>
+  <view class="salon-intro">
+    <view class="skeleton-line detail-skeleton-text"></view>
+    <view class="skeleton-line detail-skeleton-text"></view>
+    <view class="skeleton-line detail-skeleton-text detail-skeleton-text--last"></view>
+  </view>
+  <view class="card info-card">
+    <view wx:for="{{[0, 1]}}" wx:key="*this" class="info-row">
+      <view class="skeleton-block detail-skeleton-icon"></view>
+      <view class="skeleton-line detail-skeleton-info"></view>
+    </view>
+  </view>
+  <view class="section">
+    <view class="section-title">热门套餐</view>
+    <block wx:for="{{[0, 1]}}" wx:key="*this"><template is="service-card-skeleton" /></block>
+  </view>
+</template>
+<view wx:if="{{loading && !salon}}" class="detail" role="status" aria-label="正在加载店铺信息">
+  <view class="body">
+    <view class="head-row">
+      <view class="head-main">
+        <view class="skeleton-line detail-skeleton-district"></view>
+        <view class="skeleton-line detail-skeleton-heading"></view>
+        <view class="skeleton-line detail-skeleton-stars"></view>
+        <view class="skeleton-line detail-skeleton-hours"></view>
+      </view>
+    </view>
+    <template is="detail-body-skeleton" />
+  </view>
+</view>
 <view wx:elif="{{errorMessage}}" class="page-error" role="alert">
   <view class="page-error-title">店铺加载失败</view>
   <view class="page-error-sub">{{errorMessage}}</view>
@@ -10,23 +46,23 @@
       <image class="ad-banner" mode="aspectFill" src="{{ad.image}}" />
     </navigator>
   </view>
-  <view class="hero" bindtap="previewHeroImage" aria-role="button" aria-label="查看店铺大图">
-    <view class="hero-img" style="background-image: url('{{salon.image}}');"></view>
-    <view class="heart" catchtap="toggleFavorite" aria-role="button" aria-label="{{isFavorite ? '取消收藏' : '收藏店铺'}}">
-      <image mode="aspectFit" src="{{isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" />
-    </view>
-  </view>
   <view class="body">
     <view class="head-row">
       <view class="head-main">
         <view wx:if="{{salon.isFeatured === true}}" class="featured-badge"><text>靓丝精选</text></view>
+        <view class="head-top">
+          <view wx:if="{{salon.businessDistrict}}" class="head-district">{{salon.businessDistrict}}</view>
+          <view class="heart" bindtap="toggleFavorite" aria-role="button" aria-label="{{isFavorite ? '取消收藏' : '收藏店铺'}}">
+            <image mode="aspectFit" src="{{isFavorite ? '/assets/icons/favorite_pink.png' : '/assets/icons/favorite_border.png'}}" aria-hidden="true" />
+          </view>
+        </view>
         <view class="detail-heading">{{salon.name}}{{salon.description ? ' 「' + salon.description + '」' : ''}}</view>
-        <view class="stars">
+        <view wx:if="{{salon.starIcons}}" class="stars">
           <image wx:for="{{salon.starIcons}}" wx:for-item="star" wx:key="*this" class="star-icon rating-star" mode="aspectFit" src="{{star}}" />
           <text class="rating-text">{{salon.ratingText}}</text>
           <text class="rating-count">({{salon.reviewTotalText}}人评分)</text>
         </view>
-        <view class="hours">
+        <view wx:if="{{salon.openingHoursText}}" class="hours">
           <text>营业时间： {{salon.openingHoursText}}</text>
           <text wx:if="{{salon.weeklyClosedDaysText}}">{{salon.weeklyClosedDaysText}}</text>
         </view>
@@ -36,135 +72,120 @@
         </view>
       </view>
     </view>
-    <view wx:if="{{salon.promoImages.length}}" class="promo">
-      <swiper class="promo-swiper" current="{{currentPromoIndex}}" bindchange="onPromoChange" circular="{{salon.promoImages.length > 1}}">
-        <swiper-item wx:for="{{salon.promoImages}}" wx:key="*this">
-          <image class="promo-image" mode="aspectFill" src="{{item}}" lazy-load bindtap="previewImage" data-url="{{item}}" />
-        </swiper-item>
-      </swiper>
-      <view wx:if="{{salon.promoImages.length > 1}}" class="promo-dots">
-        <view wx:for="{{salon.promoImages}}" wx:for-index="index" wx:key="*this" class="promo-dot {{index == currentPromoIndex ? 'active' : ''}}"></view>
-      </view>
+    <!-- 从列表进入时头部先用列表数据展示，其余内容等详情返回。 -->
+    <view wx:if="{{loading}}" role="status" aria-label="正在加载店铺详情">
+      <template is="detail-body-skeleton" />
     </view>
-    <view class="salon-intro">{{salon.descriptionText}}</view>
-    <view class="card info-card">
-      <view class="info-row" bindtap="callPhone"><image class="icon-img" mode="aspectFit" src="/assets/icons/phone.png" /><text class="info-label">电话</text><text class="info-value">{{salon.phoneText}}</text></view>
-      <view class="info-row" bindtap="openMap"><image class="icon-img" mode="aspectFit" src="/assets/icons/location_on.png" /><text class="info-label">地址</text><text class="info-value">{{salon.addressText}}</text></view>
-    </view>
-    <view class="section">
-      <view class="section-title">热门套餐</view>
-      <view wx:for="{{salon.services}}" wx:key="id" class="service-card" bindtap="openService" data-id="{{item.id}}" aria-role="{{item.imageUrl ? 'button' : ''}}" aria-label="{{item.imageUrl ? '查看套餐大图：' + item.name : item.name}}">
-        <view class="service-image-wrap">
-          <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
-          <image wx:if="{{item.hasGallery}}" class="service-gallery-icon" mode="aspectFit" src="/assets/icons/stack.png" aria-label="点击查看多张图片" />
-        </view>
-        <view class="service-main">
-          <view class="service-copy">
-            <view class="service-tags">
-              <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
-            </view>
-            <view class="service-name">{{item.name}}</view>
-            <view class="service-note">{{item.noteText}}</view>
-          </view>
-          <view class="service-meta">
-            <service-price class="service-price-slot" price-fen="{{item.priceFen}}" discount-tenths="{{item.discountTenths}}" original-price-fen="{{item.originalPriceFen}}" />
-            <view class="service-duration">{{item.durationText}}</view>
-          </view>
+    <block wx:else>
+      <view wx:if="{{salon.promoImages.length}}" class="promo">
+        <swiper class="promo-swiper" current="{{currentPromoIndex}}" bindchange="onPromoChange" circular="{{salon.promoImages.length > 1}}">
+          <swiper-item wx:for="{{salon.promoImages}}" wx:key="*this">
+            <image class="promo-image" mode="aspectFill" src="{{item}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="salon.promoImages[{{index}}]" data-src="{{item}}" bindtap="previewImage" data-url="{{item}}" />
+          </swiper-item>
+        </swiper>
+        <view wx:if="{{salon.promoImages.length > 1}}" class="promo-dots">
+          <view wx:for="{{salon.promoImages}}" wx:for-index="index" wx:key="*this" class="promo-dot {{index == currentPromoIndex ? 'active' : ''}}"></view>
         </view>
       </view>
-    </view>
-    <view class="section">
-      <view class="section-title">我们的理发师</view>
-      <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="staff-strip">
-        <view wx:for="{{salon.staff}}" wx:key="id" class="staff-card" bindtap="openStaff" data-id="{{item.id}}">
-          <image class="staff-photo" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
-          <view class="staff-info">
-            <view class="staff-name">{{item.name}}</view>
-            <view wx:if="{{item.roleText || item.experienceText}}" class="staff-role">{{item.roleText}}{{item.roleText && item.experienceText ? ' · ' : ''}}{{item.experienceText}}</view>
-            <view class="staff-bio">{{item.bioText}}</view>
+      <view class="salon-intro">{{salon.descriptionText}}</view>
+      <view class="card info-card">
+        <view class="info-row" bindtap="callPhone"><image class="icon-img" mode="aspectFit" src="/assets/icons/phone.png" /><text class="info-label">电话</text><text class="info-value">{{salon.phoneText}}</text></view>
+        <view class="info-row" bindtap="openMap"><image class="icon-img" mode="aspectFit" src="/assets/icons/location_on.png" /><text class="info-label">地址</text><text class="info-value">{{salon.addressText}}</text></view>
+      </view>
+      <view class="section">
+        <view class="section-title">热门套餐</view>
+        <view wx:for="{{salon.services}}" wx:key="id" class="service-card" bindtap="bookService" data-id="{{item.id}}" aria-role="button" aria-label="预约套餐：{{item.name}}">
+          <view class="service-image-wrap" catchtap="{{item.imageUrl ? 'openService' : ''}}" data-id="{{item.id}}" aria-role="{{item.imageUrl ? 'button' : ''}}" aria-label="{{item.imageUrl ? '查看套餐大图：' + item.name : ''}}">
+            <image class="service-image" mode="aspectFill" src="{{item.imageUrl}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="salon.services[{{index}}].imageUrl" data-src="{{item.imageUrl}}" />
+            <image wx:if="{{item.hasGallery}}" class="service-gallery-icon" mode="aspectFit" src="/assets/icons/stack.png" aria-label="点击查看多张图片" />
           </view>
-        </view>
-      </scroll-view>
-    </view>
-    <view wx:if="{{salon.latestPosts.length > 0}}" class="section">
-      <view class="section-title">店铺动态</view>
-      <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="salon-posts-strip">
-        <view class="salon-posts-row">
-          <view wx:for="{{salon.latestPosts}}" wx:for-index="postIndex" wx:key="id" class="salon-post">
-            <view class="salon-post-content">{{item.content}}</view>
-            <view wx:if="{{item.imageUrls.length}}" class="salon-post-images">
-              <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="salon-post-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewPostImage" data-url="{{image}}" data-post-index="{{postIndex}}" />
-            </view>
-            <view wx:if="{{item.relatedService}}" class="salon-post-service" bindtap="bookPostService" data-id="{{item.relatedService.id}}" aria-role="button" aria-label="预约关联套餐：{{item.relatedService.name}}">
-              <view class="salon-post-service-label"><text>关</text><text>联</text><text>套</text><text>餐</text></view>
-              <view class="salon-post-service-main">
-                <view class="salon-post-service-tags">
-                  <text wx:for="{{item.relatedService.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
-                </view>
-                <view class="salon-post-service-name">{{item.relatedService.name}}</view>
-                <view wx:if="{{item.relatedService.noteText}}" class="salon-post-service-note">{{item.relatedService.noteText}}</view>
-                <view class="salon-post-service-bottom">
-                  <service-price price-fen="{{item.relatedService.priceFen}}" discount-tenths="{{item.relatedService.discountTenths}}" original-price-fen="{{item.relatedService.originalPriceFen}}" compact />
-                </view>
+          <view class="service-main">
+            <view class="service-copy">
+              <view class="service-tags">
+                <text wx:for="{{item.tags}}" wx:for-item="tag" wx:key="*this" class="service-tag">{{tag}}</text>
               </view>
-              <view class="salon-post-service-arrow" aria-hidden="true"></view>
+              <view class="service-name">{{item.name}}</view>
+              <view class="service-note">{{item.noteText}}</view>
             </view>
-            <view wx:elif="{{item.serviceName}}" class="salon-post-service-unavailable">关联套餐：{{item.serviceName}}（暂不可预约）</view>
-            <view class="salon-post-head">
-              <text bindtap="openStaff" data-id="{{item.authorStaffId}}" aria-role="button">{{item.authorName}}</text>
-              <text> · 投稿时间：{{item.dateText}}</text>
+            <view class="service-meta">
+              <service-price class="service-price-slot" price-fen="{{item.priceFen}}" discount-tenths="{{item.discountTenths}}" original-price-fen="{{item.originalPriceFen}}" />
+              <view class="service-duration">{{item.durationText}}</view>
             </view>
           </view>
         </view>
-      </scroll-view>
-      <button wx:if="{{salon.hasMorePosts}}" class="ghost-btn" bindtap="showAllPosts">展示更多</button>
-    </view>
-    <view wx:if="{{relatedSalons.length}}" class="related-salons">
-      <view class="related-salons-title">看了这个店铺的用户还看了</view>
-      <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="related-salons-strip">
-        <navigator wx:for="{{relatedSalons}}" wx:key="id" class="related-salon-card" url="{{item.detailUrl}}" hover-class="none" aria-label="查看店铺：{{item.name}}">
-          <image class="related-salon-image" mode="aspectFill" src="{{item.image}}" lazy-load />
-          <view class="related-salon-name">{{item.name}}{{item.description ? ' 「' + item.description + '」' : ''}}</view>
-        </navigator>
-      </scroll-view>
-    </view>
-    <view class="section">
-      <view class="reviews-heading">
-        <view class="section-title">客户评价（{{salon.reviewTotalText}}）</view>
-        <view wx:if="{{salon.reviewCount > 0}}" class="reviews-all" bindtap="showAllReviews" aria-role="button">
-          <text>查看全部</text>
-          <view class="reviews-all-arrow" aria-hidden="true"></view>
-        </view>
       </view>
-      <view wx:if="{{salon.reviewTags.length}}" class="review-tag-summary">
-        <view wx:for="{{salon.reviewTags}}" wx:key="name" class="review-tag-count">{{item.name}}（{{item.count}}）</view>
-      </view>
-      <view wx:if="{{!visibleReviews.length}}" class="muted">暂无评价</view>
-      <view wx:for="{{visibleReviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
-        <view class="review-head">
-          <view class="review-user">
-            <image class="avatar" mode="{{item.avatarUrl ? 'aspectFill' : 'aspectFit'}}" src="{{item.avatarUrl || '/assets/icons/person.png'}}" />
-            <view class="review-name">{{item.userText}}</view>
+      <view class="section">
+        <view class="section-title">我们的理发师</view>
+        <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="staff-strip">
+          <view wx:for="{{salon.staff}}" wx:key="id" class="staff-card" bindtap="openStaff" data-id="{{item.id}}">
+            <image class="staff-photo" mode="aspectFill" src="{{item.imageUrl}}" lazy-load />
+            <view class="staff-info">
+              <view class="staff-name">{{item.name}}</view>
+              <view wx:if="{{item.roleText || item.experienceText}}" class="staff-role">{{item.roleText}}{{item.roleText && item.experienceText ? ' · ' : ''}}{{item.experienceText}}</view>
+              <view class="staff-bio">{{item.bioText}}</view>
+            </view>
           </view>
-          <view class="review-helpful {{item.helpful ? 'active' : ''}}" bindtap="markReviewHelpful" data-booking-id="{{item.bookingId}}" data-review-id="{{item.id}}" aria-role="button" aria-disabled="{{item.helpful || item.helpfulSubmitting}}">
-            <image class="review-helpful-icon" mode="aspectFit" src="{{item.helpful ? '/assets/icons/check_circle_pink.png' : '/assets/icons/thumb_up.svg'}}" aria-hidden="true" />
-            <text>{{item.helpful ? '感谢您提供反馈' : item.helpfulSubmitting ? '提交中...' : '有用'}}</text>
+        </scroll-view>
+      </view>
+      <view wx:if="{{salon.latestPosts.length > 0}}" class="section">
+        <view class="section-title">店铺动态</view>
+        <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="salon-posts-strip">
+          <view class="salon-posts-row">
+            <salon-post-card wx:for="{{salon.latestPosts}}" wx:key="id" class="salon-post-slide" post="{{item}}" favorite="{{favoritePostIds[item.id]}}" compact bind:favoritechange="togglePostFavorite" />
+            <view wx:if="{{salon.hasMorePosts}}" class="salon-posts-all" bindtap="showAllPosts" aria-role="button" aria-label="查看全部店铺动态">
+              <view class="salon-posts-all-text"><text>全</text><text>部</text><text>动</text><text>态</text></view>
+              <view class="salon-posts-all-arrow" aria-hidden="true"></view>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+      <view wx:if="{{relatedSalons.length}}" class="related-salons">
+        <view class="related-salons-title">看了这个店铺的用户还看了</view>
+        <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="related-salons-strip">
+          <view wx:for="{{relatedSalons}}" wx:key="id" class="related-salon-card" bindtap="openRelatedSalon" data-id="{{item.id}}" aria-role="link" aria-label="查看店铺：{{item.name}}">
+            <image class="related-salon-image" mode="aspectFill" src="{{item.image}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="relatedSalons[{{index}}].image" data-src="{{item.image}}" />
+            <view class="related-salon-name">{{item.name}}{{item.description ? ' 「' + item.description + '」' : ''}}</view>
+          </view>
+        </scroll-view>
+      </view>
+      <view class="section">
+        <view class="section-heading">
+          <view class="section-title">客户评价（{{salon.reviewTotalText}}）</view>
+          <view wx:if="{{salon.reviewCount > 0}}" class="section-all" bindtap="showAllReviews" aria-role="button">
+            <text>查看全部</text>
+            <view class="section-all-arrow" aria-hidden="true"></view>
           </view>
         </view>
-        <view wx:if="{{item.dateText}}" class="review-date">{{item.dateText}}发布评论</view>
-        <review-booking-info service-name="{{item.serviceText}}" staff-name="{{item.staffText}}" />
-        <view class="review-rating-row">
-          <review-rating-summary rating="{{item.rating}}" ratings="{{item.ratings}}" />
+        <view wx:if="{{salon.reviewTags.length}}" class="review-tag-summary">
+          <view wx:for="{{salon.reviewTags}}" wx:key="name" class="review-tag-count">{{item.name}}（{{item.count}}）</view>
         </view>
-        <review-content class="review-comment-content" content="{{item.comment}}" />
-        <view wx:if="{{item.imageUrls.length}}" class="review-images">
-          <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+        <view wx:if="{{!visibleReviews.length}}" class="muted">暂无评价</view>
+        <view wx:for="{{visibleReviews}}" wx:for-index="reviewIndex" wx:key="id" class="review">
+          <view class="review-head">
+            <view class="review-user">
+              <image class="avatar" mode="{{item.avatarUrl ? 'aspectFill' : 'aspectFit'}}" src="{{item.avatarUrl || '/assets/icons/person.png'}}" />
+              <view class="review-name">{{item.userText}}</view>
+            </view>
+            <view class="review-helpful {{item.helpful ? 'active' : ''}}" bindtap="markReviewHelpful" data-booking-id="{{item.bookingId}}" data-review-id="{{item.id}}" aria-role="button" aria-disabled="{{item.helpful || item.helpfulSubmitting}}">
+              <image class="review-helpful-icon" mode="aspectFit" src="{{item.helpful ? '/assets/icons/check_circle_pink.png' : '/assets/icons/thumb_up.svg'}}" aria-hidden="true" />
+              <text>{{item.helpful ? '感谢您提供反馈' : item.helpfulSubmitting ? '提交中...' : '有用'}}</text>
+            </view>
+          </view>
+          <view wx:if="{{item.dateText}}" class="review-date">{{item.dateText}}发布评论</view>
+          <review-booking-info service-name="{{item.serviceText}}" staff-name="{{item.staffText}}" />
+          <view class="review-rating-row">
+            <review-rating-summary rating="{{item.rating}}" ratings="{{item.ratings}}" />
+          </view>
+          <review-content class="review-comment-content" content="{{item.comment}}" />
+          <view wx:if="{{item.imageUrls.length}}" class="review-images">
+            <image wx:for="{{item.imageUrls}}" wx:for-item="image" wx:key="*this" class="review-image" mode="aspectFill" src="{{image}}" lazy-load webp="{{true}}" binderror="onImageError" data-path="visibleReviews[{{reviewIndex}}].imageUrls[{{index}}]" data-src="{{image}}" bindtap="previewReviewImage" data-url="{{image}}" data-review-index="{{reviewIndex}}" />
+          </view>
+          <view wx:if="{{item.helpfulCount > 0}}" class="review-helpful-count">{{item.helpfulCount}}位用户认为这个有帮助</view>
         </view>
-        <view wx:if="{{item.helpfulCount > 0}}" class="review-helpful-count">{{item.helpfulCount}}位用户认为这个有帮助</view>
       </view>
-    </view>
+    </block>
   </view>
-  <view class="bar">
+  <view wx:if="{{!loading}}" class="bar">
     <button class="primary-btn" bindtap="book">立即预约</button>
   </view>
 </view>

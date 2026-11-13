@@ -10,7 +10,7 @@ global.wx = {
 };
 require('../pages/profile/profile');
 const review = { bookingId: 'booking-1', rating: 5, comment: '很好', tags: ['善于沟通'], imageUrls: [], imageKeys: [] };
-const page = { ...definition, data: { ...definition.data, reviews: [review] } };
+const page = { ...definition, data: { ...definition.data, reviews: [{ bookingId: review.bookingId }] }, reviewSources: [review] };
 page.editReview({ currentTarget: { dataset: { index: 0 } } });
 assert.equal(navigation.url, '/pages/review-editor/review-editor');
 navigation.success({ eventChannel: { emit(event, data) {

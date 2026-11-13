@@ -37,6 +37,11 @@ page.load().then(() => {
   assert.equal(page.data.dates[0].isRelativeDate, true);
   assert.equal(page.data.dates[1].isRelativeDate, true);
   assert.equal(page.data.dates[2].isRelativeDate, false);
+  // 可预约今天起共 9 天，日期连续。
+  assert.equal(page.data.dates.length, 9);
+  const first = new Date(`${page.data.dates[0].value}T00:00:00`);
+  const last = new Date(`${page.data.dates[8].value}T00:00:00`);
+  assert.equal(Math.round((last - first) / 86400000), 8);
 }).catch((error) => {
   console.error(error);
   process.exitCode = 1;

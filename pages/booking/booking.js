@@ -6,14 +6,18 @@ const analytics = require('../../utils/analytics');
 const salonDetail = require('../../utils/salonDetail');
 const { formatFen } = require('../../utils/money');
 const { staffRoleLabel } = require('../../utils/staffRoles');
+const { dataPatch } = require('../../utils/dataPatch');
+const NO_PREFERENCE_STAFF_ID = '__no_preference__';
+// 可预约日期范围（含今天）。后端按天计算休息日覆盖未来 31 天，下单不限制提前天数。
+const BOOKING_DAYS = 9;
 
 Page({
   onShareAppMessage,
 
+  // 店铺详情（this.salon）和时间段原始数据（this.slots）只供逻辑层使用，
+  // 不进入 setData，避免把模板用不到的数据传到视图层。
   data: {
-    salon: null,
     dates: [],
-    slots: [],
     slotsLoading: false,
     slotErrorMessage: '',
     staffOptions: [],
@@ -23,7 +27,7 @@ Page({
     slotOptions: [],
     previousSlotOptions: [],
     slotsAnimating: false,
-    selectedStaffId: '__no_preference__',
+    selectedStaffId: NO_PREFERENCE_STAFF_ID,
     selectedServiceId: '',
     selectedDate: '',
     selectedTime: '',
@@ -62,7 +66,11 @@ Page({
     }
     this.waitingForLogin = false;
     this.loginPageWasShown = false;
-    if (!this.salonId || this.data.salon || this.loadingSalon) return;
+    // 从确认页返回时，期间可能已提交预约（或有其他写操作），已展示的时间段不再可信。
+    if (this.salon && this.data.selectedDate && this.slotsStartedAt < api.lastWriteAt()) {
+      return this.loadSlots();
+    }
+    if (!this.salonId || this.salon || this.loadingSalon) return;
     return this.load();
   },
 
@@ -80,32 +88,40 @@ Page({
       const selectedServiceId = selectedService ? requestedServiceId : '';
       const firstAvailableCategory = (SERVICE_TABS.find((tab) =>
         services.some((service) => serviceMatchesCategory(service, tab.id))) || SERVICE_TABS[0]).id;
-      this.setData({
-        salon,
+      this.salon = salon;
+      this.refreshOptions({
         dates,
         selectedDate,
-        selectedStaffId: this.initialStaffId || '__no_preference__',
+        selectedStaffId: this.initialStaffId || NO_PREFERENCE_STAFF_ID,
         selectedServiceId,
         activeServiceCategory: selectedService
           ? serviceCategory(selectedService)
-          : firstAvailableCategory
+          : firstAvailableCategory,
+        // 表单先渲染；时间段单独请求并显示自己的加载态，不阻塞首屏。
+        slotsLoading: Boolean(selectedDate),
+        loading: false
       });
       if (requestedServiceId && !selectedServiceId) {
         wx.showToast({ title: '套餐已更新，请重新选择', icon: 'none' });
       }
-      this.refreshOptions();
       if (selectedDate) await this.loadSlots();
       analytics.track('booking_started', {
         salonId: this.salonId,
         serviceId: selectedServiceId
       });
     } catch (err) {
-      if (!this.data.salon) this.setData({ errorMessage: err.message || '店铺加载失败，请稍后重试' });
+      if (!this.salon) this.setData({ errorMessage: err.message || '店铺加载失败，请稍后重试' });
       else wx.showToast({ title: err.message, icon: 'none' });
     } finally {
       this.loadingSalon = false;
-      this.setData({ loading: false });
+      if (this.data.loading) this.setData({ loading: false });
     }
+  },
+
+  // 网络恢复后重新加载之前失败的内容。
+  onNetworkRestored() {
+    if (this.data.errorMessage) this.load();
+    else if (this.data.slotErrorMessage) this.loadSlots();
   },
 
   retryLoad() {
@@ -118,48 +134,49 @@ Page({
     const selectedDate = this.data.selectedDate;
     const staffId = this.data.selectedStaffId;
     const serviceId = this.data.selectedServiceId;
-    this.setData({
+    this.refreshOptions({
       selectedTime: '',
       slotsLoading: Boolean(selectedDate),
       slotErrorMessage: '',
       previousSlotOptions: [],
       slotsAnimating: false
     });
-    this.refreshOptions();
     if (!selectedDate) return;
+    this.slotsStartedAt = Date.now();
 
     try {
       const serviceQuery = serviceId ? `&serviceId=${encodeURIComponent(serviceId)}` : '';
-      const slots = staffId === '__no_preference__'
+      const slots = staffId === NO_PREFERENCE_STAFF_ID
         ? await api.request(`/staff/${staffId}/slots?date=${selectedDate}&salonId=${encodeURIComponent(this.salonId)}${serviceQuery}`)
         : await api.request(`/staff/${staffId}/slots?date=${selectedDate}${serviceQuery}`);
       if (requestId !== this.slotRequestId) return;
-      const previousSlotOptions = this.data.slotOptions;
-      this.setData({ slots, slotsLoading: false });
+      // 复制一份旧时间段用于滑出动画，不与随后按路径更新的 slotOptions 共用对象。
+      const previousSlotOptions = this.data.slotOptions.map((slot) => ({ ...slot }));
+      this.slots = slots;
       this.refreshOptions({
+        slotsLoading: false,
         previousSlotOptions: animate ? previousSlotOptions : [],
         slotsAnimating: animate && previousSlotOptions.length > 0
       });
     } catch (err) {
       if (requestId !== this.slotRequestId) return;
-      this.setData({
-        slots: [],
+      this.slots = [];
+      this.refreshOptions({
         selectedTime: '',
         slotsLoading: false,
         slotErrorMessage: err.message || '时间段加载失败',
         previousSlotOptions: [],
         slotsAnimating: false
       });
-      this.refreshOptions();
       wx.showToast({ title: err.message || '时间段加载失败', icon: 'none' });
     }
   },
 
   selectStaff(e) {
     const staffId = e.currentTarget.dataset.id;
-    const service = ((this.data.salon || {}).services || [])
+    const service = ((this.salon || {}).services || [])
       .find((item) => String(item.id) === this.data.selectedServiceId);
-    if (service && service.staffSelectionRestricted === true && staffId !== '__no_preference__'
+    if (service && service.staffSelectionRestricted === true && staffId !== NO_PREFERENCE_STAFF_ID
       && !(service.selectableStaffIds || []).includes(staffId)) return;
     this.setData({ selectedStaffId: staffId });
     return this.loadSlots({ animate: true });
@@ -167,8 +184,7 @@ Page({
 
   selectService(e) {
     const selectedServiceId = String(e.currentTarget.dataset.id || '');
-    this.setData({ selectedServiceId });
-    this.refreshOptions();
+    this.refreshOptions({ selectedServiceId });
     analytics.track('service_click', { salonId: this.salonId, serviceId: selectedServiceId });
     return this.loadSlots();
   },
@@ -176,15 +192,13 @@ Page({
   selectServiceCategory(e) {
     const category = String(e.currentTarget.dataset.category || '');
     if (!SERVICE_TABS.some((tab) => tab.id === category)) return;
-    const selectedService = ((this.data.salon || {}).services || [])
+    const selectedService = ((this.salon || {}).services || [])
       .find((service) => String(service.id) === this.data.selectedServiceId);
-    const clearSelection = selectedService && !serviceMatchesCategory(selectedService, category);
-    this.setData({
-      activeServiceCategory: category,
-      ...(clearSelection ? { selectedServiceId: '' } : {})
-    });
-    if (clearSelection) return this.loadSlots();
-    this.refreshOptions();
+    if (selectedService && !serviceMatchesCategory(selectedService, category)) {
+      this.setData({ activeServiceCategory: category, selectedServiceId: '' });
+      return this.loadSlots();
+    }
+    this.refreshOptions({ activeServiceCategory: category });
   },
 
   selectDate(e) {
@@ -197,8 +211,7 @@ Page({
   selectTime(e) {
     const available = e.currentTarget.dataset.available;
     if (available === false || available === 'false') return;
-    this.setData({ selectedTime: e.currentTarget.dataset.time });
-    this.refreshOptions();
+    this.refreshOptions({ selectedTime: e.currentTarget.dataset.time });
     if (!this.slotSelectedTracked && this.data.canSubmit) {
       this.slotSelectedTracked = true;
       analytics.track('slot_selected', {
@@ -212,20 +225,22 @@ Page({
     this.setData({ previousSlotOptions: [], slotsAnimating: false });
   },
 
-  refreshOptions(extraData = {}) {
-    const salon = this.data.salon || {};
+  // 按「当前 data + 本次变更」重新计算各选项列表，并只把发生变化的字段交给 setData。
+  refreshOptions(changes = {}) {
+    const state = { ...this.data, ...changes };
+    const salon = this.salon || {};
     const selectedService = (salon.services || [])
-      .find((service) => String(service.id) === this.data.selectedServiceId);
+      .find((service) => String(service.id) === state.selectedServiceId);
     const staffSelectionRestricted = selectedService && selectedService.staffSelectionRestricted === true;
-    if (staffSelectionRestricted && this.data.selectedStaffId !== '__no_preference__'
-      && !(selectedService.selectableStaffIds || []).includes(this.data.selectedStaffId)) {
-      this.setData({ selectedStaffId: '__no_preference__' });
-    }
+    const staffUnavailable = (staffId) => Boolean(staffSelectionRestricted
+      && staffId !== NO_PREFERENCE_STAFF_ID
+      && !(selectedService.selectableStaffIds || []).includes(staffId));
+    if (staffUnavailable(state.selectedStaffId)) state.selectedStaffId = NO_PREFERENCE_STAFF_ID;
     const showStaffExtraFee = selectedService
       ? serviceCategory(selectedService) === 'cut'
-      : this.data.activeServiceCategory === 'cut';
+      : state.activeServiceCategory === 'cut';
     const staffOptions = [
-      { id: '__no_preference__', name: '无需指定', isNoPreference: true },
+      { id: NO_PREFERENCE_STAFF_ID, name: '无需指定', isNoPreference: true },
       ...((salon.staff || []).map((staff) => ({
         id: staff.id,
         name: staff.name,
@@ -235,65 +250,84 @@ Page({
         imageUrl: api.thumbnailUrl(staff.imageUrl || '', 240),
         extraServiceFeeText: showStaffExtraFee && staff.extraServiceFeeFen > 0 ? formatFen(staff.extraServiceFeeFen) : ''
       })))
-    ].map((staff) => ({
-      ...staff,
-      disabled: Boolean(staffSelectionRestricted && !staff.isNoPreference
-        && !(selectedService.selectableStaffIds || []).includes(staff.id)),
-      className: staffSelectionRestricted && !staff.isNoPreference
-        && !(selectedService.selectableStaffIds || []).includes(staff.id)
-        ? 'disabled' : this.data.selectedStaffId === staff.id ? 'active' : ''
-    }));
+    ].map((staff) => {
+      const disabled = staffUnavailable(staff.id);
+      return {
+        ...staff,
+        disabled,
+        className: disabled ? 'disabled' : state.selectedStaffId === staff.id ? 'active' : ''
+      };
+    });
     const serviceTabs = SERVICE_TABS.map((tab) => ({
       ...tab,
-      className: this.data.activeServiceCategory === tab.id ? 'active' : ''
+      className: state.activeServiceCategory === tab.id ? 'active' : ''
     }));
-    const serviceOptions = (salon.services || []).map((service) => ({
-      ...service,
-      imageUrl: api.thumbnailUrl((service.imageUrls || [])[0] || service.imageUrl || '', 480),
-      tags: serviceTagLabels(service.tagIds),
-      noteText: service.note || service.description || '',
-      durationText: service.durationMinutes ? `${service.durationMinutes}分钟` : '',
-      priceText: formatFen(service.priceFen),
-      className: this.data.selectedServiceId === String(service.id) ? 'active-card' : ''
-    })).filter((service) => serviceMatchesCategory(service, this.data.activeServiceCategory));
-    const dates = this.data.dates.map((date) => ({
+    // 只保留模板使用的字段。
+    const serviceOptions = (salon.services || [])
+      .filter((service) => serviceMatchesCategory(service, state.activeServiceCategory))
+      .map((service) => ({
+        id: service.id,
+        name: service.name,
+        imageUrl: api.thumbnailUrl((service.imageUrls || [])[0] || service.imageUrl || '', 480),
+        tags: serviceTagLabels(service.tagIds),
+        noteText: service.note || service.description || '',
+        durationText: service.durationMinutes ? `${service.durationMinutes}分钟` : '',
+        priceFen: service.priceFen,
+        discountTenths: service.discountTenths,
+        originalPriceFen: service.originalPriceFen,
+        className: state.selectedServiceId === String(service.id) ? 'active-card' : ''
+      }));
+    const dates = state.dates.map((date) => ({
       ...date,
-      className: date.isDisabled ? 'disabled' : this.data.selectedDate === date.value ? 'active' : ''
+      className: date.isDisabled ? 'disabled' : state.selectedDate === date.value ? 'active' : ''
     }));
-    const slotOptions = this.data.slots.map((slot) => {
-      const isAvailable = isSlotAvailable(slot, this.data.selectedDate);
+    const slotOptions = (this.slots || []).map((slot) => {
+      const isAvailable = isSlotAvailable(slot, state.selectedDate);
       return {
-        ...slot,
+        time: slot.time,
+        startTime: slot.startTime,
         isAvailable,
-        className: !isAvailable ? 'disabled' : this.data.selectedTime === slot.time ? 'active' : ''
+        className: !isAvailable ? 'disabled' : state.selectedTime === slot.time ? 'active' : ''
       };
     });
     const selectedSlotAvailable = slotOptions.some((slot) => (
-      slot.isAvailable && slot.time === this.data.selectedTime
+      slot.isAvailable && slot.time === state.selectedTime
     ));
     const canSubmit = Boolean(
-      !this.data.slotsLoading
-      && this.data.selectedStaffId
-      && this.data.selectedServiceId
-      && this.data.selectedDate
+      !state.slotsLoading
+      && state.selectedStaffId
+      && state.selectedServiceId
+      && state.selectedDate
       && selectedSlotAvailable
     );
-    const submitText = !this.data.selectedStaffId
+    const submitText = !state.selectedStaffId
       ? '请选择理发师'
-      : !this.data.selectedDate
+      : !state.selectedDate
         ? '请选择营业日期'
-        : !this.data.selectedServiceId
+        : !state.selectedServiceId
           ? '请选择服务项目'
-          : this.data.slotsLoading
+          : state.slotsLoading
             ? '时间段加载中'
-            : !this.data.selectedTime
+            : !state.selectedTime
               ? '请选择时间段'
               : '确认预约';
-    this.setData({ staffOptions, serviceTabs, serviceOptions, dates, slotOptions, canSubmit, submitText, ...extraData });
+    const patch = dataPatch(this.data, {
+      ...changes,
+      selectedStaffId: state.selectedStaffId,
+      staffOptions,
+      serviceTabs,
+      serviceOptions,
+      dates,
+      slotOptions,
+      canSubmit,
+      submitText
+    });
+    if (Object.keys(patch).length) this.setData(patch);
   },
 
   async submit() {
-    const { selectedServiceId, selectedStaffId, selectedDate, selectedTime, salon } = this.data;
+    const { selectedServiceId, selectedStaffId, selectedDate, selectedTime } = this.data;
+    const salon = this.salon || {};
     if (!this.data.canSubmit || !selectedStaffId || !selectedServiceId || !selectedDate || !selectedTime) {
       wx.showToast({ title: '请选完整预约信息', icon: 'none' });
       return;
@@ -301,13 +335,12 @@ Page({
     const staffId = selectedStaffId;
     const service = (salon.services || []).find((item) => String(item.id) === selectedServiceId);
     if (!service) {
-      this.setData({ selectedServiceId: '' });
-      this.refreshOptions();
+      this.refreshOptions({ selectedServiceId: '' });
       wx.showToast({ title: '套餐已更新，请重新选择', icon: 'none' });
       return;
     }
-    const staff = selectedStaffId === '__no_preference__'
-      ? { id: '__no_preference__', name: '无需指定' }
+    const staff = selectedStaffId === NO_PREFERENCE_STAFF_ID
+      ? { id: NO_PREFERENCE_STAFF_ID, name: '无需指定' }
       : (salon.staff || []).find((item) => item.id === selectedStaffId) || {};
     const payload = {
       salonId: this.salonId,
@@ -330,7 +363,7 @@ function nextDates(closedDates = [], acceptsSameDayBooking = true) {
   const week = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
   const closedDateSet = new Set(closedDates || []);
   const today = new Date();
-  return Array.from({ length: 7 }, (_, index) => {
+  return Array.from({ length: BOOKING_DAYS }, (_, index) => {
     const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + index);
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
