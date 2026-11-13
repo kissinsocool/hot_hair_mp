@@ -438,9 +438,6 @@
   box-shadow: 0 1rpx 8rpx rgba(0, 0, 0, 0.1);
 }
 
-.salon-card--loading {
-  height: 660rpx;
-}
 
 .salon-card-border-light {
   position: absolute;
@@ -520,12 +517,22 @@
   display: flex;
   align-items: center;
   flex: 0 0 auto;
+  min-height: 44rpx;
   margin-left: 16rpx;
   color: #d06884;
   font-size: 34rpx;
   font-weight: 800;
-  line-height: 44rpx;
   white-space: nowrap;
+}
+
+.salon-rating-value {
+  line-height: 1;
+}
+
+/* 视觉对齐：五角星上尖下宽，视觉重心在高度约 55% 处，外框居中时看起来比数字低。
+   向上挪 1.5rpx（约为星星显示高度的 5%），让星星和数字在视觉上居中对齐。 */
+.salon-rating .star-icon {
+  transform: translateY(-1.5rpx);
 }
 
 .star-icon {
@@ -534,20 +541,21 @@
   margin-right: 6rpx;
 }
 
-/* 收藏按钮在卡片右下角（底部栏右端），垂直居中；点击区域比图标向外扩出 19rpx。 */
+/* 收藏按钮在卡片右下角（底部栏右端），垂直居中；点击区域比图标向外扩出 19rpx。
+   margin-top 为（图标高度 + 上下内边距）的一半，保持垂直居中。 */
 .favorite {
   position: absolute;
   top: 50%;
   right: -19rpx;
-  margin-top: -40rpx;
+  margin-top: -38.25rpx;
   padding: 19rpx;
   font-size: 0;
 }
 
 .favorite image {
   display: block;
-  width: 48rpx;
-  height: 42rpx;
+  width: 44rpx;
+  height: 38.5rpx;
 }
 
 .salon-gallery {
@@ -753,8 +761,8 @@
   margin-top: 19rpx;
   border-top: 2rpx solid #e0e1e1;
   color: #b43f58;
-  font-size: 28rpx;
-  font-weight: 700;
+  font-size: 30rpx;
+  font-weight: 500;
   line-height: 84.6rpx;
   text-align: center;
 }
@@ -895,4 +903,95 @@
   opacity: 0.333;
   pointer-events: none;
   transform: translateX(66.666%);
+}
+
+/* 加载占位卡片：沿用真实卡片的容器（salon-head / salon-info / salon-cta），尺寸与店名、标签、评分、
+   简介、地址、评价与价格、底部操作对应，卡片高度由内容撑开，与真实卡片一致。 */
+.home-skeleton-head {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+}
+
+.home-skeleton-name {
+  flex: none;
+  width: 170rpx;
+  height: 30rpx;
+  margin: 7rpx 0;
+}
+
+.home-skeleton-tag {
+  flex: none;
+  width: 200rpx;
+  height: 38rpx;
+  border-radius: 999rpx;
+}
+
+.home-skeleton-rating {
+  width: 72rpx;
+  height: 34rpx;
+  margin: 5rpx 0;
+}
+
+/* 简介单行（行高 42rpx）。 */
+.home-skeleton-desc-row {
+  margin-top: 22.3rpx;
+  padding: 7rpx 0;
+}
+
+.home-skeleton-desc {
+  width: 46%;
+  height: 28rpx;
+  margin: 0;
+}
+
+/* 信息行行高 44rpx；图标位与真实图标（42rpx 宽、右边距 8.3rpx）占同样宽度。 */
+.home-skeleton-row {
+  min-height: 44rpx;
+}
+
+.home-skeleton-icon {
+  flex: 0 0 34rpx;
+  width: 34rpx;
+  height: 34rpx;
+  margin: 0 12.3rpx 0 4rpx;
+  border-radius: 50%;
+}
+
+.home-skeleton-row .skeleton-line {
+  height: 26rpx;
+  margin: 0;
+}
+
+.home-skeleton-address {
+  width: 76%;
+}
+
+.home-skeleton-reviews {
+  flex: none;
+  width: 110rpx;
+  margin-right: 46rpx !important;
+}
+
+.home-skeleton-price {
+  flex: none;
+  width: 130rpx;
+}
+
+.home-skeleton-cta-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-skeleton-cta {
+  width: 210rpx;
+  height: 30rpx;
+  margin: 0;
+}
+
+.home-skeleton-heart {
+  width: 44rpx;
+  height: 38.5rpx;
+  border-radius: 50%;
 }

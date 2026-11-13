@@ -81,6 +81,9 @@ const page = {
     const renderPage = {
       ...global.homePageDefinition,
       salonListVersion: 1,
+      // 页面上的列表就是第 1 轮查询的结果（与真实加载完成后的状态一致）。
+      displayedSalonListVersion: 1,
+      displayedSalonListPath: '/salons?latitude=39.9042&longitude=116.4074',
       salons: salonsForPage(1),
       data: {
         ...global.homePageDefinition.data,

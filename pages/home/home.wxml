@@ -90,11 +90,19 @@
         <view class="salon-card-border-light {{visibleSalonCards[salonIndex] ? 'salon-card-border-light--active' : ''}}" style="animation-delay: {{salonIndex * 70 + 560}}ms;" aria-hidden="true"></view>
         <!-- 右上角评分：暂无评分的店铺暂时显示为 5，真实评分数据不变；恢复时改回只显示 ratingText，并让星标只在有评分时出现。 -->
         <view class="salon-head">
+          <!-- 加载占位：店名与标签、右上角评分的位置。 -->
+          <block wx:if="{{item.isPlaceholder}}">
+            <view class="salon-name home-skeleton-head" aria-hidden="true"><view class="skeleton-line home-skeleton-name"></view><view class="skeleton-block home-skeleton-tag"></view></view>
+            <view class="salon-rating" aria-hidden="true"><view class="skeleton-block home-skeleton-rating"></view></view>
+          </block>
           <view wx:if="{{!item.isPlaceholder}}" class="salon-name">
             <text>{{item.nameText}}</text><view wx:if="{{item.tags.length}}" class="salon-tag {{item.tags[0].colorClass}}"><text class="salon-tag-text">{{item.tags[0].text}}</text></view>
             <view wx:if="{{item.isFeatured}}" class="featured-badge"><text>靓丝精选</text></view>
           </view>
-          <view wx:if="{{!item.isPlaceholder}}" class="salon-rating"><image class="star-icon rating-star" mode="aspectFit" src="/assets/icons/star_gold.png" />{{item.hasRating ? item.ratingText : '5'}}</view>
+          <view wx:if="{{!item.isPlaceholder}}" class="salon-rating">
+            <image class="star-icon rating-star" mode="aspectFit" src="/assets/icons/star_gold.png" />
+            <text class="salon-rating-value">{{item.hasRating ? item.ratingText : '5'}}</text>
+          </view>
         </view>
         <scroll-view class="salon-gallery" scroll-x enhanced show-scrollbar="{{false}}">
           <block wx:if="{{item.isPlaceholder}}">
@@ -134,6 +142,21 @@
             <view class="favorite" catchtap="toggleFavorite" data-id="{{item.id}}" role="button" aria-label="{{item.isFavorite ? '取消收藏' : '收藏'}}">
               <image mode="aspectFit" src="{{item.isFavorite ? '/assets/icons/favorite_pink.svg' : '/assets/icons/favorite_border_ink.svg'}}" />
             </view>
+          </view>
+        </block>
+        <!-- 加载占位：简介、地址、评价与价格、底部操作栏，位置与上面的真实内容一致。 -->
+        <block wx:else>
+          <view class="home-skeleton-desc-row" aria-hidden="true"><view class="skeleton-line home-skeleton-desc"></view></view>
+          <view class="salon-info" aria-hidden="true">
+            <view class="salon-info-row home-skeleton-row"><view class="skeleton-block home-skeleton-icon"></view><view class="skeleton-line home-skeleton-address"></view></view>
+            <view class="salon-info-row home-skeleton-row">
+              <view class="skeleton-block home-skeleton-icon"></view><view class="skeleton-line home-skeleton-reviews"></view>
+              <view class="skeleton-block home-skeleton-icon"></view><view class="skeleton-line home-skeleton-price"></view>
+            </view>
+          </view>
+          <view class="salon-cta home-skeleton-cta-row" aria-hidden="true">
+            <view class="skeleton-line home-skeleton-cta"></view>
+            <view class="favorite"><view class="skeleton-block home-skeleton-heart"></view></view>
           </view>
         </block>
       </view>

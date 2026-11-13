@@ -181,6 +181,17 @@ Page({
         this.updatePrice(err.data.quote);
         await this.loadCoupons({ force: true });
         wx.showModal({ title: '价格已更新', content: '套餐价格或优惠已变更，请核对新金额后再次提交。', showCancel: false });
+      } else if (err.code === 'BOOKING_SLOT_UNAVAILABLE') {
+        // 所选时间已不可约（被他人约走、理发师不可用、休息日等）：回到预约页重新选时间。
+        // 预约页返回时会重新读取时间段，并保留仍有效的套餐、理发师和日期。
+        wx.showModal({
+          title: '该时间已不可预约',
+          content: err.message || '请重新选择预约时间',
+          showCancel: false,
+          // 微信限制按钮文字最多 4 个汉字，超出时弹窗调用失败。
+          confirmText: '重新选择',
+          success: () => wx.navigateBack({ fail: () => wx.switchTab({ url: '/pages/home/home' }) })
+        });
       } else if (err.timeout) {
         // 请求超时时预约可能已经创建，直接重试可能重复下单，先让用户到订单页核对。
         wx.showModal({

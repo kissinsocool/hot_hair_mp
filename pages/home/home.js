@@ -10,7 +10,7 @@ const salonDetail = require('../../utils/salonDetail');
 const unreadMessages = require('../../utils/unreadMessages');
 const salonListCache = require('../../utils/salonListCache');
 const { ratingDisplay } = require('../../utils/rating');
-const { formatFen } = require('../../utils/money');
+const { formatFenAmount } = require('../../utils/money');
 const { PROMOTION_CATEGORIES, promotionCategory } = require('../../utils/promotionCategories');
 const TAB_BAR_SCROLL_TRIGGER = 8;
 const DEFAULT_SERVICE_LOCATION = {
@@ -220,22 +220,28 @@ Page({
     const version = (this.salonListVersion || 0) + 1;
     this.salonListVersion = version;
     this.setData({ loading: !this.data.salonCount, loadingMore: false, errorMessage: '' });
+    // 查询条件（位置、关键词、排序）在发起时确定，与这一轮的结果绑定。
+    const path = this.salonListPath();
+    const { latitude, longitude, searchKeyword, salonSort } = this.data;
     try {
-      const result = await api.requestPage(this.salonListPath(), { page: 1, limit: SALON_PAGE_SIZE });
+      const result = await api.requestPage(path, { page: 1, limit: SALON_PAGE_SIZE });
       const normalizedSalons = await this.normalizeSalonPage(result.items);
-      if (version !== this.salonListVersion) return;
+      if (version !== this.salonListVersion || path !== this.salonListPath()) return;
       this.salonListLoaded = true;
+      // 页面上的列表现在是这一轮查询的结果，之后的加载更多才按这一轮的条件和页码继续。
+      this.displayedSalonListVersion = version;
+      this.displayedSalonListPath = path;
       this.salons = normalizedSalons;
       this.setData({
         salonPage: 1,
         hasMoreSalons: result.hasMore
       });
       this.renderSalons(normalizedSalons);
-      if (!this.data.searchKeyword && this.data.salonSort === 'distance') {
-        salonListCache.save({ latitude: this.data.latitude, longitude: this.data.longitude }, result.items);
+      if (!searchKeyword && salonSort === 'distance') {
+        salonListCache.save({ latitude, longitude }, result.items);
       }
     } catch (err) {
-      if (version !== this.salonListVersion) return;
+      if (version !== this.salonListVersion || path !== this.salonListPath()) return;
       const updates = { errorMessage: err.message || '网络请求失败' };
       if ((this.salons || []).length) this.setData(updates);
       else this.setSalonCardData({ ...updates, salonCards: [] }, 0);
@@ -297,7 +303,7 @@ Page({
       reviewCountText: reviewCount ? `评价 ${reviewCount}条` : '暂无评价',
       // 列表接口的可选字段：该店剪发类套餐的最低价（分），没有剪发套餐时不返回。
       cutPriceText: Number.isSafeInteger(salon.cutPriceFromFen) && salon.cutPriceFromFen > 0
-        ? `剪发${formatFen(salon.cutPriceFromFen)}起`
+        ? `剪发 ¥ ${formatFenAmount(salon.cutPriceFromFen)}～`
         : '',
       distanceText: this.formatDistance(salon.distanceKm)
     };
@@ -522,13 +528,20 @@ Page({
 
   async loadMore() {
     if (this.data.loading || this.data.loadingMore || !this.data.hasMoreSalons) return;
+    // 新一轮查询（搜索、清除搜索、下拉刷新、换位置）的第 1 页还没替换列表时，页面上的页码属于旧列表，
+    // 不能拿它按新条件翻页；新查询失败时旧列表保留，同样不翻页。
+    if (this.displayedSalonListVersion !== this.salonListVersion) return;
+    // 查询条件已变但新一轮查询还没发起时（如换位置后坐标已更新、第 1 页请求要等滚动回顶的回调），
+    // 页面上的列表属于旧条件，同样不翻页；翻页始终使用列表自己的查询条件。
+    const path = this.displayedSalonListPath;
+    if (path !== this.salonListPath()) return;
     const version = this.salonListVersion;
     const page = this.data.salonPage + 1;
     this.setData({ loadingMore: true });
     try {
-      const result = await api.requestPage(this.salonListPath(), { page, limit: SALON_PAGE_SIZE });
+      const result = await api.requestPage(path, { page, limit: SALON_PAGE_SIZE });
       const nextSalons = await this.normalizeSalonPage(result.items);
-      if (version !== this.salonListVersion) return;
+      if (version !== this.salonListVersion || path !== this.salonListPath()) return;
       const knownIds = new Set((this.salons || []).map((salon) => salon.id));
       const newSalons = nextSalons.filter((salon) => {
         if (knownIds.has(salon.id)) return false;
@@ -545,7 +558,7 @@ Page({
       });
       await new Promise(resolve => this.renderSalons(newSalons, true, resolve));
     } catch (err) {
-      if (version === this.salonListVersion) {
+      if (version === this.salonListVersion && path === this.salonListPath()) {
         wx.showToast({ title: err.message || '加载失败，请稍后重试', icon: 'none' });
       }
     } finally {

@@ -49,8 +49,8 @@ assert.equal(page.normalizeSalon({ reviewCount: 0 }).reviewCountText, '暂无评
 page.renderSalons([reviewed]);
 assert.equal(page.data.salonCards[0].reviewCountText, '评价 707条');
 assert.equal(page.data.salonCards[0].addressText, '测试路 1 号');
-assert.equal(page.data.salonCards[0].cutPriceText, '剪发¥4,950起');
-assert.equal(page.normalizeSalon({ cutPriceFromFen: 6850 }).cutPriceText, '剪发¥68.50起');
+assert.equal(page.data.salonCards[0].cutPriceText, '剪发 ¥ 4,950～');
+assert.equal(page.normalizeSalon({ cutPriceFromFen: 6850 }).cutPriceText, '剪发 ¥ 68.50～');
 for (const cutPriceFromFen of [undefined, null, 0, -1, '6800', 68.5]) {
   assert.equal(page.normalizeSalon({ cutPriceFromFen }).cutPriceText, '', 'the item is hidden without a valid price');
 }

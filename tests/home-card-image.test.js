@@ -23,11 +23,11 @@ assert.match(template, /wx:for="\{\{item\.images\}\}" wx:for-item="image" wx:for
 assert.match(template, /data-card-index="\{\{salonIndex\}\}" data-image-index="\{\{imageIndex\}\}" data-src="\{\{image\}\}"/);
 assert.match(template, /favorite_pink\.svg' : '\/assets\/icons\/favorite_border_ink\.svg'/);
 // 右上角是一颗粉星加评分，暂无评分的店铺暂时显示 5；收藏按钮在卡片右下角的底部栏里。
-assert.match(template, /class="salon-name">[\s\S]*?<\/view>\s*<view wx:if="\{\{!item\.isPlaceholder\}\}" class="salon-rating"><image class="star-icon rating-star" mode="aspectFit" src="\/assets\/icons\/star_gold\.png" \/>\{\{item\.hasRating \? item\.ratingText : '5'\}\}<\/view>\s*<\/view>\s*<scroll-view/);
+assert.match(template, /class="salon-name">[\s\S]*?<\/view>\s*<view wx:if="\{\{!item\.isPlaceholder\}\}" class="salon-rating">\s*<image class="star-icon rating-star" mode="aspectFit" src="\/assets\/icons\/star_gold\.png" \/>\s*<text class="salon-rating-value">\{\{item\.hasRating \? item\.ratingText : '5'\}\}<\/text>\s*<\/view>\s*<\/view>\s*<scroll-view/);
 assert.match(template, /wx:if="\{\{item\.cutPriceText\}\}" class="salon-info-item">[\s\S]*?\{\{item\.cutPriceText\}\}/);
 assert.match(template, /<view class="salon-cta">\s*<text>查看店铺详情<\/text>\s*<view class="favorite" catchtap="toggleFavorite" data-id="\{\{item\.id\}\}"/);
 assert.match(styles, /\.salon-cta\s*\{[^}]*position:\s*relative;/s);
-assert.match(styles, /\.favorite\s*\{[^}]*position:\s*absolute;[^}]*top:\s*50%;[^}]*right:\s*-19rpx;[^}]*margin-top:\s*-40rpx;/s);
+assert.match(styles, /\.favorite\s*\{[^}]*position:\s*absolute;[^}]*top:\s*50%;[^}]*right:\s*-19rpx;[^}]*margin-top:\s*-38.25rpx;/s);
 assert.doesNotMatch(template, /star_gray|评分 \{\{/);
 for (const icon of ['favorite_pink', 'favorite_border_ink', 'location_on_gray', 'chat_bubble_gray', 'yen_gray']) {
   assert.ok(fs.existsSync(path.join(__dirname, `../assets/icons/${icon}.svg`)), icon);
