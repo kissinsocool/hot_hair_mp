@@ -6,6 +6,7 @@ let chooseLocation;
 let visible = true;
 let scrollTop = 2400;
 let page;
+let openerEvents;
 const requests = [];
 const scrolls = [];
 global.getApp = () => ({ globalData: { apiBaseUrl: 'https://example.com/api', session: null } });
@@ -13,6 +14,7 @@ global.wx = {
   getStorageSync: () => 'test-visitor',
   chooseLocation(options) { chooseLocation = options; },
   navigateBack() { visible = true; page.onShow(); },
+  navigateTo(options) { openerEvents = options.events; },
   showToast() {}
 };
 global.Page = value => { homeDefinition = value; };
@@ -43,12 +45,15 @@ page = {
     };
   }
 };
+// 选位置页通过事件通道把地点交回打开它的页面，不再经由页面栈直接修改首页。
 const location = {
   ...locationDefinition, data: { ...locationDefinition.data },
-  setData(values) { Object.assign(this.data, values); }
+  setData(values) { Object.assign(this.data, values); },
+  getOpenerEventChannel: () => ({ emit: (name, value) => openerEvents[name](value) })
 };
-global.getCurrentPages = () => [page, location];
+global.getCurrentPages = () => { throw new Error('location page must not reach into the page stack'); };
 (async () => {
+  page.openLocation();
   visible = false;
   page.onHide();
   location.locate();

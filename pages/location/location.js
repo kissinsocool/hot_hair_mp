@@ -23,17 +23,14 @@ Page({
       latitude: this.data.latitude,
       longitude: this.data.longitude,
       success: (res) => {
-        const pages = getCurrentPages();
-        const prev = pages[pages.length - 2];
-        if (prev) {
-          prev.setData({
+        // 只把选中的地点交给打开本页的页面，不直接修改对方的数据。
+        const channel = this.getOpenerEventChannel && this.getOpenerEventChannel();
+        if (channel && channel.emit) {
+          channel.emit('locationSelected', {
             latitude: res.latitude,
             longitude: res.longitude,
-            locationText: res.name || res.address || '已选位置',
-            locatedOnce: true,
-            locationIsFuzzy: false
+            name: res.name || res.address || ''
           });
-          prev.locationChanged = true;
         }
         wx.navigateBack();
       },

@@ -173,9 +173,10 @@ Page({
       type: 'gcj02',
       success: (res) => {
         const restored = this.takeRestoredLocation();
+        // 模糊定位照常记住，供下次冷启动先展示；但不覆盖本次已手动选择的位置。
         wx.setStorage({ key: LAST_LOCATION_KEY, data: { latitude: res.latitude, longitude: res.longitude } });
-        // 等待定位期间用户已手动选点时，以用户的选择为准。
-        if (restored && !this.data.locationIsFuzzy) return;
+        // 等待定位期间用户已手动选点时（无论是否有缓存位置），以用户的选择为准。
+        if (!this.data.locationIsFuzzy) return;
         if (restored && distanceMeters(restored, res) < LOCATION_REFRESH_DISTANCE_M) return;
         this.setData({
           latitude: res.latitude,
@@ -190,7 +191,8 @@ Page({
         const restored = this.takeRestoredLocation();
         // 定位不可用时不再沿用上次位置，与未缓存时一样回到默认城市。
         if (restored) wx.removeStorage({ key: LAST_LOCATION_KEY });
-        if (restored && !this.data.locationIsFuzzy) return;
+        // 用户已手动选点时，定位失败不影响手选位置，不回到默认城市。
+        if (!this.data.locationIsFuzzy) return;
         this.setData({
           ...DEFAULT_SERVICE_LOCATION,
           locatedOnce: false,
@@ -635,10 +637,29 @@ Page({
     wx.navigateTo({ url: '/pages/support/support' });
   },
 
+  // 选位置页只通过事件通道交回选中的地点，首页自己决定更新哪些字段、何时刷新列表。
   openLocation() {
     wx.navigateTo({
-      url: `/pages/location/location?text=${encodeURIComponent(this.data.locationText)}&latitude=${this.data.latitude}&longitude=${this.data.longitude}`
+      url: `/pages/location/location?text=${encodeURIComponent(this.data.locationText)}&latitude=${this.data.latitude}&longitude=${this.data.longitude}`,
+      events: {
+        locationSelected: (location) => this.applySelectedLocation(location)
+      }
     });
+  },
+
+  // 手动选点：以用户选择为准（不再被随后返回的模糊定位覆盖），首页回到前台时再按新位置加载列表。
+  applySelectedLocation(location = {}) {
+    const latitude = Number(location.latitude);
+    const longitude = Number(location.longitude);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return;
+    this.setData({
+      latitude,
+      longitude,
+      locationText: location.name || '已选位置',
+      locatedOnce: true,
+      locationIsFuzzy: false
+    });
+    this.locationChanged = true;
   }
 });
 
