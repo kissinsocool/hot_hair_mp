@@ -63,6 +63,7 @@ Page({
     } catch (_) {}
   },
 
+  // 商家接单时会立即发送提醒。用户同意订阅后，先完成 OpenID 绑定再创建预约。
   requestBookingSubscription() {
     const tmplIds = this.data.bookingStatusTemplateIds;
     if (!tmplIds.length || !wx.requestSubscribeMessage) return Promise.resolve();
@@ -71,16 +72,25 @@ Page({
         tmplIds,
         success: (result) => {
           if (!tmplIds.some((id) => result[id] === 'accept')) return resolve();
-          wx.login({
-            success: ({ code }) => {
-              if (!code) return resolve();
-              api.request('/auth/wechat/openid', {
-                method: 'POST',
-                data: { loginCode: code }
-              }).then(resolve).catch(resolve);
-            },
-            fail: resolve
-          });
+          this.bindSubscriptionOpenId().then(resolve, resolve);
+        },
+        fail: resolve
+      });
+    });
+  },
+
+  bindSubscriptionOpenId() {
+    return new Promise((resolve, reject) => {
+      wx.login({
+        success: ({ code }) => {
+          if (!code) return resolve();
+          api.request('/auth/wechat/openid', {
+            method: 'POST',
+            affectsUserData: false,
+            // 微信换取 OpenID 失败也返回 401，预约请求会单独处理真实的会话失效。
+            skipUnauthorized: true,
+            data: { loginCode: code }
+          }).then(resolve, reject);
         },
         fail: resolve
       });
@@ -150,7 +160,12 @@ Page({
     try {
       await this.requestBookingSubscription();
       const booking = this.data.booking;
+      // A retry from this page must refer to the same booking attempt.
+      if (!this.clientRequestId) {
+        this.clientRequestId = [Date.now(), Math.random().toString(36).slice(2), Math.random().toString(36).slice(2)].join('-');
+      }
       const data = {
+        clientRequestId: this.clientRequestId,
         salonId: booking.salonId,
         staffId: booking.staffId,
         serviceId: booking.serviceId,

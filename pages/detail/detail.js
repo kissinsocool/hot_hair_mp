@@ -13,6 +13,8 @@ const { afterSalesPolicyLabels } = require('../../utils/afterSalesPolicies');
 const { postServiceView } = require('../../utils/postService');
 const navigation = require('../../utils/navigation');
 const imageFallback = require('../../utils/imageFallback');
+// 「相关店铺」距离可视区域还有这么远时开始请求，滚动到时内容已经就绪。
+const RELATED_SALONS_PRELOAD_PX = 600;
 
 Page({
   onShareAppMessage,
@@ -42,6 +44,7 @@ Page({
 
   onUnload() {
     this.reviewFeedbackDisposed = true;
+    this.stopRelatedSalonsObserver();
   },
 
   markReviewHelpful(e) {
@@ -52,6 +55,7 @@ Page({
     if (this.loadingSalon) return;
     this.loadingSalon = true;
     this.setData({ loading: true, errorMessage: '' });
+    let relatedSource = null;
     try {
       // 详情页始终读取最新数据，并刷新供预约页复用的缓存。
       const source = await salonDetail.load(this.data.id, { maxAgeMs: 0 });
@@ -71,13 +75,38 @@ Page({
         .map((review) => this.normalizeReview(review)));
       this.setData({ salon, visibleReviews });
       this.loadFavoriteState();
-      this.loadRelatedSalons(source);
+      relatedSource = source;
     } catch (err) {
       this.setData({ errorMessage: err.message || '店铺加载失败，请稍后重试' });
     } finally {
       this.loadingSalon = false;
-      this.setData({ loading: false });
+      // 详情正文（含「相关店铺」的位置）在 loading 结束后才渲染，渲染完成后才能开始观察。
+      this.setData({ loading: false }, () => {
+        if (relatedSource) this.observeRelatedSalons(relatedSource);
+      });
     }
+  },
+
+  // 「相关店铺」在详情靠后的位置：滚动接近时才请求附近店铺列表，
+  // 只看了头部和套餐就离开或去预约的用户不必多拉一次列表。
+  observeRelatedSalons(source) {
+    this.stopRelatedSalonsObserver();
+    if (this.reviewFeedbackDisposed || !salonCoordinates(source)) return;
+    const observer = this.createIntersectionObserver();
+    this.relatedSalonsObserver = observer;
+    observer
+      .relativeToViewport({ bottom: RELATED_SALONS_PRELOAD_PX })
+      .observe('.related-salons-anchor', (entry) => {
+        if (this.relatedSalonsObserver !== observer || !(entry.intersectionRatio > 0)) return;
+        this.stopRelatedSalonsObserver();
+        this.loadRelatedSalons(source);
+      });
+  },
+
+  stopRelatedSalonsObserver() {
+    const observer = this.relatedSalonsObserver;
+    this.relatedSalonsObserver = null;
+    if (observer) observer.disconnect();
   },
 
   // 详情返回前的头部预览，只包含列表数据里已有的字段。
@@ -365,9 +394,10 @@ Page({
     navigation.navigateTo(`/pages/staff/staff?id=${encodeURIComponent(id)}&salonId=${encodeURIComponent(this.data.id)}`);
   },
 
+  // 未登录时由预约页打开登录页，登录成功后直接停在预约页继续（与点击套餐卡片预约一致），不必回到本页再点一次。
   book() {
-    if (!api.requireLogin()) return;
-    wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.id}` });
+    if (!this.data.id) return;
+    wx.navigateTo({ url: `/pages/booking/booking?id=${encodeURIComponent(this.data.id)}` });
   }
 });
 

@@ -87,3 +87,5 @@ storage.homeLastLocation = { latitude: '31.2', longitude: null };
 page = createPage();
 page.onLoad();
 assert.deepEqual(page.loads, []);
+
+page.onUnload();

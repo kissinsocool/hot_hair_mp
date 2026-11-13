@@ -42,5 +42,6 @@ async function main() {
   await logout;
   assert.equal(api.session().token, 'B');
   off();
+  socket.reset();
 }
 main().catch(error => { console.error(error); process.exitCode = 1; });

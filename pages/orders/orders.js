@@ -60,11 +60,25 @@ Page({
     // 短时间内返回且期间没有本端写操作和预约推送时，保留已加载的分页和滚动位置。
     // 连接断开期间可能漏掉的推送，由下面重新鉴权后的刷新补上。
     if (!freshness.isFresh(this.ordersStamp)) this.load({ keepLoaded: true });
+    // 列表仍然有效时只同步未读角标：在消息页看过消息只改变未读数，订单列表不必重新读取。
+    // 未读数共用短期缓存，没有失效时不发请求。
+    else this.refreshUnread();
     this.unsubscribeBookingSocket = bookingSocket.subscribe((event) => {
       if (event.event === 'authenticated' || event.event === 'booking.created' || event.event === 'booking.updated') {
         this.load({ keepLoaded: true, forceUnread: true });
       }
     });
+  },
+
+  async refreshUnread() {
+    const requestToken = (api.session() || {}).token;
+    try {
+      const unreadMessageCount = await unreadMessages.count();
+      if (requestToken !== (api.session() || {}).token) return;
+      if (unreadMessageCount !== this.data.unreadMessageCount) this.setData({ unreadMessageCount });
+    } catch (_) {
+      // 只是角标，读取失败时保留当前值。
+    }
   },
 
   refresh() {

@@ -174,3 +174,24 @@ test('back on the booking page the slots reload while service, stylist and date 
   assert.equal(page.data.selectedStaffId, 'st1');
   assert.equal(page.data.selectedDate, '2030-01-01');
 });
+
+
+test('retry after an ambiguous timeout reuses the confirmation page request ID', async () => {
+  const ids = [];
+  const api = {
+    formatTime: value => value,
+    async request(_url, { data }) {
+      ids.push(data.clientRequestId);
+      if (ids.length === 1) throw Object.assign(new Error('timeout'), { timeout: true });
+      return {};
+    }
+  };
+  const wx = { showModal() {}, showToast() {} };
+  const page = loadConfirm(api, wx);
+  await page.submit();
+  await page.submit();
+  await loadConfirm(api, wx).submit();
+  assert.match(ids[0], /^[A-Za-z0-9_-]{1,64}$/);
+  assert.equal(ids[1], ids[0]);
+  assert.notEqual(ids[2], ids[0]);
+});

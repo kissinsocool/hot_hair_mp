@@ -185,6 +185,11 @@
   line-height: 42rpx;
 }
 
+/* 位置标记需要有高度才能被相交观察到。 */
+.related-salons-anchor {
+  height: 1px;
+}
+
 .related-salons {
   margin: 46rpx -20rpx 0;
   padding: 32rpx 0 12rpx;

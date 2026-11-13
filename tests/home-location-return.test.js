@@ -12,6 +12,7 @@ const scrolls = [];
 global.getApp = () => ({ globalData: { apiBaseUrl: 'https://example.com/api', session: null } });
 global.wx = {
   getStorageSync: () => 'test-visitor',
+  setStorage() {},
   chooseLocation(options) { chooseLocation = options; },
   navigateBack() { visible = true; page.onShow(); },
   navigateTo(options) { openerEvents = options.events; },

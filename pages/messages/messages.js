@@ -5,6 +5,7 @@ const unreadMessages = require('../../utils/unreadMessages');
 const layout = require('../../utils/layout');
 const orderUtils = require('../../utils/orders');
 const freshness = require('../../utils/freshness');
+const loginGate = require('../../utils/loginGate');
 const { appendPatch } = require('../../utils/dataPatch');
 const PAGE_SIZE = 20;
 // 刷新时按已加载的页数一次重新读取，最多为分页接口单次上限 100 条。
@@ -28,7 +29,8 @@ Page({
   },
 
   onShow() {
-    if (!api.requireLogin()) return;
+    // 未登录时打开登录页；用户没有登录就返回时离开本页，不反复跳回登录页。
+    if (!loginGate.ensure(this)) return;
     if (this.unsubscribeBookingSocket) this.unsubscribeBookingSocket();
     // 短时间内返回且期间没有本端写操作和预约推送时，保留已加载的分页和滚动位置。
     if (!freshness.isFresh(this.messagesStamp)) this.load({ keepLoaded: true });
@@ -75,6 +77,7 @@ Page({
     if (this.loadingMessages) { this.messagesDirty = true; return; }
     this.loadingMessages = true;
     const requestToken = (api.session() || {}).token;
+    const stamp = freshness.stamp();
     const version = (this.messagesVersion || 0) + 1;
     this.messagesVersion = version;
     const pages = keepLoaded ? Math.min(Math.max(1, this.data.messagePage), MAX_RELOAD_PAGES) : 1;
@@ -88,15 +91,21 @@ Page({
         hasMoreMessages: result.hasMore
       });
       if (result.items.length) {
-        await api.request('/booking-messages/read', {
-          method: 'PATCH',
-          data: { through: result.items[0].createdAt }
-        });
-        unreadMessages.invalidate();
+        // 同一批消息已标记过时不重复提交：推送连接鉴权后的补刷新经常读到与刚才相同的内容。
+        // 列表里出现任何新消息时这个标识都会变化。
+        const readKey = `${requestToken}:${result.items.map((item) => item.id).join(',')}`;
+        if (readKey !== this.readKey) {
+          await api.request('/booking-messages/read', {
+            method: 'PATCH',
+            // 标记已读只改变未读数（下面单独失效），不改变订单、收藏、优惠券等页面数据，不必让它们重新读取。
+            affectsUserData: false,
+            data: { through: result.items[0].createdAt }
+          });
+          this.readKey = readKey;
+          unreadMessages.invalidate();
+        }
       }
-      // 标记已读是本页自己的写操作，所以在它完成之后记录；
-      // 本页可见期间的预约推送由订阅直接触发刷新，不依赖这个时间。
-      this.messagesStamp = freshness.stamp();
+      this.messagesStamp = stamp;
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
     } finally {

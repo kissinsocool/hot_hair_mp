@@ -17,7 +17,6 @@ Page({
     staff: null,
     isFavorite: false,
     favoriteCount: 0,
-    services: [],
     loading: true,
     reviews: [],
     reviewPage: 0,
@@ -47,15 +46,19 @@ Page({
   async load() {
     try {
       const data = await api.request(`/staff/${this.data.id}`);
-      data.imageUrl = api.thumbnailUrl(data.imageUrl, 720);
-      Object.assign(data, ratingDisplay(data.rating, data.reviewCount));
-      data.starIcons = data.hasRating ? starIcons(data.rating) : [];
-      data.bioText = data.bio || '暂无简介';
-      data.roleText = [staffRoleLabel(data.roleId), data.experience && `${data.experience}经验`].filter(Boolean).join(' · ');
+      const rating = ratingDisplay(data.rating, data.reviewCount);
       this.setData({
-        staff: data,
+        // 只传模板和分享用到的字段；接口返回的店铺套餐列表等本页不展示，不进入视图层。
+        staff: {
+          name: data.name || '',
+          imageUrl: api.thumbnailUrl(data.imageUrl, 720),
+          ...rating,
+          starIcons: rating.hasRating ? starIcons(data.rating) : [],
+          reviewCount: Number(data.reviewCount) || 0,
+          bioText: data.bio || '暂无简介',
+          roleText: [staffRoleLabel(data.roleId), data.experience && `${data.experience}经验`].filter(Boolean).join(' · ')
+        },
         salonName: data.salonName || '',
-        services: data.salonServices || [],
         favoriteCount: Number(data.favoriteCount) || 0
       });
     } catch (err) {
@@ -138,9 +141,9 @@ Page({
     imageFallback.retryAsJpeg(this, e);
   },
 
+  // 未登录时由预约页打开登录页，登录成功后直接停在预约页继续，不必回到本页再点一次。
   book() {
-    if (!api.requireLogin()) return;
-    wx.navigateTo({ url: `/pages/booking/booking?id=${this.data.salonId}&staffId=${this.data.id}` });
+    wx.navigateTo({ url: `/pages/booking/booking?id=${encodeURIComponent(this.data.salonId)}&staffId=${encodeURIComponent(this.data.id)}` });
   },
 
   previewAvatar() {

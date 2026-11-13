@@ -139,6 +139,8 @@
           </view>
         </scroll-view>
       </view>
+      <!-- 「相关店铺」的位置标记：滚动接近这里时才请求附近店铺（见 detail.js observeRelatedSalons）。 -->
+      <view class="related-salons-anchor" aria-hidden="true"></view>
       <view wx:if="{{relatedSalons.length}}" class="related-salons">
         <view class="related-salons-title">看了这个店铺的用户还看了</view>
         <scroll-view scroll-x enhanced show-scrollbar="{{false}}" class="related-salons-strip">

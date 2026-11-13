@@ -25,6 +25,7 @@ for (const name of ['orders', 'messages']) {
         : module.includes('bookingSocket') ? { subscribe(fn) { subscription = fn; return () => {}; } }
         : module.includes('unreadMessages') ? { count: async () => 0, invalidate() {} }
         : module.includes('freshness') ? { stamp: () => ({}), isFresh: () => fresh }
+        : module.includes('loginGate') ? { ensure: () => true }
         : module.includes('layout') ? { appBarSize: () => ({}) } : module.includes('reviewTags') ? { buildReviewTags: () => [] } : {},
       wx: { showToast() {} },
     };

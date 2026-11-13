@@ -7,6 +7,7 @@ const freshness = require('../../utils/freshness');
 const imageFallback = require('../../utils/imageFallback');
 const { staffRoleLabel } = require('../../utils/staffRoles');
 const { postCardView } = require('../../utils/postCard');
+const { pickFields } = require('../../utils/orders');
 const initiallyLoggedIn = Boolean(api.session() && api.session().token);
 
 // 收藏分类：key 同时是 data 里列表字段的名字。
@@ -57,6 +58,17 @@ const loaders = {
       salonTags: Array.isArray(post.salonTags) ? post.salonTags : []
     })));
   }
+};
+
+// 各分类卡片模板使用的字段。接口返回的完整数据（店铺的套餐、理发师列表等）留在逻辑层，
+// 页面跳转时从完整数据读取，视图层只拿卡片显示的字段。
+const CARD_FIELDS = {
+  salons: ['id', 'image', 'nameText', 'descriptionText'],
+  staff: ['id', 'image', 'nameText', 'subText', 'bioText'],
+  posts: [
+    'id', 'salonId', 'salonImage', 'salonNameText', 'salonDescriptionText', 'salonTags',
+    'relatedService', 'serviceName', 'serviceUnavailable'
+  ]
 };
 
 const stores = {
@@ -123,7 +135,8 @@ Page({
     const stamp = freshness.stamp();
     try {
       const list = await loaders[key]();
-      this.setData({ [key]: list });
+      this.sources = { ...this.sources, [key]: list };
+      this.setData({ [key]: list.map((item) => pickFields(item, CARD_FIELDS[key])) });
       this.stamps[key] = stamp;
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });
@@ -137,20 +150,25 @@ Page({
     imageFallback.retryAsJpeg(this, e);
   },
 
+  // 某个分类里一条收藏的完整数据。
+  source(key, id) {
+    return ((this.sources && this.sources[key]) || []).find((item) => item.id === id) || null;
+  },
+
   openDetail(e) {
     const salonId = e.currentTarget.dataset.id;
-    salonDetail.prefetch(salonId, this.data.salons.find((item) => item.id === salonId));
+    salonDetail.prefetch(salonId, this.source('salons', salonId));
     wx.navigateTo({ url: `/pages/detail/detail?id=${salonId}` });
   },
 
   openStaff(e) {
-    const person = this.data.staff.find((item) => item.id === e.currentTarget.dataset.id);
+    const person = this.source('staff', e.currentTarget.dataset.id);
     if (!person) return;
     wx.navigateTo({ url: `/pages/staff/staff?id=${encodeURIComponent(person.id)}&salonId=${encodeURIComponent(person.salonId)}` });
   },
 
   bookStaff(e) {
-    const person = this.data.staff.find((item) => item.id === e.currentTarget.dataset.id);
+    const person = this.source('staff', e.currentTarget.dataset.id);
     if (!person || !api.requireLogin()) return;
     wx.navigateTo({ url: `/pages/booking/booking?id=${encodeURIComponent(person.salonId)}&staffId=${encodeURIComponent(person.id)}` });
   },
@@ -160,6 +178,7 @@ Page({
     if (!this.data[key].some((item) => item.id === id)) return;
     try {
       await stores[key].setFavorite(id, false);
+      this.sources = { ...this.sources, [key]: ((this.sources && this.sources[key]) || []).filter((item) => item.id !== id) };
       this.setData({ [key]: this.data[key].filter((item) => item.id !== id) });
     } catch (err) {
       wx.showToast({ title: err.message, icon: 'none' });

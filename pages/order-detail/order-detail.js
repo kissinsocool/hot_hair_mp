@@ -3,6 +3,7 @@ const api = require('../../utils/api');
 const orderUtils = require('../../utils/orders');
 const analytics = require('../../utils/analytics');
 const salonDetail = require('../../utils/salonDetail');
+const loginGate = require('../../utils/loginGate');
 
 Page({
   onShareAppMessage,
@@ -13,17 +14,15 @@ Page({
     order: null
   },
 
+  // 订单编号在登录判断之前记下：未登录进入时，登录成功返回本页只触发 onShow，仍要知道加载哪个订单。
   onLoad(query) {
-    if (!api.requireLogin()) return;
     this.bookingId = String(query.id || '');
-    if (!this.bookingId) {
-      this.setData({ loading: false, errorMessage: '订单编号无效' });
-      return;
-    }
+    if (!this.bookingId) this.setData({ loading: false, errorMessage: '订单编号无效' });
   },
 
   onShow() {
-    if (this.bookingId) return this.load();
+    if (!this.bookingId || !loginGate.ensure(this)) return;
+    return this.load();
   },
 
   reportIssue() {

@@ -82,8 +82,17 @@ Page({
       mediaType: ['image'],
       sizeType: ['compressed'],
       success: async (res) => {
-        const additions = await prepareImages(res.tempFiles || []);
-        this.setData({ images: this.data.images.concat(additions).slice(0, 5) });
+        // 多张大图逐张压缩需要几秒，期间给出提示并挡住重复操作。
+        wx.showLoading({ title: '正在处理图片', mask: true });
+        let prepared = { images: [], tooLarge: false };
+        try {
+          prepared = await prepareImages(res.tempFiles || []);
+          this.setData({ images: this.data.images.concat(prepared.images).slice(0, 5) });
+        } finally {
+          wx.hideLoading();
+        }
+        // 加载提示与 toast 共用同一个位置，关闭加载提示之后再提示。
+        if (prepared.tooLarge) wx.showToast({ title: '图片过大，请换一张', icon: 'none' });
       }
     });
   },
@@ -127,18 +136,19 @@ Page({
 async function prepareImages(files) {
   const fs = wx.getFileSystemManager();
   const images = [];
+  let tooLarge = false;
   for (const file of files) {
     try {
       const shrunk = await shrinkImage(file.tempFilePath, fs);
       if (!shrunk) {
-        wx.showToast({ title: '图片过大，请换一张', icon: 'none' });
+        tooLarge = true;
         continue;
       }
       const fileName = shrunk.path.split('/').pop() || 'image.jpg';
       images.push({ tempPath: shrunk.path, fileName, contentType: imageContentType(fileName), size: shrunk.size, existing: false });
     } catch (_) {}
   }
-  return images;
+  return { images, tooLarge };
 }
 
 function imageContentType(fileName) {

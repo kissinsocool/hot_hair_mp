@@ -320,15 +320,26 @@ async function logout() {
   }
 }
 
+// 在发起跳转的页面上记下「已为它打开过登录页」。页面再次显示时如果仍未登录，说明用户放弃了登录，
+// 页面据此离开而不是再次打开登录页（见 utils/loginGate.js）。
+function markLoginRequested(page) {
+  if (page && `/${page.route}` !== LOGIN_PAGE) page.loginRequested = true;
+}
+
+function currentPage() {
+  const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+  return pages[pages.length - 1] || null;
+}
+
 function handleUnauthorized(requestToken) {
   const currentSession = session();
   if (currentSession && currentSession.token && currentSession.token !== requestToken) return;
   clearSession();
 
-  const pages = getCurrentPages();
-  const currentPage = pages[pages.length - 1];
-  if (navigatingToLogin || (currentPage && `/${currentPage.route}` === LOGIN_PAGE)) return;
+  const page = currentPage();
+  if (navigatingToLogin || (page && `/${page.route}` === LOGIN_PAGE)) return;
 
+  markLoginRequested(page);
   navigatingToLogin = true;
   wx.navigateTo({
     url: LOGIN_PAGE,
@@ -345,6 +356,7 @@ function handleUnauthorized(requestToken) {
 function requireLogin() {
   const currentSession = session();
   if (currentSession && currentSession.token) return true;
+  markLoginRequested(currentPage());
   wx.navigateTo({ url: LOGIN_PAGE });
   return false;
 }

@@ -19,6 +19,12 @@ const DEFAULT_SERVICE_LOCATION = {
   locationText: '选择定位'
 };
 const LAST_LOCATION_KEY = 'homeLastLocation';
+// 用户上次手动选择的位置。只在定位不可用（多为未授权定位）时使用，让这类用户不必每次冷启动都重新选点；
+// 定位可用时始终以当前定位为准，不沿用以前手选的位置。
+const MANUAL_LOCATION_KEY = 'homeManualLocation';
+// 没有缓存位置的冷启动要等定位返回才有列表；定位迟迟不返回（如系统授权弹窗一直未处理）时，
+// 超过这个时间先展示默认城市的店铺，定位返回后再按实际位置替换。
+const LOCATE_TIMEOUT_MS = 6000;
 // 模糊定位本身只有公里级精度；移动不足这个距离时，附近店铺列表不会有实质变化。
 const LOCATION_REFRESH_DISTANCE_M = 500;
 const INITIAL_SALON_CARD_COUNT = 10;
@@ -88,6 +94,8 @@ Page({
       this.showCachedSalons(lastLocation);
       this.loadSalons();
     }
+    // 没有可用位置：列表要等定位结果（或用户手动选点、等待超时）才开始加载。
+    this.awaitingFirstLocation = !lastLocation;
     this.locate();
   },
 
@@ -148,7 +156,9 @@ Page({
   },
 
   onUnload() {
+    this.locationDisposed = true;
     clearTimeout(this.supportTimer);
+    this.clearLocateTimer();
     this.salonListVersion = (this.salonListVersion || 0) + 1;
     this.salonCardRender = null;
     this.stopSalonCardObserver();
@@ -169,9 +179,16 @@ Page({
   async locate() {
     if (this.data.locating) return;
     this.setData({ locating: true });
+    this.clearLocateTimer();
+    if (this.awaitingFirstLocation) {
+      this.locateTimer = setTimeout(() => this.onLocateTimeout(), LOCATE_TIMEOUT_MS);
+    }
     wx.getFuzzyLocation({
       type: 'gcj02',
       success: (res) => {
+        if (this.locationDisposed) return;
+        this.clearLocateTimer();
+        this.awaitingFirstLocation = false;
         const restored = this.takeRestoredLocation();
         // 模糊定位照常记住，供下次冷启动先展示；但不覆盖本次已手动选择的位置。
         wx.setStorage({ key: LAST_LOCATION_KEY, data: { latitude: res.latitude, longitude: res.longitude } });
@@ -185,23 +202,74 @@ Page({
           locationFailed: false,
           locationIsFuzzy: true
         });
-        this.reloadSalonsForLocation(Boolean(restored));
+        // 已按上次定位或超时后的默认城市展示过列表时，替换前先回到顶部。
+        this.reloadSalonsForLocation(Boolean(restored) || this.takeLocateTimedOut());
       },
       fail: () => {
+        if (this.locationDisposed) return;
+        this.clearLocateTimer();
+        this.awaitingFirstLocation = false;
         const restored = this.takeRestoredLocation();
         // 定位不可用时不再沿用上次位置，与未缓存时一样回到默认城市。
         if (restored) wx.removeStorage({ key: LAST_LOCATION_KEY });
         // 用户已手动选点时，定位失败不影响手选位置，不回到默认城市。
         if (!this.data.locationIsFuzzy) return;
+        const timedOut = this.takeLocateTimedOut();
+        // 定位不可用时，优先回到用户上次手动选择的位置，没有时才回到默认城市。
+        const manual = readManualLocation();
+        if (manual) {
+          this.setData({
+            latitude: manual.latitude,
+            longitude: manual.longitude,
+            locationText: manual.name || '已选位置',
+            locatedOnce: true,
+            locationFailed: false,
+            locationIsFuzzy: false
+          });
+          this.reloadSalonsForLocation(Boolean(restored) || timedOut);
+          return;
+        }
         this.setData({
           ...DEFAULT_SERVICE_LOCATION,
           locatedOnce: false,
           locationFailed: true
         });
-        this.reloadSalonsForLocation(Boolean(restored));
+        // 等待超时后已经按默认城市加载过，位置没有变化，不重复请求。
+        if (!timedOut) this.reloadSalonsForLocation(Boolean(restored));
       },
-      complete: () => this.setData({ locating: false })
+      complete: () => {
+        if (this.locationDisposed) return;
+        this.clearLocateTimer();
+        this.setData({ locating: false });
+      }
     });
+  },
+
+  clearLocateTimer() {
+    clearTimeout(this.locateTimer);
+    this.locateTimer = null;
+  },
+
+  // 等待定位超时：先按默认城市展示。之后各种先后顺序的处理——
+  // 定位成功：按实际位置替换列表（先回到顶部）；定位失败：有手选记录时换成手选位置，否则保持默认城市、不重复请求；
+  // 用户在超时前已手动选点（awaitingFirstLocation 已清除）：不处理，以手选位置为准。
+  onLocateTimeout() {
+    this.locateTimer = null;
+    if (!this.awaitingFirstLocation || !this.data.locationIsFuzzy) return;
+    this.awaitingFirstLocation = false;
+    this.locateTimedOut = true;
+    this.setData({
+      ...DEFAULT_SERVICE_LOCATION,
+      locatedOnce: false,
+      locationFailed: true
+    });
+    this.loadSalons();
+  },
+
+  takeLocateTimedOut() {
+    const timedOut = Boolean(this.locateTimedOut);
+    this.locateTimedOut = false;
+    return timedOut;
   },
 
   takeRestoredLocation() {
@@ -670,8 +738,15 @@ Page({
       longitude,
       locationText: location.name || '已选位置',
       locatedOnce: true,
+      locationFailed: false,
       locationIsFuzzy: false
     });
+    // 手动选点后列表按所选位置加载，不再等待定位，也不需要超时兜底。
+    this.awaitingFirstLocation = false;
+    this.clearLocateTimer();
+    this.locateTimedOut = false;
+    // 记住这次选择，供定位不可用时的冷启动使用。
+    wx.setStorage({ key: MANUAL_LOCATION_KEY, data: { latitude, longitude, name: location.name || '' } });
     this.locationChanged = true;
   }
 });
@@ -683,6 +758,15 @@ function readLastLocation() {
   if (typeof latitude !== 'number' || typeof longitude !== 'number') return null;
   if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
   return { latitude, longitude };
+}
+
+function readManualLocation() {
+  const stored = wx.getStorageSync(MANUAL_LOCATION_KEY);
+  const latitude = stored && stored.latitude;
+  const longitude = stored && stored.longitude;
+  if (typeof latitude !== 'number' || typeof longitude !== 'number') return null;
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  return { latitude, longitude, name: typeof stored.name === 'string' ? stored.name : '' };
 }
 
 function distanceMeters(from, to) {
