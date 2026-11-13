@@ -413,12 +413,12 @@ Page({
     return this.loadSalons();
   },
 
+  // 搜索结果以服务端为准（列表接口按关键词筛选），这里不再按店名二次过滤，
+  // 服务端调整匹配范围（如增加地址、商圈）时前端无需同步修改。
   renderSalons(salons, append = false, onRendered) {
-    const keyword = this.data.searchKeyword.toLowerCase();
     const favoriteSet = new Set(this.data.favorites);
     const offset = append ? this.data.salonCards.length : 0;
     const cards = salons
-      .filter((salon) => !keyword || String(salon.name || '').toLowerCase().includes(keyword))
       .map((salon, index) => ({
         id: salon.id,
         // 没有图片时保留一个占位格，卡片高度不随图片有无变化。

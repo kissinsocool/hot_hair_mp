@@ -1,4 +1,24 @@
-<view wx:if="{{loading}}" class="empty">正在加载...</view>
+<!-- 加载占位：沿用真实区块的类名和尺寸（头像、姓名、职位、评分、简介、客户评价），标题显示真实文字。
+     简介和评价按最常见的情况各画一行（多数简介只有一行，很多理发师暂无评价），避免数据返回后卡片明显缩短。
+     「立即预约」需要理发师数据，加载完成后才出现。 -->
+<view wx:if="{{loading}}" class="staff-page" role="status" aria-label="正在加载理发师信息">
+  <view class="profile">
+    <view class="avatar skeleton-block staff-skeleton-avatar"></view>
+    <view class="skeleton-line staff-skeleton-name"></view>
+    <view class="skeleton-line staff-skeleton-role"></view>
+    <view class="skeleton-line staff-skeleton-rating"></view>
+    <view class="favorite"><view class="skeleton-block staff-skeleton-heart"></view></view>
+  </view>
+  <view class="page">
+    <view class="card section">
+      <view class="skeleton-line staff-skeleton-text staff-skeleton-text--last"></view>
+    </view>
+    <view class="card section">
+      <view class="section-title">客户评价</view>
+      <view class="skeleton-line staff-skeleton-reviewer"></view>
+    </view>
+  </view>
+</view>
 <view wx:else class="staff-page">
   <view class="profile">
     <image class="avatar" mode="aspectFill" src="{{staff.imageUrl}}" bindtap="previewAvatar" aria-role="button" aria-label="查看理发师头像大图" />

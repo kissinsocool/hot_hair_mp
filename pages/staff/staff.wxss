@@ -162,3 +162,50 @@
   font-size: 36rpx;
   font-weight: 700;
 }
+
+
+/* 加载占位：位置和大小与头像、姓名、职位、评分及正文行一致（正文行高 1.6 倍，约 51rpx）。 */
+.staff-skeleton-avatar {
+  display: block;
+  margin: 0 auto;
+}
+
+.staff-skeleton-name {
+  width: 220rpx;
+  height: 48rpx;
+  margin: 50rpx auto 0;
+}
+
+.staff-skeleton-role {
+  width: 160rpx;
+  height: 30rpx;
+  margin: 28rpx auto 0;
+}
+
+.staff-skeleton-rating {
+  width: 200rpx;
+  height: 44rpx;
+  margin: 38rpx auto 24rpx;
+}
+
+.staff-skeleton-text {
+  height: 30rpx;
+  margin: 10rpx 0 11rpx;
+}
+
+.staff-skeleton-text--last {
+  width: 58%;
+}
+
+.staff-skeleton-reviewer {
+  width: 160rpx;
+  height: 30rpx;
+  margin: 10rpx 0 11rpx;
+}
+
+.staff-skeleton-heart {
+  width: 56rpx;
+  height: 56rpx;
+  margin-bottom: 30rpx;
+  border-radius: 50%;
+}

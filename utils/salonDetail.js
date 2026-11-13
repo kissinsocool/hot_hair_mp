@@ -64,9 +64,16 @@ async function load(id, { maxAgeMs = CACHE_MS } = {}) {
   return fetchDetail(id, key);
 }
 
+// 同步读取仍在有效期内的缓存，没有时返回 null，不发请求。
+// 预约页在 onLoad 里用它直接渲染首帧，不必先显示加载占位再切换。
+function peek(id, { maxAgeMs = CACHE_MS } = {}) {
+  const cached = cache.get(cacheKey(id));
+  return cached && Date.now() - cached.fetchedAt < maxAgeMs ? copy(cached.data) : null;
+}
+
 function clear() {
   cache.clear();
   prefetched = null;
 }
 
-module.exports = { load, prefetch, summary, clear, CACHE_MS, PREFETCH_MS };
+module.exports = { load, peek, prefetch, summary, clear, CACHE_MS, PREFETCH_MS };

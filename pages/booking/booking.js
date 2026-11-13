@@ -77,9 +77,12 @@ Page({
   async load() {
     if (this.loadingSalon) return;
     this.loadingSalon = true;
-    this.setData({ loading: true, errorMessage: '' });
+    // 从详情页进入时店铺数据通常还在缓存里：同步取出，表单在 onLoad 内就设置好，首帧直接渲染，
+    // 不会先闪一下加载占位。没有缓存时才显示占位并请求。
+    const cached = salonDetail.peek(this.salonId);
+    if (!cached) this.setData({ loading: true, errorMessage: '' });
     try {
-      const salon = await salonDetail.load(this.salonId);
+      const salon = cached || await salonDetail.load(this.salonId);
       const dates = nextDates(salon.closedDates, salon.acceptsSameDayBooking !== false);
       const selectedDate = (dates.find((date) => !date.isDisabled) || {}).value || '';
       const requestedServiceId = String(this.initialServiceId || '');
